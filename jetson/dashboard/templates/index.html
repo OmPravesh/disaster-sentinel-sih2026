@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Disaster Sentinel — Real-time distributed disaster monitoring dashboard with 3-layer sensor confirmation">
+    <title>{{ title }} — Real-Time Monitoring</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="/static/css/index.css">
+</head>
+<body>
+    <!-- Top Bar -->
+    <header id="top-bar">
+        <div class="top-bar-left">
+            <div class="logo-container">
+                <div class="logo-icon" id="logo-pulse">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1>DISASTER SENTINEL</h1>
+                    <p class="subtitle">Real-Time Monitoring Dashboard</p>
+                </div>
+            </div>
+        </div>
+        <div class="top-bar-right">
+            <div class="status-chip" id="connection-status">
+                <span class="status-dot"></span>
+                <span class="status-text">Connecting...</span>
+            </div>
+            <div class="status-chip" id="node-count-chip">
+                <span class="status-text">Nodes: <strong id="nodes-online">—</strong>/<strong id="nodes-total">—</strong></span>
+            </div>
+            <div class="last-packet" id="last-packet-time">
+                Last packet: <span>—</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Grid -->
+    <main id="dashboard-grid">
+        
+        <!-- Flood Card -->
+        <section class="hazard-card" id="card-flood" data-hazard="FLOOD">
+            <div class="card-header">
+                <div class="hazard-icon flood-icon">🌊</div>
+                <div class="hazard-title">
+                    <h2>FLOOD MONITORING</h2>
+                    <span class="node-badge">Node: FLD1</span>
+                </div>
+                <div class="risk-badge" id="flood-risk-badge">GREEN</div>
+            </div>
+            
+            <div class="three-layer-grid">
+                <div class="layer-row" id="flood-l1">
+                    <div class="layer-label">L1 <span class="layer-type">Water Level</span></div>
+                    <div class="layer-bar-container">
+                        <div class="layer-bar" style="width: 5%"></div>
+                    </div>
+                    <div class="layer-value">—</div>
+                    <div class="layer-score">0.00</div>
+                    <div class="layer-status">🟢</div>
+                </div>
+                <div class="layer-row" id="flood-l2">
+                    <div class="layer-label">L2 <span class="layer-type">Rainfall</span></div>
+                    <div class="layer-bar-container">
+                        <div class="layer-bar" style="width: 5%"></div>
+                    </div>
+                    <div class="layer-value">—</div>
+                    <div class="layer-score">0.00</div>
+                    <div class="layer-status">🟢</div>
+                </div>
+                <div class="layer-row" id="flood-l3">
+                    <div class="layer-label">L3 <span class="layer-type">Pressure</span></div>
+                    <div class="layer-bar-container">
+                        <div class="layer-bar" style="width: 5%"></div>
+                    </div>
+                    <div class="layer-value">—</div>
+                    <div class="layer-score">0.00</div>
+                    <div class="layer-status">🟢</div>
+                </div>
+            </div>
+
+            <div class="card-metrics">
+                <div class="metric">
+                    <span class="metric-label">3-Layer Score</span>
+                    <span class="metric-value" id="flood-combined">0.00</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Confirmation</span>
+                    <span class="metric-value" id="flood-confirm">NONE</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Probability</span>
+                    <span class="metric-value" id="flood-prob">0%</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Severity</span>
+                    <span class="metric-value" id="flood-severity">—</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">ETA</span>
+                    <span class="metric-value" id="flood-eta">—</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Trend</span>
+                    <span class="metric-value" id="flood-trend">—</span>
+                </div>
+            </div>
+
+            <div class="card-chart">
+                <canvas id="flood-chart"></canvas>
+            </div>
+        </section>
+
+        <!-- Fire Card -->
+        <section class="hazard-card" id="card-fire" data-hazard="FIRE">
+            <div class="card-header">
+                <div class="hazard-icon fire-icon">🔥</div>
+                <div class="hazard-title">
+                    <h2>FIRE MONITORING</h2>
+                    <span class="node-badge">Node: FIR2</span>
+                </div>
+                <div class="risk-badge" id="fire-risk-badge">GREEN</div>
+            </div>
+            
+            <div class="three-layer-grid">
+                <div class="layer-row" id="fire-l1">
+                    <div class="layer-label">L1 <span class="layer-type">Flame/IR</span></div>
+                    <div class="layer-bar-container">
+                        <div class="layer-bar" style="width: 5%"></div>
+                    </div>
+                    <div class="layer-value">—</div>
+                    <div class="layer-score">0.00</div>
+                    <div class="layer-status">🟢</div>
+                </div>
+                <div class="layer-row" id="fire-l2">
+                    <div class="layer-label">L2 <span class="layer-type">Gas/Smoke</span></div>
+                    <div class="layer-bar-container">
+                        <div class="layer-bar" style="width: 5%"></div>
+                    </div>
+                    <div class="layer-value">—</div>
+                    <div class="layer-score">0.00</div>
+                    <div class="layer-status">🟢</div>
+                </div>
+                <div class="layer-row" id="fire-l3">
+                    <div class="layer-label">L3 <span class="layer-type">Temp/Humid</span></div>
+                    <div class="layer-bar-container">
+                        <div class="layer-bar" style="width: 5%"></div>
+                    </div>
+                    <div class="layer-value">—</div>
+                    <div class="layer-score">0.00</div>
+                    <div class="layer-status">🟢</div>
+                </div>
+            </div>
+
+            <div class="card-metrics">
+                <div class="metric">
+                    <span class="metric-label">3-Layer Score</span>
+                    <span class="metric-value" id="fire-combined">0.00</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Confirmation</span>
+                    <span class="metric-value" id="fire-confirm">NONE</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Probability</span>
+                    <span class="metric-value" id="fire-prob">0%</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Severity</span>
+                    <span class="metric-value" id="fire-severity">—</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">ETA</span>
+                    <span class="metric-value" id="fire-eta">—</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Trend</span>
+                    <span class="metric-value" id="fire-trend">—</span>
+                </div>
+            </div>
+
+            <div class="card-chart">
+                <canvas id="fire-chart"></canvas>
+            </div>
+        </section>
+
+        <!-- Landslide Card -->
+        <section class="hazard-card" id="card-landslide" data-hazard="LANDSLIDE">
+            <div class="card-header">
+                <div class="hazard-icon landslide-icon">⛰️</div>
+                <div class="hazard-title">
+                    <h2>LANDSLIDE MONITORING</h2>
+                    <span class="node-badge">Node: SLD2</span>
+                </div>
+                <div class="risk-badge" id="landslide-risk-badge">GREEN</div>
+            </div>
+            
+            <div class="three-layer-grid">
+                <div class="layer-row" id="landslide-l1">
+                    <div class="layer-label">L1 <span class="layer-type">Tilt/Vibration</span></div>
+                    <div class="layer-bar-container">
+                        <div class="layer-bar" style="width: 5%"></div>
+                    </div>
+                    <div class="layer-value">—</div>
+                    <div class="layer-score">0.00</div>
+                    <div class="layer-status">🟢</div>
+                </div>
+                <div class="layer-row" id="landslide-l2">
+                    <div class="layer-label">L2 <span class="layer-type">Soil Moisture</span></div>
+                    <div class="layer-bar-container">
+                        <div class="layer-bar" style="width: 5%"></div>
+                    </div>
+                    <div class="layer-value">—</div>
+                    <div class="layer-score">0.00</div>
+                    <div class="layer-status">🟢</div>
+                </div>
+                <div class="layer-row" id="landslide-l3">
+                    <div class="layer-label">L3 <span class="layer-type">Pressure</span></div>
+                    <div class="layer-bar-container">
+                        <div class="layer-bar" style="width: 5%"></div>
+                    </div>
+                    <div class="layer-value">—</div>
+                    <div class="layer-score">0.00</div>
+                    <div class="layer-status">🟢</div>
+                </div>
+            </div>
+
+            <div class="card-metrics">
+                <div class="metric">
+                    <span class="metric-label">3-Layer Score</span>
+                    <span class="metric-value" id="landslide-combined">0.00</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Confirmation</span>
+                    <span class="metric-value" id="landslide-confirm">NONE</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Probability</span>
+                    <span class="metric-value" id="landslide-prob">0%</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Severity</span>
+                    <span class="metric-value" id="landslide-severity">—</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">ETA</span>
+                    <span class="metric-value" id="landslide-eta">—</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Trend</span>
+                    <span class="metric-value" id="landslide-trend">—</span>
+                </div>
+            </div>
+
+            <div class="card-chart">
+                <canvas id="landslide-chart"></canvas>
+            </div>
+        </section>
+
+        <!-- Alert Status Panel -->
+        <section class="alert-panel" id="alert-panel">
+            <h2>ALERT SYSTEM STATUS</h2>
+            <div class="alert-channels">
+                <div class="alert-channel" id="alert-dashboard">
+                    <div class="channel-icon">📊</div>
+                    <div class="channel-name">Dashboard</div>
+                    <div class="channel-status active">ACTIVE</div>
+                </div>
+                <div class="alert-channel" id="alert-sms">
+                    <div class="channel-icon">📱</div>
+                    <div class="channel-name">SMS</div>
+                    <div class="channel-status ready">READY</div>
+                </div>
+                <div class="alert-channel" id="alert-buzzer">
+                    <div class="channel-icon">🔔</div>
+                    <div class="channel-name">Buzzer</div>
+                    <div class="channel-status off">OFF</div>
+                </div>
+                <div class="alert-channel" id="alert-strobe">
+                    <div class="channel-icon">💡</div>
+                    <div class="channel-name">Strobe</div>
+                    <div class="channel-status off">OFF</div>
+                </div>
+            </div>
+
+            <!-- Recent Alerts Feed -->
+            <div class="recent-alerts">
+                <h3>Recent Activity</h3>
+                <div id="alert-feed" class="alert-feed">
+                    <div class="alert-item info">System started — awaiting sensor data...</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <span>Disaster Sentinel v1.0 — SIH 2026 · SIH26178 · Qualcomm</span>
+        <span id="clock"></span>
+    </footer>
+
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

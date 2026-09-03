@@ -1,0 +1,118 @@
+# Disaster Sentinel — Jetson Configuration
+# All system parameters in one place
+
+system:
+  name: "Disaster Sentinel"
+  version: "1.0.0"
+  log_level: "INFO"
+
+# LoRa Receiver Configuration
+lora:
+  spi_bus: 0
+  spi_device: 0
+  frequency: 433000000   # 433 MHz
+  spreading_factor: 7
+  bandwidth: 125000       # 125 kHz
+  coding_rate: 5          # 4/5
+  sync_word: 0xF3
+  # Jetson Orin Nano GPIO pin numbers (Linux GPIO numbering)
+  reset_pin: 25           # Pin 22 on 40-pin header
+  dio0_pin: 4             # Pin 7 on 40-pin header (IRQ)
+
+# Node Registry
+nodes:
+  FLD1:
+    name: "Flood Node 1"
+    hazard_type: "FLOOD"
+    location:
+      lat: 28.6139       # Example: Delhi coordinates
+      lon: 77.2090
+      description: "River bank monitoring point Alpha"
+    sensors:
+      layer1: "Water Level (Ultrasonic)"
+      layer2: "Rain Sensor (YL-83)"
+      layer3: "BME280 (Pressure/Humidity)"
+
+  FIR2:
+    name: "Fire + Landslide Node 2"
+    hazard_type: "FIRE"
+    location:
+      lat: 28.6150
+      lon: 77.2100
+      description: "Forest edge monitoring point Beta"
+    sensors:
+      layer1: "Flame/IR Sensor (KY-026)"
+      layer2: "MQ-2 Gas/Smoke Sensor"
+      layer3: "BME280 (Temperature/Humidity)"
+
+  SLD2:
+    name: "Fire + Landslide Node 2 (Landslide)"
+    hazard_type: "LANDSLIDE"
+    location:
+      lat: 28.6150
+      lon: 77.2100
+      description: "Hill slope monitoring point Beta"
+    sensors:
+      layer1: "MPU6050 (Tilt/Vibration)"
+      layer2: "Soil Moisture (Capacitive)"
+      layer3: "BME280 (Pressure/Humidity)"
+
+# Three-Layer Validation Thresholds
+three_layer:
+  high_min_layers: 3
+  high_min_combined: 0.75
+  medium_min_layers: 2
+  medium_min_combined: 0.60
+  low_min_layers: 1
+  low_min_combined: 0.40
+
+# Risk Level Thresholds
+risk_levels:
+  green:
+    max_score: 0.40
+    actions: ["dashboard_normal"]
+  yellow:
+    max_score: 0.60
+    actions: ["dashboard_warning"]
+  orange:
+    max_score: 0.75
+    min_sustained_minutes: 5
+    actions: ["dashboard_alert", "buzzer_short"]
+  red:
+    min_score: 0.75
+    min_sustained_minutes: 3
+    actions: ["dashboard_critical", "sms", "buzzer_continuous", "strobe"]
+
+# Alert Configuration
+alerts:
+  sms:
+    enabled: true
+    uart_port: "/dev/ttyTHS1"     # Jetson UART1
+    baud_rate: 9600
+    recipients:
+      - "+919876543210"           # Primary contact
+      - "+919876543211"           # Secondary contact
+    cooldown_minutes: 5            # Min time between SMS for same hazard
+
+  buzzer:
+    enabled: true
+    gpio_pin: 12                   # Pin 12 on 40-pin header
+    short_beep_ms: 500
+    continuous_interval_ms: 1000
+
+  strobe:
+    enabled: true
+    gpio_pin: 16                   # Pin 16 on 40-pin header
+
+# Database
+database:
+  path: "data/disaster_sentinel.db"
+  max_readings_per_node: 100000    # Rotate old data
+  retention_days: 30
+
+# Dashboard
+dashboard:
+  host: "0.0.0.0"
+  port: 8080
+  title: "Disaster Sentinel"
+  refresh_interval_ms: 1000

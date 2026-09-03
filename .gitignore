@@ -1,0 +1,28 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Python environments
+.venv/
+venv/
+ENV/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+jetson/data/disaster_sentinel.db
+
+# PlatformIO build artifacts
+.pio/
+.vscode/
+
+# IDE / OS specific
+.DS_Store
+Thumbs.db
+.idea/
+*.swp
+
+# Model binaries (optional, keep small ones or ignore heavy binaries)
+ai/jetson_model/models/*.pkl
