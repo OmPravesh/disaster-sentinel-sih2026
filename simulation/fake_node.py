@@ -19,6 +19,7 @@ PACKET_END_MARKER = 0x0D
 HAZARD_FLOOD = 0x01
 HAZARD_FIRE = 0x02
 HAZARD_LANDSLIDE = 0x03
+HAZARD_POLLUTION = 0x04
 
 
 def calculate_crc16(data: bytes) -> int:
@@ -98,7 +99,7 @@ def create_normal_fire_packet(seq: int = 0) -> bytes:
     temp = 28.0 + random.gauss(0, 2)        # Normal temp
 
     return _build_raw_packet(
-        "FIR2", HAZARD_FIRE,
+        "FIR3", HAZARD_FIRE,
         max(0, flame), random.uniform(0.01, 0.08),
         max(0, gas), random.uniform(0.01, 0.06),
         temp, random.uniform(0.01, 0.05),
@@ -123,6 +124,27 @@ def create_normal_landslide_packet(seq: int = 0) -> bytes:
         random.uniform(0.02, 0.08),
         0,
         random.randint(82, 95),
+        seq,
+    )
+
+
+def create_normal_pollution_packet(seq: int = 0) -> bytes:
+    """Generate a normal pollution node packet (2-layer)."""
+    aqi = 45.0 + random.gauss(0, 5)          # Clean AQI (~45)
+    pm25 = 12.0 + random.gauss(0, 2)         # Normal PM2.5 (~12 ug/m3)
+
+    l1_a = random.uniform(0.02, 0.12)
+    l2_a = random.uniform(0.01, 0.10)
+    combined = 0.55 * l1_a + 0.45 * l2_a
+
+    return _build_raw_packet(
+        "POL4", HAZARD_POLLUTION,
+        max(0, aqi), l1_a,
+        max(0, pm25), l2_a,
+        0.0, 0.0,  # L3 not used for 2-layer node
+        combined,
+        0,
+        random.randint(85, 98),
         seq,
     )
 
@@ -165,7 +187,7 @@ def create_fire_event_packet(seq: int, severity: float = 0.8) -> bytes:
     combined = 0.50 * l1_a + 0.30 * l2_a + 0.20 * l3_a
 
     return _build_raw_packet(
-        "FIR2", HAZARD_FIRE,
+        "FIR3", HAZARD_FIRE,
         min(1.0, flame), min(1.0, max(0, l1_a)),
         min(1.0, gas), min(1.0, max(0, l2_a)),
         temp, min(1.0, max(0, l3_a)),
@@ -194,6 +216,28 @@ def create_landslide_event_packet(seq: int, severity: float = 0.8) -> bytes:
         max(0, tilt), min(1.0, max(0, l1_a)),
         min(100, max(0, soil)), min(1.0, max(0, l2_a)),
         pressure, min(1.0, max(0, l3_a)),
+        min(1.0, max(0, combined)),
+        3 if severity > 0.6 else 1,
+        random.randint(70, 90),
+        seq,
+        priority=(combined > 0.7),
+    )
+
+
+def create_pollution_event_packet(seq: int, severity: float = 0.8) -> bytes:
+    """Generate a pollution-event packet (2-layer)."""
+    aqi = 150 + severity * 250 + random.gauss(0, 10)     # Severe AQI (150-400+)
+    pm25 = 80 + severity * 180 + random.gauss(0, 8)      # Severe PM2.5 (80-260+)
+
+    l1_a = 0.5 + severity * 0.45
+    l2_a = 0.4 + severity * 0.50
+    combined = 0.55 * l1_a + 0.45 * l2_a
+
+    return _build_raw_packet(
+        "POL4", HAZARD_POLLUTION,
+        max(0, aqi), min(1.0, max(0, l1_a)),
+        max(0, pm25), min(1.0, max(0, l2_a)),
+        0.0, 0.0,
         min(1.0, max(0, combined)),
         3 if severity > 0.6 else 1,
         random.randint(70, 90),

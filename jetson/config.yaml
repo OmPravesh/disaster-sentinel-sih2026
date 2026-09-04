@@ -3,7 +3,7 @@
 
 system:
   name: "Disaster Sentinel"
-  version: "1.0.0"
+  version: "2.0.0"
   log_level: "INFO"
 
 # LoRa Receiver Configuration
@@ -19,52 +19,95 @@ lora:
   reset_pin: 25           # Pin 22 on 40-pin header
   dio0_pin: 4             # Pin 7 on 40-pin header (IRQ)
 
-# Node Registry
+# Node Registry — 4 Dedicated ESP32 Nodes
 nodes:
   FLD1:
-    name: "Flood Node 1"
+    name: "Flood Monitoring Node"
     hazard_type: "FLOOD"
+    layer_count: 3
     location:
-      lat: 28.6139       # Example: Delhi coordinates
+      lat: 28.6139
       lon: 77.2090
       description: "River bank monitoring point Alpha"
     sensors:
-      layer1: "Water Level (Ultrasonic)"
+      layer1: "Water Level (Ultrasonic JSN-SR04T)"
       layer2: "Rain Sensor (YL-83)"
       layer3: "BME280 (Pressure/Humidity)"
-
-  FIR2:
-    name: "Fire + Landslide Node 2"
-    hazard_type: "FIRE"
-    location:
-      lat: 28.6150
-      lon: 77.2100
-      description: "Forest edge monitoring point Beta"
-    sensors:
-      layer1: "Flame/IR Sensor (KY-026)"
-      layer2: "MQ-2 Gas/Smoke Sensor"
-      layer3: "BME280 (Temperature/Humidity)"
+    weights:
+      l1: 0.50
+      l2: 0.30
+      l3: 0.20
 
   SLD2:
-    name: "Fire + Landslide Node 2 (Landslide)"
+    name: "Landslide Monitoring Node"
     hazard_type: "LANDSLIDE"
+    layer_count: 3
     location:
       lat: 28.6150
       lon: 77.2100
       description: "Hill slope monitoring point Beta"
     sensors:
       layer1: "MPU6050 (Tilt/Vibration)"
-      layer2: "Soil Moisture (Capacitive)"
+      layer2: "Soil Moisture (Capacitive v1.2)"
       layer3: "BME280 (Pressure/Humidity)"
+    weights:
+      l1: 0.50
+      l2: 0.30
+      l3: 0.20
+
+  FIR3:
+    name: "Fire Monitoring Node"
+    hazard_type: "FIRE"
+    layer_count: 3
+    location:
+      lat: 28.6160
+      lon: 77.2110
+      description: "Forest edge monitoring point Gamma"
+    sensors:
+      layer1: "Flame/IR Sensor (KY-026)"
+      layer2: "MQ-2 Gas/Smoke Sensor"
+      layer3: "BME280 (Temperature/Humidity)"
+    weights:
+      l1: 0.50
+      l2: 0.30
+      l3: 0.20
+
+  POL4:
+    name: "Pollution Monitoring Node"
+    hazard_type: "POLLUTION"
+    layer_count: 2          # 2-Layer only — no BME280
+    location:
+      lat: 28.6170
+      lon: 77.2120
+      description: "Industrial zone monitoring point Delta"
+    sensors:
+      layer1: "MQ-135 (Air Quality Index / Gas)"
+      layer2: "PM2.5 Dust Sensor (PMS5003)"
+      layer3: "Not used"
+    weights:
+      l1: 0.55
+      l2: 0.45
+      l3: 0.00              # No L3 for 2-layer node
 
 # Three-Layer Validation Thresholds
 three_layer:
-  high_min_layers: 3
-  high_min_combined: 0.75
-  medium_min_layers: 2
-  medium_min_combined: 0.60
-  low_min_layers: 1
-  low_min_combined: 0.40
+  # 3-Layer nodes (FLD1, SLD2, FIR3)
+  three_layer_thresholds:
+    high_min_layers: 3
+    high_min_combined: 0.75
+    medium_min_layers: 2
+    medium_min_combined: 0.60
+    low_min_layers: 1
+    low_min_combined: 0.40
+
+  # 2-Layer nodes (POL4)
+  two_layer_thresholds:
+    high_min_layers: 2
+    high_min_combined: 0.75
+    medium_min_layers: 1
+    medium_min_combined: 0.55
+    low_min_layers: 1
+    low_min_combined: 0.35
 
 # Risk Level Thresholds
 risk_levels:
@@ -82,6 +125,17 @@ risk_levels:
     min_score: 0.75
     min_sustained_minutes: 3
     actions: ["dashboard_critical", "sms", "buzzer_continuous", "strobe"]
+
+# AI Prediction Engine
+ai:
+  model_dir: "data/models"         # Directory for trained GRU model weights
+  sequence_length: 30              # Number of past readings for prediction
+  prediction_horizons: [15, 30, 60]  # Minutes into the future
+  auto_train:
+    enabled: true                  # Auto-train if model missing at startup
+    epochs: 100
+    learning_rate: 0.001
+    synthetic_sequences: 2000      # Number of training sequences to generate
 
 # Alert Configuration
 alerts:

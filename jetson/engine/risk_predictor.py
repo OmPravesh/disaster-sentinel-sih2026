@@ -14,6 +14,14 @@ import logging
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 
+try:
+    from engine.ai_predictor import GRUPredictor
+except ImportError:
+    try:
+        from ai_predictor import GRUPredictor
+    except ImportError:
+        GRUPredictor = None
+
 logger = logging.getLogger(__name__)
 
 # Risk levels
@@ -31,23 +39,22 @@ SEVERITY_CRITICAL = "CRITICAL"
 
 class RiskPredictor:
     """
-    AI-based risk prediction engine.
-    
-    For MVP: uses a rule-based decision tree combining:
-      - 3-layer confirmation level
-      - Combined anomaly score
-      - Rate of change
-      - Duration of sustained anomaly
-      - Trend analysis
-    
-    Can be upgraded to ML model (XGBoost/LSTM) with training data.
+    AI-based risk prediction engine powered by PyTorch GRU time-series forecasting.
+    Combines 3-layer validation, sustained anomaly duration, and GRU future predictions.
     """
 
-    def __init__(self, config: dict = None):
+    def __init__(self, config: dict = None, node_configs: dict = None):
         self.config = config or {}
+        self.node_configs = node_configs or {}
         # Track sustained anomaly durations per node
         self._anomaly_start: Dict[str, datetime] = {}
         self._last_scores: Dict[str, List[float]] = {}
+
+        # GRU AI Engine centerpiece
+        if GRUPredictor:
+            self.gru_predictor = GRUPredictor(config=self.config, node_configs=self.node_configs)
+        else:
+            self.gru_predictor = None
 
     def predict(self, packet_data: Dict, validation: Dict,
                 history: List[Dict] = None) -> Dict:
@@ -105,8 +112,8 @@ class RiskPredictor:
         # --- Determine risk color ---
         risk_level = self._compute_risk_level(probability, confirmation, sustained_minutes)
 
-        # --- Estimate ETA ---
-        eta = self._estimate_eta(history, hazard_name, trend)
+        # --- GRU Future Predictions ---
+        predictions = self.predict_future(node_id, history or [])
 
         result = {
             "node_id": node_id,
@@ -121,6 +128,7 @@ class RiskPredictor:
             "combined_score": combined,
             "sustained_minutes": round(sustained_minutes, 1),
             "trend": trend,
+            "predictions": predictions,
             "timestamp": datetime.now().isoformat(),
         }
 
@@ -132,6 +140,21 @@ class RiskPredictor:
             )
 
         return result
+
+    def predict_future(self, node_id: str, history: List[Dict]) -> Dict:
+        """
+        Get future GRU AI predictions for T+15, T+30, T+60 minutes.
+        """
+        if self.gru_predictor:
+            return self.gru_predictor.predict_future(node_id, history)
+        return {
+            "t15": {"probability": 0.0, "severity": "LOW"},
+            "t30": {"probability": 0.0, "severity": "LOW"},
+            "t60": {"probability": 0.0, "severity": "LOW"},
+            "trajectory": "no_model",
+            "confidence": 0.0,
+            "model_type": "none",
+        }
 
     def _analyze_trend(self, node_id: str, current_score: float,
                        history: List[Dict] = None) -> Dict:

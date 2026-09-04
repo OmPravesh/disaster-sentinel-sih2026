@@ -196,15 +196,25 @@ class SimulatedReceiver:
 
     async def start(self):
         """Start generating simulated packets."""
-        from simulation.fake_node import create_normal_flood_packet, create_normal_fire_packet, create_normal_landslide_packet
+        from simulation.fake_node import (
+            create_normal_flood_packet,
+            create_normal_fire_packet,
+            create_normal_landslide_packet,
+            create_normal_pollution_packet,
+        )
 
         self.running = True
-        logger.info("Simulated LoRa receiver started")
+        logger.info("Simulated LoRa receiver started (4 Nodes: FLD1, SLD2, FIR3, POL4)")
 
         seq = 0
         while self.running:
-            # Generate normal packets from all nodes
-            for gen_func in [create_normal_flood_packet, create_normal_fire_packet, create_normal_landslide_packet]:
+            # Generate normal packets from all 4 nodes
+            for gen_func in [
+                create_normal_flood_packet,
+                create_normal_fire_packet,
+                create_normal_landslide_packet,
+                create_normal_pollution_packet,
+            ]:
                 raw = gen_func(seq)
                 packet = decode_packet(raw, rssi=-50)
                 if packet:

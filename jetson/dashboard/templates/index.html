@@ -3,308 +3,775 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Disaster Sentinel — Real-time distributed disaster monitoring dashboard with 3-layer sensor confirmation">
-    <title>{{ title }} — Real-Time Monitoring</title>
+    <meta name="description" content="Disaster Sentinel — Real-time distributed 4-node disaster monitoring and GRU AI predictive forecasting dashboard">
+    <title>Disaster Sentinel — AI Disaster Command Center</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <link rel="stylesheet" href="/static/css/index.css">
 </head>
-<body>
-    <!-- Top Bar -->
-    <header id="top-bar">
-        <div class="top-bar-left">
-            <div class="logo-container">
-                <div class="logo-icon" id="logo-pulse">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/>
-                        <circle cx="12" cy="10" r="3"/>
-                    </svg>
-                </div>
-                <div>
-                    <h1>DISASTER SENTINEL</h1>
-                    <p class="subtitle">Real-Time Monitoring Dashboard</p>
-                </div>
+<body class="app-layout">
+    <!-- Left Sidebar -->
+    <aside id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                </svg>
+            </div>
+            <div class="brand-text">
+                <span class="brand-name">SENTINEL</span>
+                <span class="brand-sub">AI DISASTER CENTER</span>
             </div>
         </div>
-        <div class="top-bar-right">
-            <div class="status-chip" id="connection-status">
-                <span class="status-dot"></span>
-                <span class="status-text">Connecting...</span>
+
+        <nav class="sidebar-nav">
+            <a href="#overview" class="nav-item active" id="nav-overview">
+                <span class="nav-icon">📊</span>
+                <span class="nav-label">Overview</span>
+            </a>
+            <div class="nav-section-title">HAZARD NODES</div>
+            <a href="#flood" class="nav-item" id="nav-flood">
+                <span class="nav-icon">🌊</span>
+                <span class="nav-label">Flood</span>
+                <span class="nav-badge" id="sidebar-flood-badge">3-Layer</span>
+            </a>
+            <a href="#landslide" class="nav-item" id="nav-landslide">
+                <span class="nav-icon">⛰️</span>
+                <span class="nav-label">Landslide</span>
+                <span class="nav-badge" id="sidebar-landslide-badge">3-Layer</span>
+            </a>
+            <a href="#fire" class="nav-item" id="nav-fire">
+                <span class="nav-icon">🔥</span>
+                <span class="nav-label">Fire</span>
+                <span class="nav-badge" id="sidebar-fire-badge">3-Layer</span>
+            </a>
+            <a href="#pollution" class="nav-item" id="nav-pollution">
+                <span class="nav-icon">🏭</span>
+                <span class="nav-label">Pollution</span>
+                <span class="nav-badge mode-2layer" id="sidebar-pollution-badge">2-Layer</span>
+            </a>
+            <div class="nav-section-title">SYSTEM</div>
+            <a href="#alerts" class="nav-item" id="nav-alerts">
+                <span class="nav-icon">🔔</span>
+                <span class="nav-label">Alert Log</span>
+                <span class="nav-count" id="nav-alert-count">0</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="connection-status" id="ws-status">
+                <span class="status-dot offline"></span>
+                <span class="status-text">Disconnected</span>
             </div>
-            <div class="status-chip" id="node-count-chip">
-                <span class="status-text">Nodes: <strong id="nodes-online">—</strong>/<strong id="nodes-total">—</strong></span>
-            </div>
-            <div class="last-packet" id="last-packet-time">
-                Last packet: <span>—</span>
-            </div>
+            <div class="system-tag">SIH 2026 · Qualcomm</div>
         </div>
-    </header>
+    </aside>
 
-    <!-- Main Grid -->
-    <main id="dashboard-grid">
-        
-        <!-- Flood Card -->
-        <section class="hazard-card" id="card-flood" data-hazard="FLOOD">
-            <div class="card-header">
-                <div class="hazard-icon flood-icon">🌊</div>
-                <div class="hazard-title">
-                    <h2>FLOOD MONITORING</h2>
-                    <span class="node-badge">Node: FLD1</span>
-                </div>
-                <div class="risk-badge" id="flood-risk-badge">GREEN</div>
+    <!-- Main Container -->
+    <div class="main-wrapper">
+        <!-- Top Navigation / Header -->
+        <header id="top-bar">
+            <div class="top-title">
+                <h1 id="page-title">Overview Command Center</h1>
+                <p id="page-subtitle">Real-time multi-hazard telemetry & PyTorch GRU AI predictive forecasting</p>
             </div>
-            
-            <div class="three-layer-grid">
-                <div class="layer-row" id="flood-l1">
-                    <div class="layer-label">L1 <span class="layer-type">Water Level</span></div>
-                    <div class="layer-bar-container">
-                        <div class="layer-bar" style="width: 5%"></div>
+            <div class="top-stats">
+                <div class="top-stat-box">
+                    <span class="stat-label">ACTIVE NODES</span>
+                    <span class="stat-val"><strong id="nodes-online-count">0</strong> / 4</span>
+                </div>
+                <div class="top-stat-box">
+                    <span class="stat-label">AI ENGINE</span>
+                    <span class="stat-val ai-active">PyTorch GRU</span>
+                </div>
+                <div class="top-stat-box">
+                    <span class="stat-label">LAST PACKET</span>
+                    <span class="stat-val" id="last-packet-timer">—</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dynamic Content Views -->
+        <div id="content-container">
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <!-- VIEW: OVERVIEW -->
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <section id="view-overview" class="spa-view active-view">
+                <!-- Overview Hero Banner -->
+                <div class="hero-grid">
+                    <div class="hero-card risk-gauge-card">
+                        <div class="card-title-sm">OVERALL THREAT LEVEL</div>
+                        <div class="gauge-wrapper">
+                            <div class="radial-gauge" id="overall-risk-gauge" style="--score: 0.05">
+                                <div class="gauge-center">
+                                    <span class="gauge-val" id="overall-risk-percent">5.0%</span>
+                                    <span class="gauge-label" id="overall-risk-label">LOW</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="gauge-footer" id="overall-risk-desc">All 4 sensor nodes operating within safe thresholds</div>
                     </div>
-                    <div class="layer-value">—</div>
-                    <div class="layer-score">0.00</div>
-                    <div class="layer-status">🟢</div>
-                </div>
-                <div class="layer-row" id="flood-l2">
-                    <div class="layer-label">L2 <span class="layer-type">Rainfall</span></div>
-                    <div class="layer-bar-container">
-                        <div class="layer-bar" style="width: 5%"></div>
+
+                    <div class="hero-card system-hardware-card">
+                        <div class="card-title-sm">HARDWARE & INFRASTRUCTURE</div>
+                        <div class="hardware-grid">
+                            <div class="hw-item">
+                                <span class="hw-icon">🧠</span>
+                                <div>
+                                    <span class="hw-name">NVIDIA Jetson Orin Nano</span>
+                                    <span class="hw-sub">Edge AI Gateway & Inference Engine</span>
+                                </div>
+                            </div>
+                            <div class="hw-item">
+                                <span class="hw-icon">📻</span>
+                                <div>
+                                    <span class="hw-name">SX1278 LoRa Network</span>
+                                    <span class="hw-sub">433MHz Mesh Telemetry</span>
+                                </div>
+                            </div>
+                            <div class="hw-item">
+                                <span class="hw-icon">🛡️</span>
+                                <div>
+                                    <span class="hw-name">Layered Validation</span>
+                                    <span class="hw-sub">3-Layer (3 Nodes) + 2-Layer (POL4)</span>
+                                </div>
+                            </div>
+                            <div class="hw-item">
+                                <span class="hw-icon">🤖</span>
+                                <div>
+                                    <span class="hw-name">GRU Time-Series ML</span>
+                                    <span class="hw-sub">T+15, T+30, T+60 min horizons</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="layer-value">—</div>
-                    <div class="layer-score">0.00</div>
-                    <div class="layer-status">🟢</div>
                 </div>
-                <div class="layer-row" id="flood-l3">
-                    <div class="layer-label">L3 <span class="layer-type">Pressure</span></div>
-                    <div class="layer-bar-container">
-                        <div class="layer-bar" style="width: 5%"></div>
+
+                <!-- 4 Hazard Tiles Grid -->
+                <div class="section-header">
+                    <h2>Hazard Telemetry & AI Status</h2>
+                    <span class="section-sub">Select any node for detailed sensor breakdown & future forecasts</span>
+                </div>
+
+                <div class="tiles-grid">
+                    <!-- Flood Tile -->
+                    <div class="tile-card" onclick="window.location.hash='#flood'">
+                        <div class="tile-header">
+                            <div class="tile-icon flood-bg">🌊</div>
+                            <div class="tile-meta">
+                                <h3>FLOOD</h3>
+                                <span class="node-id">FLD1</span>
+                            </div>
+                            <span class="layer-pill">3-Layer</span>
+                            <div class="status-badge green" id="tile-flood-badge">GREEN</div>
+                        </div>
+                        <div class="tile-score-box">
+                            <span class="tile-score-val" id="tile-flood-score">0.00</span>
+                            <span class="tile-score-lbl">Combined Anomaly Score</span>
+                        </div>
+                        <div class="tile-mini-layers">
+                            <div class="mini-layer-bar"><div id="tile-flood-l1" style="width: 5%"></div></div>
+                            <div class="mini-layer-bar"><div id="tile-flood-l2" style="width: 5%"></div></div>
+                            <div class="mini-layer-bar"><div id="tile-flood-l3" style="width: 5%"></div></div>
+                        </div>
+                        <div class="tile-ai-preview">
+                            <span>T+15 AI Forecast:</span>
+                            <strong id="tile-flood-ai">LOW (4.2%)</strong>
+                        </div>
                     </div>
-                    <div class="layer-value">—</div>
-                    <div class="layer-score">0.00</div>
-                    <div class="layer-status">🟢</div>
-                </div>
-            </div>
 
-            <div class="card-metrics">
-                <div class="metric">
-                    <span class="metric-label">3-Layer Score</span>
-                    <span class="metric-value" id="flood-combined">0.00</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">Confirmation</span>
-                    <span class="metric-value" id="flood-confirm">NONE</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">Probability</span>
-                    <span class="metric-value" id="flood-prob">0%</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">Severity</span>
-                    <span class="metric-value" id="flood-severity">—</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">ETA</span>
-                    <span class="metric-value" id="flood-eta">—</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">Trend</span>
-                    <span class="metric-value" id="flood-trend">—</span>
-                </div>
-            </div>
-
-            <div class="card-chart">
-                <canvas id="flood-chart"></canvas>
-            </div>
-        </section>
-
-        <!-- Fire Card -->
-        <section class="hazard-card" id="card-fire" data-hazard="FIRE">
-            <div class="card-header">
-                <div class="hazard-icon fire-icon">🔥</div>
-                <div class="hazard-title">
-                    <h2>FIRE MONITORING</h2>
-                    <span class="node-badge">Node: FIR2</span>
-                </div>
-                <div class="risk-badge" id="fire-risk-badge">GREEN</div>
-            </div>
-            
-            <div class="three-layer-grid">
-                <div class="layer-row" id="fire-l1">
-                    <div class="layer-label">L1 <span class="layer-type">Flame/IR</span></div>
-                    <div class="layer-bar-container">
-                        <div class="layer-bar" style="width: 5%"></div>
+                    <!-- Landslide Tile -->
+                    <div class="tile-card" onclick="window.location.hash='#landslide'">
+                        <div class="tile-header">
+                            <div class="tile-icon landslide-bg">⛰️</div>
+                            <div class="tile-meta">
+                                <h3>LANDSLIDE</h3>
+                                <span class="node-id">SLD2</span>
+                            </div>
+                            <span class="layer-pill">3-Layer</span>
+                            <div class="status-badge green" id="tile-landslide-badge">GREEN</div>
+                        </div>
+                        <div class="tile-score-box">
+                            <span class="tile-score-val" id="tile-landslide-score">0.00</span>
+                            <span class="tile-score-lbl">Combined Anomaly Score</span>
+                        </div>
+                        <div class="tile-mini-layers">
+                            <div class="mini-layer-bar"><div id="tile-landslide-l1" style="width: 5%"></div></div>
+                            <div class="mini-layer-bar"><div id="tile-landslide-l2" style="width: 5%"></div></div>
+                            <div class="mini-layer-bar"><div id="tile-landslide-l3" style="width: 5%"></div></div>
+                        </div>
+                        <div class="tile-ai-preview">
+                            <span>T+15 AI Forecast:</span>
+                            <strong id="tile-landslide-ai">LOW (3.8%)</strong>
+                        </div>
                     </div>
-                    <div class="layer-value">—</div>
-                    <div class="layer-score">0.00</div>
-                    <div class="layer-status">🟢</div>
-                </div>
-                <div class="layer-row" id="fire-l2">
-                    <div class="layer-label">L2 <span class="layer-type">Gas/Smoke</span></div>
-                    <div class="layer-bar-container">
-                        <div class="layer-bar" style="width: 5%"></div>
+
+                    <!-- Fire Tile -->
+                    <div class="tile-card" onclick="window.location.hash='#fire'">
+                        <div class="tile-header">
+                            <div class="tile-icon fire-bg">🔥</div>
+                            <div class="tile-meta">
+                                <h3>FIRE</h3>
+                                <span class="node-id">FIR3</span>
+                            </div>
+                            <span class="layer-pill">3-Layer</span>
+                            <div class="status-badge green" id="tile-fire-badge">GREEN</div>
+                        </div>
+                        <div class="tile-score-box">
+                            <span class="tile-score-val" id="tile-fire-score">0.00</span>
+                            <span class="tile-score-lbl">Combined Anomaly Score</span>
+                        </div>
+                        <div class="tile-mini-layers">
+                            <div class="mini-layer-bar"><div id="tile-fire-l1" style="width: 5%"></div></div>
+                            <div class="mini-layer-bar"><div id="tile-fire-l2" style="width: 5%"></div></div>
+                            <div class="mini-layer-bar"><div id="tile-fire-l3" style="width: 5%"></div></div>
+                        </div>
+                        <div class="tile-ai-preview">
+                            <span>T+15 AI Forecast:</span>
+                            <strong id="tile-fire-ai">LOW (3.1%)</strong>
+                        </div>
                     </div>
-                    <div class="layer-value">—</div>
-                    <div class="layer-score">0.00</div>
-                    <div class="layer-status">🟢</div>
-                </div>
-                <div class="layer-row" id="fire-l3">
-                    <div class="layer-label">L3 <span class="layer-type">Temp/Humid</span></div>
-                    <div class="layer-bar-container">
-                        <div class="layer-bar" style="width: 5%"></div>
+
+                    <!-- Pollution Tile -->
+                    <div class="tile-card" onclick="window.location.hash='#pollution'">
+                        <div class="tile-header">
+                            <div class="tile-icon pollution-bg">🏭</div>
+                            <div class="tile-meta">
+                                <h3>POLLUTION</h3>
+                                <span class="node-id">POL4</span>
+                            </div>
+                            <span class="layer-pill mode-2layer-pill">2-Layer Mode</span>
+                            <div class="status-badge green" id="tile-pollution-badge">GREEN</div>
+                        </div>
+                        <div class="tile-score-box">
+                            <span class="tile-score-val" id="tile-pollution-score">0.00</span>
+                            <span class="tile-score-lbl">Combined Anomaly Score</span>
+                        </div>
+                        <div class="tile-mini-layers two-bars">
+                            <div class="mini-layer-bar"><div id="tile-pollution-l1" style="width: 5%"></div></div>
+                            <div class="mini-layer-bar"><div id="tile-pollution-l2" style="width: 5%"></div></div>
+                        </div>
+                        <div class="tile-ai-preview">
+                            <span>T+15 AI Forecast:</span>
+                            <strong id="tile-pollution-ai">LOW (4.0%)</strong>
+                        </div>
                     </div>
-                    <div class="layer-value">—</div>
-                    <div class="layer-score">0.00</div>
-                    <div class="layer-status">🟢</div>
                 </div>
-            </div>
 
-            <div class="card-metrics">
-                <div class="metric">
-                    <span class="metric-label">3-Layer Score</span>
-                    <span class="metric-value" id="fire-combined">0.00</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">Confirmation</span>
-                    <span class="metric-value" id="fire-confirm">NONE</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">Probability</span>
-                    <span class="metric-value" id="fire-prob">0%</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">Severity</span>
-                    <span class="metric-value" id="fire-severity">—</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">ETA</span>
-                    <span class="metric-value" id="fire-eta">—</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">Trend</span>
-                    <span class="metric-value" id="fire-trend">—</span>
-                </div>
-            </div>
-
-            <div class="card-chart">
-                <canvas id="fire-chart"></canvas>
-            </div>
-        </section>
-
-        <!-- Landslide Card -->
-        <section class="hazard-card" id="card-landslide" data-hazard="LANDSLIDE">
-            <div class="card-header">
-                <div class="hazard-icon landslide-icon">⛰️</div>
-                <div class="hazard-title">
-                    <h2>LANDSLIDE MONITORING</h2>
-                    <span class="node-badge">Node: SLD2</span>
-                </div>
-                <div class="risk-badge" id="landslide-risk-badge">GREEN</div>
-            </div>
-            
-            <div class="three-layer-grid">
-                <div class="layer-row" id="landslide-l1">
-                    <div class="layer-label">L1 <span class="layer-type">Tilt/Vibration</span></div>
-                    <div class="layer-bar-container">
-                        <div class="layer-bar" style="width: 5%"></div>
+                <!-- Combined Multi-Hazard Timeline Chart -->
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <div>
+                            <h3>Combined Multi-Hazard Anomaly Timeline</h3>
+                            <p>Real-time anomaly score comparison across all 4 dedicated ESP32 nodes</p>
+                        </div>
+                        <div class="chart-legend-custom">
+                            <span class="lg-item flood-lg">🌊 Flood (FLD1)</span>
+                            <span class="lg-item landslide-lg">⛰️ Landslide (SLD2)</span>
+                            <span class="lg-item fire-lg">🔥 Fire (FIR3)</span>
+                            <span class="lg-item pollution-lg">🏭 Pollution (POL4)</span>
+                        </div>
                     </div>
-                    <div class="layer-value">—</div>
-                    <div class="layer-score">0.00</div>
-                    <div class="layer-status">🟢</div>
-                </div>
-                <div class="layer-row" id="landslide-l2">
-                    <div class="layer-label">L2 <span class="layer-type">Soil Moisture</span></div>
-                    <div class="layer-bar-container">
-                        <div class="layer-bar" style="width: 5%"></div>
+                    <div class="chart-wrapper">
+                        <canvas id="overview-timeline-chart"></canvas>
                     </div>
-                    <div class="layer-value">—</div>
-                    <div class="layer-score">0.00</div>
-                    <div class="layer-status">🟢</div>
                 </div>
-                <div class="layer-row" id="landslide-l3">
-                    <div class="layer-label">L3 <span class="layer-type">Pressure</span></div>
-                    <div class="layer-bar-container">
-                        <div class="layer-bar" style="width: 5%"></div>
+            </section>
+
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <!-- VIEW: FLOOD DETAIL (FLD1) -->
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <section id="view-flood" class="spa-view">
+                <div class="detail-header-card">
+                    <div class="dh-left">
+                        <div class="tile-icon flood-bg xl">🌊</div>
+                        <div>
+                            <h2>FLOOD MONITORING COMMAND</h2>
+                            <p>Node FLD1 · 3-Layer Validation (Ultrasonic Water Level + Rain Gauge + Barometric Pressure)</p>
+                        </div>
                     </div>
-                    <div class="layer-value">—</div>
-                    <div class="layer-score">0.00</div>
-                    <div class="layer-status">🟢</div>
+                    <div class="dh-right">
+                        <span class="status-badge green lg" id="flood-detail-status">GREEN</span>
+                    </div>
                 </div>
-            </div>
 
-            <div class="card-metrics">
-                <div class="metric">
-                    <span class="metric-label">3-Layer Score</span>
-                    <span class="metric-value" id="landslide-combined">0.00</span>
+                <!-- AI Prediction Cards -->
+                <div class="ai-cards-row">
+                    <div class="ai-card" id="flood-ai-t15">
+                        <div class="ai-horizon">T + 15 MINUTES</div>
+                        <div class="ai-prob" id="flood-t15-prob">0.0%</div>
+                        <div class="ai-meta">
+                            <span class="ai-sev-tag" id="flood-t15-sev">LOW</span>
+                            <span class="ai-traj" id="flood-t15-traj">➔ Stable</span>
+                        </div>
+                    </div>
+                    <div class="ai-card" id="flood-ai-t30">
+                        <div class="ai-horizon">T + 30 MINUTES</div>
+                        <div class="ai-prob" id="flood-t30-prob">0.0%</div>
+                        <div class="ai-meta">
+                            <span class="ai-sev-tag" id="flood-t30-sev">LOW</span>
+                            <span class="ai-traj" id="flood-t30-traj">➔ Stable</span>
+                        </div>
+                    </div>
+                    <div class="ai-card" id="flood-ai-t60">
+                        <div class="ai-horizon">T + 60 MINUTES</div>
+                        <div class="ai-prob" id="flood-t60-prob">0.0%</div>
+                        <div class="ai-meta">
+                            <span class="ai-sev-tag" id="flood-t60-sev">LOW</span>
+                            <span class="ai-traj" id="flood-t60-traj">➔ Stable</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="metric">
-                    <span class="metric-label">Confirmation</span>
-                    <span class="metric-value" id="landslide-confirm">NONE</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">Probability</span>
-                    <span class="metric-value" id="landslide-prob">0%</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">Severity</span>
-                    <span class="metric-value" id="landslide-severity">—</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">ETA</span>
-                    <span class="metric-value" id="landslide-eta">—</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">Trend</span>
-                    <span class="metric-value" id="landslide-trend">—</span>
-                </div>
-            </div>
 
-            <div class="card-chart">
-                <canvas id="landslide-chart"></canvas>
-            </div>
-        </section>
+                <!-- 3-Layer Telemetry Grid -->
+                <div class="layers-detail-grid">
+                    <div class="layer-detail-card" id="flood-dl1">
+                        <div class="ld-head">
+                            <span class="ld-tag">LAYER 1 — PRIMARY</span>
+                            <span class="ld-sensor">Ultrasonic Distance (HC-SR04)</span>
+                        </div>
+                        <div class="ld-main">
+                            <span class="ld-val" id="flood-dl1-raw">—</span>
+                            <span class="ld-unit">Water Level (cm)</span>
+                        </div>
+                        <div class="ld-progress">
+                            <div class="ld-bar" id="flood-dl1-bar" style="width: 5%"></div>
+                        </div>
+                        <div class="ld-foot">
+                            <span>Anomaly Score: <strong id="flood-dl1-score">0.00</strong></span>
+                            <span id="flood-dl1-status">🟢 Normal</span>
+                        </div>
+                    </div>
 
-        <!-- Alert Status Panel -->
-        <section class="alert-panel" id="alert-panel">
-            <h2>ALERT SYSTEM STATUS</h2>
-            <div class="alert-channels">
-                <div class="alert-channel" id="alert-dashboard">
-                    <div class="channel-icon">📊</div>
-                    <div class="channel-name">Dashboard</div>
-                    <div class="channel-status active">ACTIVE</div>
-                </div>
-                <div class="alert-channel" id="alert-sms">
-                    <div class="channel-icon">📱</div>
-                    <div class="channel-name">SMS</div>
-                    <div class="channel-status ready">READY</div>
-                </div>
-                <div class="alert-channel" id="alert-buzzer">
-                    <div class="channel-icon">🔔</div>
-                    <div class="channel-name">Buzzer</div>
-                    <div class="channel-status off">OFF</div>
-                </div>
-                <div class="alert-channel" id="alert-strobe">
-                    <div class="channel-icon">💡</div>
-                    <div class="channel-name">Strobe</div>
-                    <div class="channel-status off">OFF</div>
-                </div>
-            </div>
+                    <div class="layer-detail-card" id="flood-dl2">
+                        <div class="ld-head">
+                            <span class="ld-tag">LAYER 2 — CORROBORATING</span>
+                            <span class="ld-sensor">Rainfall Sensor (YL-83)</span>
+                        </div>
+                        <div class="ld-main">
+                            <span class="ld-val" id="flood-dl2-raw">—</span>
+                            <span class="ld-unit">Rain Rate (mm/min)</span>
+                        </div>
+                        <div class="ld-progress">
+                            <div class="ld-bar" id="flood-dl2-bar" style="width: 5%"></div>
+                        </div>
+                        <div class="ld-foot">
+                            <span>Anomaly Score: <strong id="flood-dl2-score">0.00</strong></span>
+                            <span id="flood-dl2-status">🟢 Normal</span>
+                        </div>
+                    </div>
 
-            <!-- Recent Alerts Feed -->
-            <div class="recent-alerts">
-                <h3>Recent Activity</h3>
-                <div id="alert-feed" class="alert-feed">
-                    <div class="alert-item info">System started — awaiting sensor data...</div>
+                    <div class="layer-detail-card" id="flood-dl3">
+                        <div class="ld-head">
+                            <span class="ld-tag">LAYER 3 — CONTEXT</span>
+                            <span class="ld-sensor">BME280 Barometer</span>
+                        </div>
+                        <div class="ld-main">
+                            <span class="ld-val" id="flood-dl3-raw">—</span>
+                            <span class="ld-unit">Pressure (hPa)</span>
+                        </div>
+                        <div class="ld-progress">
+                            <div class="ld-bar" id="flood-dl3-bar" style="width: 5%"></div>
+                        </div>
+                        <div class="ld-foot">
+                            <span>Anomaly Score: <strong id="flood-dl3-score">0.00</strong></span>
+                            <span id="flood-dl3-status">🟢 Normal</span>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </section>
-    </main>
 
-    <!-- Footer -->
-    <footer>
-        <span>Disaster Sentinel v1.0 — SIH 2026 · SIH26178 · Qualcomm</span>
-        <span id="clock"></span>
-    </footer>
+                <!-- Detailed Chart -->
+                <div class="chart-card margin-top">
+                    <div class="chart-card-header">
+                        <h3>Flood Multi-Layer Time Series</h3>
+                        <p>3-Layer anomaly breakdown over time for FLD1</p>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="flood-detail-chart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <!-- VIEW: LANDSLIDE DETAIL (SLD2) -->
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <section id="view-landslide" class="spa-view">
+                <div class="detail-header-card">
+                    <div class="dh-left">
+                        <div class="tile-icon landslide-bg xl">⛰️</div>
+                        <div>
+                            <h2>LANDSLIDE MONITORING COMMAND</h2>
+                            <p>Node SLD2 · 3-Layer Validation (MPU6050 Accelerometer + Capacitive Soil Moisture + Barometer)</p>
+                        </div>
+                    </div>
+                    <div class="dh-right">
+                        <span class="status-badge green lg" id="landslide-detail-status">GREEN</span>
+                    </div>
+                </div>
+
+                <!-- AI Prediction Cards -->
+                <div class="ai-cards-row">
+                    <div class="ai-card" id="landslide-ai-t15">
+                        <div class="ai-horizon">T + 15 MINUTES</div>
+                        <div class="ai-prob" id="landslide-t15-prob">0.0%</div>
+                        <div class="ai-meta">
+                            <span class="ai-sev-tag" id="landslide-t15-sev">LOW</span>
+                            <span class="ai-traj" id="landslide-t15-traj">➔ Stable</span>
+                        </div>
+                    </div>
+                    <div class="ai-card" id="landslide-ai-t30">
+                        <div class="ai-horizon">T + 30 MINUTES</div>
+                        <div class="ai-prob" id="landslide-t30-prob">0.0%</div>
+                        <div class="ai-meta">
+                            <span class="ai-sev-tag" id="landslide-t30-sev">LOW</span>
+                            <span class="ai-traj" id="landslide-t30-traj">➔ Stable</span>
+                        </div>
+                    </div>
+                    <div class="ai-card" id="landslide-ai-t60">
+                        <div class="ai-horizon">T + 60 MINUTES</div>
+                        <div class="ai-prob" id="landslide-t60-prob">0.0%</div>
+                        <div class="ai-meta">
+                            <span class="ai-sev-tag" id="landslide-t60-sev">LOW</span>
+                            <span class="ai-traj" id="landslide-t60-traj">➔ Stable</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3-Layer Telemetry Grid -->
+                <div class="layers-detail-grid">
+                    <div class="layer-detail-card" id="landslide-dl1">
+                        <div class="ld-head">
+                            <span class="ld-tag">LAYER 1 — PRIMARY</span>
+                            <span class="ld-sensor">MPU6050 Gyro/Tilt</span>
+                        </div>
+                        <div class="ld-main">
+                            <span class="ld-val" id="landslide-dl1-raw">—</span>
+                            <span class="ld-unit">Tilt Angle (deg)</span>
+                        </div>
+                        <div class="ld-progress">
+                            <div class="ld-bar" id="landslide-dl1-bar" style="width: 5%"></div>
+                        </div>
+                        <div class="ld-foot">
+                            <span>Anomaly Score: <strong id="landslide-dl1-score">0.00</strong></span>
+                            <span id="landslide-dl1-status">🟢 Normal</span>
+                        </div>
+                    </div>
+
+                    <div class="layer-detail-card" id="landslide-dl2">
+                        <div class="ld-head">
+                            <span class="ld-tag">LAYER 2 — CORROBORATING</span>
+                            <span class="ld-sensor">Soil Moisture Sensor</span>
+                        </div>
+                        <div class="ld-main">
+                            <span class="ld-val" id="landslide-dl2-raw">—</span>
+                            <span class="ld-unit">Soil Moisture (%)</span>
+                        </div>
+                        <div class="ld-progress">
+                            <div class="ld-bar" id="landslide-dl2-bar" style="width: 5%"></div>
+                        </div>
+                        <div class="ld-foot">
+                            <span>Anomaly Score: <strong id="landslide-dl2-score">0.00</strong></span>
+                            <span id="landslide-dl2-status">🟢 Normal</span>
+                        </div>
+                    </div>
+
+                    <div class="layer-detail-card" id="landslide-dl3">
+                        <div class="ld-head">
+                            <span class="ld-tag">LAYER 3 — CONTEXT</span>
+                            <span class="ld-sensor">BME280 Pressure</span>
+                        </div>
+                        <div class="ld-main">
+                            <span class="ld-val" id="landslide-dl3-raw">—</span>
+                            <span class="ld-unit">Pressure (hPa)</span>
+                        </div>
+                        <div class="ld-progress">
+                            <div class="ld-bar" id="landslide-dl3-bar" style="width: 5%"></div>
+                        </div>
+                        <div class="ld-foot">
+                            <span>Anomaly Score: <strong id="landslide-dl3-score">0.00</strong></span>
+                            <span id="landslide-dl3-status">🟢 Normal</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Chart -->
+                <div class="chart-card margin-top">
+                    <div class="chart-card-header">
+                        <h3>Landslide Multi-Layer Time Series</h3>
+                        <p>3-Layer anomaly breakdown over time for SLD2</p>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="landslide-detail-chart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <!-- VIEW: FIRE DETAIL (FIR3) -->
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <section id="view-fire" class="spa-view">
+                <div class="detail-header-card">
+                    <div class="dh-left">
+                        <div class="tile-icon fire-bg xl">🔥</div>
+                        <div>
+                            <h2>FIRE MONITORING COMMAND</h2>
+                            <p>Node FIR3 · 3-Layer Validation (KY-026 Flame Sensor + MQ-2 Smoke/Gas + BME280 Temperature)</p>
+                        </div>
+                    </div>
+                    <div class="dh-right">
+                        <span class="status-badge green lg" id="fire-detail-status">GREEN</span>
+                    </div>
+                </div>
+
+                <!-- AI Prediction Cards -->
+                <div class="ai-cards-row">
+                    <div class="ai-card" id="fire-ai-t15">
+                        <div class="ai-horizon">T + 15 MINUTES</div>
+                        <div class="ai-prob" id="fire-t15-prob">0.0%</div>
+                        <div class="ai-meta">
+                            <span class="ai-sev-tag" id="fire-t15-sev">LOW</span>
+                            <span class="ai-traj" id="fire-t15-traj">➔ Stable</span>
+                        </div>
+                    </div>
+                    <div class="ai-card" id="fire-ai-t30">
+                        <div class="ai-horizon">T + 30 MINUTES</div>
+                        <div class="ai-prob" id="fire-t30-prob">0.0%</div>
+                        <div class="ai-meta">
+                            <span class="ai-sev-tag" id="fire-t30-sev">LOW</span>
+                            <span class="ai-traj" id="fire-t30-traj">➔ Stable</span>
+                        </div>
+                    </div>
+                    <div class="ai-card" id="fire-ai-t60">
+                        <div class="ai-horizon">T + 60 MINUTES</div>
+                        <div class="ai-prob" id="fire-t60-prob">0.0%</div>
+                        <div class="ai-meta">
+                            <span class="ai-sev-tag" id="fire-t60-sev">LOW</span>
+                            <span class="ai-traj" id="fire-t60-traj">➔ Stable</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3-Layer Telemetry Grid -->
+                <div class="layers-detail-grid">
+                    <div class="layer-detail-card" id="fire-dl1">
+                        <div class="ld-head">
+                            <span class="ld-tag">LAYER 1 — PRIMARY</span>
+                            <span class="ld-sensor">KY-026 Flame IR Sensor</span>
+                        </div>
+                        <div class="ld-main">
+                            <span class="ld-val" id="fire-dl1-raw">—</span>
+                            <span class="ld-unit">Flame IR Intensity</span>
+                        </div>
+                        <div class="ld-progress">
+                            <div class="ld-bar" id="fire-dl1-bar" style="width: 5%"></div>
+                        </div>
+                        <div class="ld-foot">
+                            <span>Anomaly Score: <strong id="fire-dl1-score">0.00</strong></span>
+                            <span id="fire-dl1-status">🟢 Normal</span>
+                        </div>
+                    </div>
+
+                    <div class="layer-detail-card" id="fire-dl2">
+                        <div class="ld-head">
+                            <span class="ld-tag">LAYER 2 — CORROBORATING</span>
+                            <span class="ld-sensor">MQ-2 Smoke/Gas Sensor</span>
+                        </div>
+                        <div class="ld-main">
+                            <span class="ld-val" id="fire-dl2-raw">—</span>
+                            <span class="ld-unit">Gas Concentration</span>
+                        </div>
+                        <div class="ld-progress">
+                            <div class="ld-bar" id="fire-dl2-bar" style="width: 5%"></div>
+                        </div>
+                        <div class="ld-foot">
+                            <span>Anomaly Score: <strong id="fire-dl2-score">0.00</strong></span>
+                            <span id="fire-dl2-status">🟢 Normal</span>
+                        </div>
+                    </div>
+
+                    <div class="layer-detail-card" id="fire-dl3">
+                        <div class="ld-head">
+                            <span class="ld-tag">LAYER 3 — CONTEXT</span>
+                            <span class="ld-sensor">BME280 Temperature</span>
+                        </div>
+                        <div class="ld-main">
+                            <span class="ld-val" id="fire-dl3-raw">—</span>
+                            <span class="ld-unit">Temperature (°C)</span>
+                        </div>
+                        <div class="ld-progress">
+                            <div class="ld-bar" id="fire-dl3-bar" style="width: 5%"></div>
+                        </div>
+                        <div class="ld-foot">
+                            <span>Anomaly Score: <strong id="fire-dl3-score">0.00</strong></span>
+                            <span id="fire-dl3-status">🟢 Normal</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Chart -->
+                <div class="chart-card margin-top">
+                    <div class="chart-card-header">
+                        <h3>Fire Multi-Layer Time Series</h3>
+                        <p>3-Layer anomaly breakdown over time for FIR3</p>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="fire-detail-chart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <!-- VIEW: POLLUTION DETAIL (POL4 - 2-LAYER MODE) -->
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <section id="view-pollution" class="spa-view">
+                <div class="detail-header-card">
+                    <div class="dh-left">
+                        <div class="tile-icon pollution-bg xl">🏭</div>
+                        <div>
+                            <div class="mode-flex">
+                                <h2>AIR POLLUTION COMMAND</h2>
+                                <span class="mode-badge-lg">2-LAYER VALIDATION MODE</span>
+                            </div>
+                            <p>Node POL4 · Dedicated Air Quality Node (MQ-135 Air Quality + PM2.5 Dust Sensor)</p>
+                        </div>
+                    </div>
+                    <div class="dh-right">
+                        <span class="status-badge green lg" id="pollution-detail-status">GREEN</span>
+                    </div>
+                </div>
+
+                <!-- AI Prediction Cards -->
+                <div class="ai-cards-row">
+                    <div class="ai-card" id="pollution-ai-t15">
+                        <div class="ai-horizon">T + 15 MINUTES</div>
+                        <div class="ai-prob" id="pollution-t15-prob">0.0%</div>
+                        <div class="ai-meta">
+                            <span class="ai-sev-tag" id="pollution-t15-sev">LOW</span>
+                            <span class="ai-traj" id="pollution-t15-traj">➔ Stable</span>
+                        </div>
+                    </div>
+                    <div class="ai-card" id="pollution-ai-t30">
+                        <div class="ai-horizon">T + 30 MINUTES</div>
+                        <div class="ai-prob" id="pollution-t30-prob">0.0%</div>
+                        <div class="ai-meta">
+                            <span class="ai-sev-tag" id="pollution-t30-sev">LOW</span>
+                            <span class="ai-traj" id="pollution-t30-traj">➔ Stable</span>
+                        </div>
+                    </div>
+                    <div class="ai-card" id="pollution-ai-t60">
+                        <div class="ai-horizon">T + 60 MINUTES</div>
+                        <div class="ai-prob" id="pollution-t60-prob">0.0%</div>
+                        <div class="ai-meta">
+                            <span class="ai-sev-tag" id="pollution-t60-sev">LOW</span>
+                            <span class="ai-traj" id="pollution-t60-traj">➔ Stable</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2-Layer Telemetry Grid (2 active cards + 1 disabled context notice card) -->
+                <div class="layers-detail-grid">
+                    <div class="layer-detail-card" id="pollution-dl1">
+                        <div class="ld-head">
+                            <span class="ld-tag">LAYER 1 — PRIMARY</span>
+                            <span class="ld-sensor">MQ-135 Gas & AQI Sensor</span>
+                        </div>
+                        <div class="ld-main">
+                            <span class="ld-val" id="pollution-dl1-raw">—</span>
+                            <span class="ld-unit">Air Quality Index (AQI)</span>
+                        </div>
+                        <div class="ld-progress">
+                            <div class="ld-bar" id="pollution-dl1-bar" style="width: 5%"></div>
+                        </div>
+                        <div class="ld-foot">
+                            <span>Anomaly Score: <strong id="pollution-dl1-score">0.00</strong></span>
+                            <span id="pollution-dl1-status">🟢 Normal</span>
+                        </div>
+                    </div>
+
+                    <div class="layer-detail-card" id="pollution-dl2">
+                        <div class="ld-head">
+                            <span class="ld-tag">LAYER 2 — CORROBORATING</span>
+                            <span class="ld-sensor">PM2.5 Dust Sensor</span>
+                        </div>
+                        <div class="ld-main">
+                            <span class="ld-val" id="pollution-dl2-raw">—</span>
+                            <span class="ld-unit">PM2.5 Concentration (µg/m³)</span>
+                        </div>
+                        <div class="ld-progress">
+                            <div class="ld-bar" id="pollution-dl2-bar" style="width: 5%"></div>
+                        </div>
+                        <div class="ld-foot">
+                            <span>Anomaly Score: <strong id="pollution-dl2-score">0.00</strong></span>
+                            <span id="pollution-dl2-status">🟢 Normal</span>
+                        </div>
+                    </div>
+
+                    <div class="layer-detail-card disabled-layer-card">
+                        <div class="ld-head">
+                            <span class="ld-tag disabled-tag">LAYER 3 — CONTEXT</span>
+                            <span class="ld-sensor">Not Configured</span>
+                        </div>
+                        <div class="ld-main disabled-main">
+                            <span class="ld-val">N / A</span>
+                            <span class="ld-unit">2-Layer Mode Active</span>
+                        </div>
+                        <div class="ld-progress">
+                            <div class="ld-bar disabled-bar" style="width: 0%"></div>
+                        </div>
+                        <div class="ld-foot">
+                            <span>POL4 operates in 2-layer mode</span>
+                            <span>⚪ Bypass</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Chart -->
+                <div class="chart-card margin-top">
+                    <div class="chart-card-header">
+                        <h3>Pollution Multi-Layer Time Series</h3>
+                        <p>2-Layer anomaly breakdown over time for POL4</p>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="pollution-detail-chart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <!-- VIEW: ALERTS FEED -->
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <section id="view-alerts" class="spa-view">
+                <div class="detail-header-card">
+                    <div class="dh-left">
+                        <div class="tile-icon alert-bg xl">🔔</div>
+                        <div>
+                            <h2>SYSTEM ALERT AUDIT LOG</h2>
+                            <p>Chronological feed of multi-layer hazard confirmations, SMS triggers, and warning levels</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alerts-container-card">
+                    <div class="alerts-feed-full" id="alerts-page-feed">
+                        <div class="alert-row info">System initialized. Awaiting hazard events...</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer id="app-footer">
+            <div class="footer-left">
+                <span>Disaster Sentinel v2.0 · 4-Node Edge AI Disaster Management</span>
+            </div>
+            <div class="footer-right">
+                <span id="clock-display">--:--:--</span>
+            </div>
+        </footer>
+    </div>
 
     <script src="/static/js/dashboard.js"></script>
 </body>

@@ -1,14 +1,14 @@
 """
 ═══════════════════════════════════════════════════════════
-DISASTER SENTINEL — Main Orchestrator
+DISASTER SENTINEL — Main Orchestrator (v2.0)
 ═══════════════════════════════════════════════════════════
 
 Ties together all subsystems:
   1. LoRa Receiver (or Simulated Receiver for testing)
   2. Packet Decoder
   3. Time-Series Store (SQLite)
-  4. Three-Layer Validator
-  5. Risk Predictor
+  4. Three-Layer Validator (supports 2-layer and 3-layer nodes)
+  5. Risk Predictor + GRU AI Predictor
   6. Alert Manager
   7. SMS / Buzzer / Strobe
   8. FastAPI Dashboard
@@ -67,6 +67,50 @@ def load_config(path: str = "config.yaml") -> dict:
     return {}
 
 
+def clean_old_database(db_path: str):
+    """
+    Clean migration: delete old database if it exists.
+    
+    Since this is a dev/hackathon project, we wipe the old DB
+    when upgrading from 2-node to 4-node architecture.
+    The node IDs changed (FIR2 → FIR3, new POL4), so old data
+    is incompatible.
+    """
+    full_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), db_path)
+    if os.path.exists(full_path):
+        try:
+            import sqlite3
+            conn = sqlite3.connect(full_path)
+            cursor = conn.execute(
+                "SELECT DISTINCT node_id FROM sensor_readings LIMIT 10"
+            )
+            existing_nodes = {row[0] for row in cursor.fetchall()}
+            conn.close()
+
+            # Check if old node IDs exist (FIR2 = old 2-node architecture)
+            old_ids = {"FIR2"}
+            new_ids = {"FLD1", "SLD2", "FIR3", "POL4"}
+
+            if existing_nodes & old_ids:
+                logger.warning(
+                    f"⚠️  Old database detected with nodes: {existing_nodes}. "
+                    f"Migrating to 4-node architecture ({new_ids}). "
+                    f"Deleting old database..."
+                )
+                os.remove(full_path)
+                logger.info("✅ Old database removed. Fresh database will be created.")
+            else:
+                logger.info(f"Database OK — nodes: {existing_nodes or 'empty (first run)'}")
+
+        except Exception as e:
+            # If table doesn't exist or any error, just delete
+            logger.warning(f"Database check failed ({e}), recreating...")
+            try:
+                os.remove(full_path)
+            except OSError:
+                pass
+
+
 class DisasterSentinel:
     """Main system orchestrator."""
 
@@ -75,19 +119,29 @@ class DisasterSentinel:
         self.simulate = simulate
 
         # Initialize subsystems
-        logger.info("═" * 50)
-        logger.info("  DISASTER SENTINEL — Initializing")
-        logger.info("═" * 50)
+        logger.info("═" * 55)
+        logger.info("  🛡️  DISASTER SENTINEL v2.0 — Initializing")
+        logger.info("  4 Nodes · 3-Layer Validation · GRU AI Prediction")
+        logger.info("═" * 55)
+
+        # Clean old database if needed (2-node → 4-node migration)
+        db_path = config.get("database", {}).get("path", "data/disaster_sentinel.db")
+        clean_old_database(db_path)
 
         # Data store
-        db_path = config.get("database", {}).get("path", "data/disaster_sentinel.db")
         self.store = TimeSeriesStore(db_path)
 
-        # Three-layer validator
-        self.validator = ThreeLayerValidator(config.get("three_layer", {}))
+        # Node configs for layer count awareness
+        node_configs = config.get("nodes", {})
+
+        # Three-layer validator (with 2-layer support for POL4)
+        self.validator = ThreeLayerValidator(
+            config.get("three_layer", {}),
+            node_configs=node_configs,
+        )
 
         # Risk predictor
-        self.risk_predictor = RiskPredictor(config.get("risk_levels", {}))
+        self.risk_predictor = RiskPredictor(config.get("risk_levels", {}), node_configs=node_configs)
 
         # Alert manager
         alert_cfg = config.get("alerts", {})
@@ -116,16 +170,17 @@ class DisasterSentinel:
         # LoRa receiver
         if simulate:
             self.receiver = SimulatedReceiver(config.get("lora", {}))
-            logger.info("Using SIMULATED receiver (no hardware)")
+            logger.info("📡 Using SIMULATED receiver (no hardware)")
         else:
             self.receiver = LoRaReceiver(config.get("lora", {}))
-            logger.info("Using REAL LoRa receiver")
+            logger.info("📡 Using REAL LoRa receiver")
 
         # Dashboard
         self.dashboard = DashboardApp(
             self.store,
             self.alert_manager,
-            config.get("dashboard", {}),
+            risk_predictor=self.risk_predictor,
+            config=config.get("dashboard", {}),
         )
 
         # Wire alert manager to dashboard WebSocket
@@ -134,13 +189,19 @@ class DisasterSentinel:
         # Register packet callback
         self.receiver.on_packet(self.process_packet)
 
+        # Log node summary
+        for nid, ncfg in node_configs.items():
+            layers = ncfg.get("layer_count", 3)
+            hazard = ncfg.get("hazard_type", "?")
+            logger.info(f"  📍 {nid}: {ncfg.get('name', nid)} ({hazard}, {layers}-layer)")
+
     async def process_packet(self, packet: DecodedPacket):
         """
         Main processing pipeline for each received packet.
         
         Flow:
           1. Store in database
-          2. Validate 3-layer confirmation
+          2. Validate 3-layer (or 2-layer) confirmation
           3. Get historical data for trend analysis
           4. Predict risk
           5. Evaluate alerts
@@ -150,7 +211,7 @@ class DisasterSentinel:
             # 1. Store reading
             await self.store.store_reading(packet)
 
-            # 2. Three-layer validation
+            # 2. Multi-layer validation (auto-detects 2-layer vs 3-layer)
             validation = self.validator.validate(packet)
 
             # 3. Get recent history
@@ -198,11 +259,11 @@ class DisasterSentinel:
         except Exception:
             logger.warning("Strobe init skipped (no GPIO)")
 
-        logger.info("═" * 50)
-        logger.info("  DISASTER SENTINEL — Running")
+        logger.info("═" * 55)
+        logger.info("  🛡️  DISASTER SENTINEL — Running")
         logger.info(f"  Mode: {'SIMULATION' if self.simulate else 'HARDWARE'}")
         logger.info(f"  Dashboard: http://0.0.0.0:{self.config.get('dashboard', {}).get('port', 8080)}")
-        logger.info("═" * 50)
+        logger.info("═" * 55)
 
         # Run receiver and dashboard concurrently
         dashboard_config = self.config.get("dashboard", {})

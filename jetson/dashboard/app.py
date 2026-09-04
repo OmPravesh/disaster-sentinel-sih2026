@@ -24,9 +24,10 @@ logger = logging.getLogger(__name__)
 class DashboardApp:
     """Dashboard FastAPI application wrapper."""
 
-    def __init__(self, store, alert_manager, config: dict = None):
+    def __init__(self, store, alert_manager, risk_predictor=None, config: dict = None):
         self.store = store
         self.alert_manager = alert_manager
+        self.risk_predictor = risk_predictor
         self.config = config or {}
         self.app = FastAPI(title="Disaster Sentinel", version="1.0.0")
         self.active_connections: List[WebSocket] = []
@@ -123,6 +124,70 @@ class DashboardApp:
             """Get current risk states for all nodes."""
             states = self.alert_manager.get_all_states()
             return {"risk_states": states}
+
+        @app.get("/api/predictions/{node_id}")
+        async def get_node_predictions(node_id: str):
+            """Get GRU AI future predictions (T+15, T+30, T+60) for a node."""
+            history = await self.store.get_recent_readings(node_id, minutes=60)
+            if self.risk_predictor:
+                preds = self.risk_predictor.predict_future(node_id, history)
+            else:
+                preds = {
+                    "t15": {"probability": 0.0, "severity": "LOW"},
+                    "t30": {"probability": 0.0, "severity": "LOW"},
+                    "t60": {"probability": 0.0, "severity": "LOW"},
+                    "trajectory": "no_predictor",
+                    "confidence": 0.0,
+                    "model_type": "none",
+                }
+            return {"node_id": node_id, "predictions": preds}
+
+        @app.get("/api/overview")
+        async def get_overview():
+            """Get aggregated system overview data for all 4 nodes."""
+            nodes = await self.store.get_node_statuses()
+            readings = await self.store.get_all_latest()
+            alerts = await self.store.get_recent_alerts(limit=5)
+            
+            # Compute overall risk score (max combined score across nodes)
+            max_score = 0.0
+            node_overview = []
+            for r in readings.values():
+                c_score = r.get("combined_score", 0.0)
+                if c_score > max_score:
+                    max_score = c_score
+                node_overview.append(r)
+                
+            return {
+                "overall_risk_score": max_score,
+                "overall_risk_percent": round(max_score * 100, 1),
+                "nodes": nodes,
+                "latest_readings": readings,
+                "recent_alerts": alerts,
+                "timestamp": datetime.now().isoformat(),
+            }
+
+        @app.get("/api/timeseries/{node_id}/layers")
+        async def get_layers_timeseries(node_id: str, minutes: int = 60):
+            """Get all sensor layer time-series data for a node in a single call."""
+            readings = await self.store.get_recent_readings(node_id, minutes)
+            timestamps = [r.get("timestamp", "") for r in readings]
+            l1_raw = [r.get("l1_raw", 0) for r in readings]
+            l1_anomaly = [r.get("l1_anomaly", 0) for r in readings]
+            l2_raw = [r.get("l2_raw", 0) for r in readings]
+            l2_anomaly = [r.get("l2_anomaly", 0) for r in readings]
+            l3_raw = [r.get("l3_raw", 0) for r in readings]
+            l3_anomaly = [r.get("l3_anomaly", 0) for r in readings]
+            combined = [r.get("combined_score", 0) for r in readings]
+            
+            return {
+                "node_id": node_id,
+                "timestamps": timestamps,
+                "l1_raw": l1_raw, "l1_anomaly": l1_anomaly,
+                "l2_raw": l2_raw, "l2_anomaly": l2_anomaly,
+                "l3_raw": l3_raw, "l3_anomaly": l3_anomaly,
+                "combined": combined,
+            }
 
         # =============================================
         # WEBSOCKET
