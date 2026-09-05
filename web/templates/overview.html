@@ -3,6 +3,10 @@
 {% block title %}Overview · Disaster Sentinel{% endblock %}
 
 {% block content %}
+<!-- Leaflet CSS & JS for Real GIS Map -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
 <div class="space-y-8 pb-10">
 
   <!-- ========================================================================= -->
@@ -259,76 +263,32 @@
       </a>
     </div>
 
-    <!-- Map Canvas (Clean Modern Vector Canvas of Uttarakhand) -->
-    <div class="relative w-full aspect-[16/8] sm:aspect-[21/9] bg-[#F8FAFC] rounded-2xl border border-slate-border overflow-hidden flex items-center justify-center select-none shadow-inner">
-      
-      <!-- Coordinate Grid Background -->
-      <svg class="absolute inset-0 w-full h-full opacity-20 pointer-events-none">
-        <defs>
-          <pattern id="homeMapGrid" width="36" height="36" patternUnits="userSpaceOnUse">
-            <path d="M 36 0 L 0 0 0 36" fill="none" stroke="#94A3B8" stroke-width="0.7"/>
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#homeMapGrid)" />
-      </svg>
+    <!-- Real Interactive Leaflet GIS Map Container -->
+    <div class="relative w-full h-[460px] sm:h-[500px] rounded-2xl border border-slate-border overflow-hidden shadow-inner bg-[#F1F5F9] z-0">
+      <div id="overviewMap" class="w-full h-full z-0"></div>
 
-      <!-- Geographic Regional Contours & Rivers -->
-      <svg class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 900 380" fill="none">
-        <!-- Mountain Range Top-Left (Garhwal Himalaya) -->
-        <path d="M 40 100 Q 180 20 320 70 T 560 50" stroke="#D97706" stroke-width="2.5" stroke-dasharray="6 4" opacity="0.5"/>
-        <path d="M 10 150 Q 200 60 360 110 T 600 90" stroke="#D97706" stroke-width="2" stroke-dasharray="6 4" opacity="0.35"/>
-        
-        <!-- Ganga River Basin Flow -->
-        <path d="M 0 290 C 220 270 300 210 460 190 C 660 160 760 90 900 70" stroke="#0284C7" stroke-width="8" opacity="0.5" stroke-linecap="round"/>
-        
-        <!-- Kumaon Forest Boundary (Right) -->
-        <rect x="580" y="160" width="260" height="170" rx="20" stroke="#059669" stroke-width="2" stroke-dasharray="6 4" opacity="0.4" fill="#059669" fill-opacity="0.05"/>
-
-        <!-- Dehradun Valley Basin Boundary (Bottom-Left) -->
-        <rect x="60" y="240" width="220" height="110" rx="16" stroke="#7C3AED" stroke-width="2" stroke-dasharray="6 4" opacity="0.4" fill="#7C3AED" fill-opacity="0.05"/>
-      </svg>
-
-      <!-- Station 1: Flood (Rishikesh · Ganga Basin) -->
-      <div class="absolute top-[52%] left-[45%] transform -translate-x-1/2 -translate-y-1/2 text-center cursor-pointer group" onclick="window.location.href='/map'">
-        <div id="mapBeaconFlood" class="w-4 h-4 rounded-full bg-emerald-500 mx-auto transition-all shadow-md"></div>
-        <div class="mt-1 px-2.5 py-1 rounded-xl bg-white/95 border border-slate-border text-[11px] font-semibold text-navy-900 flex items-center gap-1.5 whitespace-nowrap shadow-sm">
-          <i class="fa-solid fa-water text-blue-600 text-[10px]"></i>
-          <span>Rishikesh (Ganga)</span>
-        </div>
+      <!-- Floating Map Style Switcher (Top-Right) -->
+      <div class="absolute top-3 right-3 flex items-center gap-1.5 z-[1000] bg-white/95 backdrop-blur p-1 rounded-xl border border-slate-200 shadow-md text-[11px] font-medium pointer-events-auto">
+        <button type="button" onclick="switchOverviewMap('osm')" id="btnOvOsm" class="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 font-bold transition shadow-xs">
+          Street
+        </button>
+        <button type="button" onclick="switchOverviewMap('topo')" id="btnOvTopo" class="px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition">
+          Topo
+        </button>
+        <button type="button" onclick="switchOverviewMap('satellite')" id="btnOvSat" class="px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition">
+          Satellite
+        </button>
+        <button type="button" onclick="recenterOverviewMap()" title="Recenter on Uttarakhand Basin" class="p-1 px-2 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-slate-100 transition border-l border-slate-200 ml-0.5">
+          <i class="fa-solid fa-crosshairs text-xs"></i>
+        </button>
       </div>
 
-      <!-- Station 2: Landslide (Chamoli · Garhwal Slopes) -->
-      <div class="absolute top-[22%] left-[32%] transform -translate-x-1/2 -translate-y-1/2 text-center cursor-pointer group" onclick="window.location.href='/map'">
-        <div id="mapBeaconLandslide" class="w-4 h-4 rounded-full bg-emerald-500 mx-auto transition-all shadow-md"></div>
-        <div class="mt-1 px-2.5 py-1 rounded-xl bg-white/95 border border-slate-border text-[11px] font-semibold text-navy-900 flex items-center gap-1.5 whitespace-nowrap shadow-sm">
-          <i class="fa-solid fa-mountain text-amber-600 text-[10px]"></i>
-          <span>Chamoli (Slopes)</span>
-        </div>
-      </div>
-
-      <!-- Station 3: Fire (Almora · Kumaon Forest) -->
-      <div class="absolute top-[58%] left-[76%] transform -translate-x-1/2 -translate-y-1/2 text-center cursor-pointer group" onclick="window.location.href='/map'">
-        <div id="mapBeaconFire" class="w-4 h-4 rounded-full bg-emerald-500 mx-auto transition-all shadow-md"></div>
-        <div class="mt-1 px-2.5 py-1 rounded-xl bg-white/95 border border-slate-border text-[11px] font-semibold text-navy-900 flex items-center gap-1.5 whitespace-nowrap shadow-sm">
-          <i class="fa-solid fa-fire-flame-curved text-rose-600 text-[10px]"></i>
-          <span>Almora (Forest)</span>
-        </div>
-      </div>
-
-      <!-- Station 4: Pollution (Dehradun · Selaqui Valley) -->
-      <div class="absolute top-[75%] left-[16%] transform -translate-x-1/2 -translate-y-1/2 text-center cursor-pointer group" onclick="window.location.href='/map'">
-        <div id="mapBeaconPollution" class="w-4 h-4 rounded-full bg-emerald-500 mx-auto transition-all shadow-md"></div>
-        <div class="mt-1 px-2.5 py-1 rounded-xl bg-white/95 border border-slate-border text-[11px] font-semibold text-navy-900 flex items-center gap-1.5 whitespace-nowrap shadow-sm">
-          <i class="fa-solid fa-smog text-purple-600 text-[10px]"></i>
-          <span>Dehradun (Valley)</span>
-        </div>
-      </div>
-
-      <!-- Overlay Legend -->
-      <div class="absolute bottom-3 left-3 bg-white/95 backdrop-blur px-3 py-1.5 rounded-xl border border-slate-border text-[11px] text-slate-muted flex items-center gap-3 shadow-sm">
-        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Safe Baseline</span>
+      <!-- Floating Map Legend & Coverage Indicator (Bottom-Left) -->
+      <div class="absolute bottom-3 left-3 z-[1000] bg-white/95 backdrop-blur px-3 py-2 rounded-xl border border-slate-border text-[11px] text-slate-700 flex flex-wrap items-center gap-3 shadow-md pointer-events-auto">
+        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm"></span> Safe Baseline</span>
+        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-sm"></span> Warning</span>
         <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span> Threat Active</span>
-        <span class="flex items-center gap-1.5 border-l border-slate-200 pl-2 text-blue-600 font-semibold">Uttarakhand Basin</span>
+        <span class="flex items-center gap-1.5 border-l border-slate-200 pl-2.5 text-blue-600 font-semibold"><i class="fa-solid fa-tower-broadcast text-blue-500 text-[10px]"></i> 433 MHz LoRa Reach (10 km)</span>
       </div>
     </div>
   </section>
@@ -423,6 +383,238 @@
     'FIR3': 'fa-fire-flame-curved text-rose-600',
     'POL4': 'fa-smog text-purple-600'
   };
+
+  // =============================================================
+  // LEAFLET REAL GIS MAP INITIALIZATION (UTTARAKHAND BASIN)
+  // =============================================================
+  let ovMap = null;
+  let ovActiveTile = null;
+  const ovMarkers = {};
+  const ovCircles = {};
+
+  const STATIONS_GEO = {
+    FLD1: {
+      id: "FLD1",
+      name: "Rishikesh (Ganga Basin)",
+      hazard: "Flood",
+      lat: 30.0869,
+      lng: 78.2676,
+      icon: "fa-water",
+      badgeColor: "#0284C7"
+    },
+    SLD2: {
+      id: "SLD2",
+      name: "Chamoli (Garhwal Slopes)",
+      hazard: "Landslide",
+      lat: 30.3844,
+      lng: 79.2811,
+      icon: "fa-mountain",
+      badgeColor: "#D97706"
+    },
+    FIR3: {
+      id: "FIR3",
+      name: "Almora (Pine Forest)",
+      hazard: "Fire",
+      lat: 29.6200,
+      lng: 79.6800,
+      icon: "fa-fire-flame-curved",
+      badgeColor: "#E11D48"
+    },
+    POL4: {
+      id: "POL4",
+      name: "Dehradun (Selaqui Valley)",
+      hazard: "Pollution",
+      lat: 30.3400,
+      lng: 77.8700,
+      icon: "fa-smog",
+      badgeColor: "#7C3AED"
+    }
+  };
+
+  const OV_TILES = {
+    osm: {
+      url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+      options: { maxZoom: 18, attribution: '&copy; OpenStreetMap contributors' }
+    },
+    topo: {
+      url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+      options: { maxZoom: 17, attribution: '&copy; OpenTopoMap' }
+    },
+    satellite: {
+      url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      options: { maxZoom: 18, attribution: '&copy; Esri & Earthstar Geographics' }
+    }
+  };
+
+  function switchOverviewMap(type) {
+    if (!ovMap) return;
+    if (ovActiveTile) ovMap.removeLayer(ovActiveTile);
+    const cfg = OV_TILES[type] || OV_TILES.osm;
+    ovActiveTile = L.tileLayer(cfg.url, cfg.options).addTo(ovMap);
+
+    ['osm', 'topo', 'satellite'].forEach(k => {
+      const btn = document.getElementById('btnOv' + (k === 'osm' ? 'Osm' : (k === 'topo' ? 'Topo' : 'Sat')));
+      if (btn) {
+        if (k === type) {
+          btn.className = 'px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 font-bold transition shadow-xs';
+        } else {
+          btn.className = 'px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition';
+        }
+      }
+    });
+  }
+
+  function recenterOverviewMap() {
+    if (ovMap) {
+      ovMap.setView([30.15, 79.10], 8);
+    }
+  }
+
+  function createStationIcon(station, status) {
+    const isCrit = status === 'Hazardous';
+    const isWarn = status === 'Warning';
+    const bgClass = isCrit ? 'bg-rose-600' : (isWarn ? 'bg-amber-500' : 'bg-emerald-600');
+    const pingHtml = isCrit ? '<span class="absolute inset-0 rounded-full bg-rose-500 animate-ping opacity-75"></span>' : '';
+
+    return L.divIcon({
+      className: 'custom-ov-marker',
+      html: `
+        <div class="relative flex items-center justify-center w-8 h-8 rounded-full ${bgClass} text-white shadow-lg border-2 border-white cursor-pointer hover:scale-110 transition">
+          ${pingHtml}
+          <i class="fa-solid ${station.icon} text-xs relative z-10"></i>
+        </div>
+      `,
+      iconSize: [32, 32],
+      iconAnchor: [16, 16],
+      popupAnchor: [0, -18]
+    });
+  }
+
+  function initOverviewMap() {
+    const mapEl = document.getElementById('overviewMap');
+    if (!mapEl || ovMap) return;
+
+    ovMap = L.map('overviewMap', {
+      center: [30.15, 79.10],
+      zoom: 8,
+      minZoom: 7,
+      maxZoom: 14,
+      scrollWheelZoom: false,
+      zoomControl: false
+    });
+
+    L.control.zoom({ position: 'topleft' }).addTo(ovMap);
+    switchOverviewMap('osm');
+
+    // State of Uttarakhand Geographical Boundary
+    const uttarakhandBoundary = [
+      [30.40, 77.70], [30.70, 77.75], [31.05, 77.85], [31.25, 78.10],
+      [31.45, 78.45], [31.30, 79.10], [31.05, 79.80], [30.90, 80.30],
+      [30.50, 80.95], [30.15, 80.60], [29.60, 80.40], [29.10, 80.15],
+      [28.85, 79.95], [28.70, 79.60], [28.90, 79.25], [29.20, 78.95],
+      [29.50, 78.60], [29.80, 78.15], [30.10, 77.95], [30.40, 77.70]
+    ];
+
+    L.polygon(uttarakhandBoundary, {
+      color: '#0284C7',
+      weight: 2,
+      dashArray: '5, 5',
+      fillColor: '#0284C7',
+      fillOpacity: 0.04
+    }).bindTooltip("State of Uttarakhand (India) · Multi-Hazard Surveillance Basin", {
+      sticky: true,
+      className: 'text-xs font-semibold text-slate-800 bg-white/95 rounded shadow px-2 py-1'
+    }).addTo(ovMap);
+
+    // Create markers for each station
+    Object.values(STATIONS_GEO).forEach(station => {
+      // 10 km LoRa coverage circle
+      const circle = L.circle([station.lat, station.lng], {
+        radius: 10000,
+        color: '#10B981',
+        weight: 1.5,
+        fillColor: '#10B981',
+        fillOpacity: 0.08
+      }).addTo(ovMap);
+      ovCircles[station.id] = circle;
+
+      // Custom HTML Marker Pin
+      const marker = L.marker([station.lat, station.lng], {
+        icon: createStationIcon(station, 'Safe')
+      }).addTo(ovMap);
+
+      marker.bindTooltip(`<b>${station.name}</b><br><span style="color:#059669">● Safe Baseline</span>`, {
+        direction: 'top',
+        offset: [0, -14],
+        className: 'text-xs font-medium text-slate-900 bg-white/95 rounded-lg shadow px-2.5 py-1'
+      });
+
+      marker.bindPopup(`
+        <div class="p-2.5 space-y-1.5 font-sans min-w-[180px]">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-1">
+            <span class="font-bold text-slate-900 text-xs">${station.id}: ${station.hazard}</span>
+            <span id="ovPopBadge_${station.id}" class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-50 text-emerald-700">SAFE</span>
+          </div>
+          <p class="text-[11px] text-slate-600">${station.name}</p>
+          <div class="text-[10px] text-slate-500 font-mono">LoRa: 433 MHz · Range: 10 km</div>
+          <a href="/monitoring" class="inline-block text-[11px] text-blue-600 font-semibold hover:underline mt-1">View Live Sensors &rarr;</a>
+        </div>
+      `);
+
+      ovMarkers[station.id] = marker;
+    });
+
+    // Invalidate size to ensure clean tile rendering
+    setTimeout(() => {
+      if (ovMap) ovMap.invalidateSize();
+    }, 300);
+  }
+
+  function updateOverviewMapNodes(nodes) {
+    if (!nodes || !ovMap) return;
+
+    Object.values(STATIONS_GEO).forEach(station => {
+      const nodeData = nodes[station.id];
+      if (!nodeData) return;
+
+      const status = nodeData.status || 'Safe';
+      const marker = ovMarkers[station.id];
+      const circle = ovCircles[station.id];
+
+      if (marker) {
+        marker.setIcon(createStationIcon(station, status));
+
+        const isCrit = status === 'Hazardous';
+        const isWarn = status === 'Warning';
+        const statusColor = isCrit ? '#E11D48' : (isWarn ? '#D97706' : '#059669');
+        const statusLabel = isCrit ? '⚠️ CRITICAL THREAT' : (isWarn ? '⚡ WARNING' : '● Safe Baseline');
+
+        marker.setTooltipContent(`<b>${station.name}</b><br><span style="color:${statusColor}">${statusLabel}</span>`);
+
+        const popBadge = document.getElementById(`ovPopBadge_${station.id}`);
+        if (popBadge) {
+          popBadge.className = isCrit ? 'text-[10px] px-2 py-0.5 rounded-full font-bold bg-rose-50 text-rose-700' :
+                               (isWarn ? 'text-[10px] px-2 py-0.5 rounded-full font-bold bg-amber-50 text-amber-700' :
+                               'text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-50 text-emerald-700');
+          popBadge.textContent = isCrit ? 'CRITICAL' : (isWarn ? 'WARNING' : 'SAFE');
+        }
+      }
+
+      if (circle) {
+        const isCrit = status === 'Hazardous';
+        const circleColor = isCrit ? '#E11D48' : (status === 'Warning' ? '#D97706' : '#10B981');
+        circle.setStyle({
+          color: circleColor,
+          fillColor: circleColor,
+          fillOpacity: isCrit ? 0.22 : 0.08
+        });
+      }
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    initOverviewMap();
+  });
 
   window.addEventListener('sentinel_data', (event) => {
     const { hub, nodes, incidents } = event.detail;
@@ -579,21 +771,9 @@
     }
 
     // -------------------------------------------------------------
-    // 3. UPDATE MAP BEACONS
+    // 3. UPDATE REAL LEAFLET GIS MAP STATIONS
     // -------------------------------------------------------------
-    const updateBeacon = (id, isCrit) => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      if (isCrit) {
-        el.className = 'w-4 h-4 rounded-full bg-rose-600 mx-auto shadow-md animate-ping';
-      } else {
-        el.className = 'w-4 h-4 rounded-full bg-emerald-500 mx-auto shadow-sm';
-      }
-    };
-    updateBeacon('mapBeaconFlood', nodes.FLD1 && nodes.FLD1.status === 'Hazardous');
-    updateBeacon('mapBeaconLandslide', nodes.SLD2 && nodes.SLD2.status === 'Hazardous');
-    updateBeacon('mapBeaconFire', nodes.FIR3 && nodes.FIR3.status === 'Hazardous');
-    updateBeacon('mapBeaconPollution', nodes.POL4 && nodes.POL4.status === 'Hazardous');
+    updateOverviewMapNodes(nodes);
 
     // -------------------------------------------------------------
     // 4. UPDATE ACTIVE ALERTS FEED
