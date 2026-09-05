@@ -195,7 +195,7 @@ hub_state = {
     "hub_id": "JETSON-ORIN-NANO-01",
     "hub_name": "NVIDIA Jetson Orin Nano (Central Hub)",
     "processor": "6-core ARM v8.2 64-bit | 1024-core Ampere GPU",
-    "lora_protocol": "SX1278 LoRa SPI0 @ 868.1 MHz",
+    "lora_protocol": "SX1278 LoRa SPI0 @ 433.0 MHz",
     "lora_status": "ONLINE",
     "gsm_status": "ONLINE (SIM800L RSSI: 28/31)",
     "buzzer_gpio18": False,
@@ -347,7 +347,7 @@ incident_log = [
         "title": "Autonomous Edge Hub Boot Sequence",
         "severity": "INFO",
         "status": "Resolved",
-        "details": "NVIDIA Jetson Orin Nano AI Hub initialized. LoRa SX1278 SPI link online @ 868.1 MHz."
+        "details": "NVIDIA Jetson Orin Nano AI Hub initialized. LoRa SX1278 SPI link online @ 433.0 MHz."
     }
 ]
 

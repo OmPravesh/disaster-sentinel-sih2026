@@ -342,7 +342,7 @@
     s = s.replace(/Water level jumped to ([\d\.]+)m \(Critical > ([\d\.]+)m\)/gi, "Water level reached $1 m, exceeding the $2 m critical safety limit.");
     s = s.replace(/Combustion gas TVOC spiked to ([\d\,]+) ppb\. Ambient temperature ([\d\.]+)°C\. Flame sensor tripwire positive\./gi, "Combustion gas concentration surged to $1 ppb with temperature at $2°C. Active thermal combustion detected.");
     s = s.replace(/Particulate dust PM2\.5 jumped to ([\d\.]+) µg\/m³ \(Severe Hazardous > 150 µg\/m³\)\. Atmospheric inversion layer trapped pollutants\./gi, "Particulate PM2.5 reached $1 µg/m³, exceeding the 150 µg/m³ severe hazard limit. Smog inversion detected.");
-    s = s.replace(/NVIDIA Jetson Orin Nano AI Hub initialized\. LoRa SX1278 SPI link online @ 868\.1 MHz\./gi, "Autonomous Disaster Monitoring System initialized. All regional communication links active.");
+    s = s.replace(/NVIDIA Jetson Orin Nano AI Hub initialized\. LoRa SX1278 SPI link online @ (?:868\.1|433\.0) MHz\./gi, "Autonomous Disaster Monitoring System initialized. All regional communication links active.");
     return s;
   }
 
