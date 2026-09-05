@@ -59,18 +59,20 @@ class DashboardApp:
         @app.get("/", response_class=HTMLResponse)
         async def index(request: Request):
             """Main dashboard page."""
-            return self.templates.TemplateResponse("index.html", {
-                "request": request,
-                "title": "Disaster Sentinel",
-            })
+            return self.templates.TemplateResponse(
+                request=request,
+                name="index.html",
+                context={"title": "Disaster Sentinel"}
+            )
 
         @app.get("/alerts", response_class=HTMLResponse)
         async def alerts_page(request: Request):
             """Alert history page."""
-            return self.templates.TemplateResponse("alert_history.html", {
-                "request": request,
-                "title": "Alert History — Disaster Sentinel",
-            })
+            return self.templates.TemplateResponse(
+                request=request,
+                name="alert_history.html",
+                context={"title": "Alert History — Disaster Sentinel"}
+            )
 
         # =============================================
         # REST API
