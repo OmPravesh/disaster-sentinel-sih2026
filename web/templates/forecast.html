@@ -1,0 +1,449 @@
+{% extends "base.html" %}
+
+{% block title %}AI Predictor · Disaster Sentinel{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <!-- ========================================================================= -->
+  <!-- 1. PAGE HEADER & STATION SELECTOR TOGGLE -->
+  <!-- ========================================================================= -->
+  <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-dark-800 pb-5">
+    <div>
+      <div class="flex items-center gap-2.5">
+        <h1 class="text-2xl font-extrabold text-white tracking-tight">Jetson Edge AI Recurrent Predictor</h1>
+        <span class="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40">BRAIN 2</span>
+      </div>
+      <p class="text-xs sm:text-sm text-slate-400 mt-1">
+        PyTorch 2-layer GRU sequence forecaster on NVIDIA Jetson Orin Nano. Projects multi-step trajectories (+10m to +50m) and early warning lead times.
+      </p>
+    </div>
+
+    <!-- Station Selector Buttons -->
+    <div class="flex items-center gap-1.5 p-1 rounded-xl bg-dark-850 border border-dark-750 text-xs font-mono">
+      <button onclick="switchForecastNode('FLD1')" id="btnFld1" class="px-3 py-1.5 rounded-lg font-bold bg-dark-750 text-cyan-300 border border-dark-700 shadow-sm flex items-center gap-1.5 transition">
+        <span>FLD1</span> <span class="text-[10px] opacity-75 font-sans">Flood</span>
+      </button>
+      <button onclick="switchForecastNode('SLD2')" id="btnSld2" class="px-3 py-1.5 rounded-lg font-bold text-slate-400 hover:text-amber-300 flex items-center gap-1.5 transition">
+        <span>SLD2</span> <span class="text-[10px] opacity-75 font-sans">Landslide</span>
+      </button>
+      <button onclick="switchForecastNode('FIR3')" id="btnFir3" class="px-3 py-1.5 rounded-lg font-bold text-slate-400 hover:text-rose-300 flex items-center gap-1.5 transition">
+        <span>FIR3</span> <span class="text-[10px] opacity-75 font-sans">Fire</span>
+      </button>
+      <button onclick="switchForecastNode('POL4')" id="btnPol4" class="px-3 py-1.5 rounded-lg font-bold text-slate-400 hover:text-purple-300 flex items-center gap-1.5 transition">
+        <span>POL4</span> <span class="text-[10px] opacity-75 font-sans">Smog</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 2. EARLY WARNING LEAD-TIME COUNTDOWN BANNER -->
+  <!-- ========================================================================= -->
+  <div id="leadTimeBanner" class="p-5 rounded-2xl border transition-all duration-300 bg-emerald-950/20 border-emerald-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div class="flex items-center gap-4">
+      <div id="leadTimeIconContainer" class="w-12 h-12 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 text-2xl flex-shrink-0">
+        <i id="leadTimeIcon" class="fa-solid fa-circle-check"></i>
+      </div>
+      <div>
+        <span class="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold block">AUTONOMOUS EARLY WARNING ENGINE</span>
+        <h2 id="leadTimeTitle" class="text-base sm:text-lg font-black font-mono text-emerald-300 tracking-tight">
+          NORMAL · 50+ MINUTE HORIZON SAFE
+        </h2>
+        <p id="leadTimeSubtitle" class="text-xs text-slate-300 mt-0.5">
+          Recurrent GRU trajectory projects sensor levels remaining below critical warning thresholds across all 5 future timesteps.
+        </p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3 self-end sm:self-center">
+      <div class="text-right font-mono">
+        <span class="text-[10px] text-slate-400 block">Risk Breach Head:</span>
+        <span id="riskProbabilityHead" class="text-lg font-extrabold text-emerald-400">0.0%</span>
+      </div>
+      <button onclick="openSimDrawer()" class="px-3.5 py-2 rounded-xl bg-dark-800 hover:bg-dark-750 text-cyan-300 border border-dark-700 text-xs font-semibold flex items-center gap-2 transition">
+        <i class="fa-solid fa-flask text-xs"></i>
+        <span>Trigger Surge</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 3. FOUR AI METRIC STAT CARDS -->
+  <!-- ========================================================================= -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    
+    <!-- Stat 1: Current Observation (t) -->
+    <div class="glass-card p-4 rounded-2xl space-y-1">
+      <div class="flex items-center justify-between text-slate-400 text-xs">
+        <span>Current Reading (t)</span>
+        <i class="fa-solid fa-satellite-dish text-cyan-400"></i>
+      </div>
+      <div class="flex items-baseline gap-1 font-mono">
+        <span id="statCurrentVal" class="text-xl font-extrabold text-white">2.10</span>
+        <span id="statUnit1" class="text-xs text-slate-400">m</span>
+      </div>
+      <div class="text-[11px] text-slate-400">From 10-step buffer</div>
+    </div>
+
+    <!-- Stat 2: Projected +50m Horizon Peak -->
+    <div class="glass-card p-4 rounded-2xl space-y-1">
+      <div class="flex items-center justify-between text-slate-400 text-xs">
+        <span>Projected +50m Peak</span>
+        <i class="fa-solid fa-chart-line text-purple-400"></i>
+      </div>
+      <div class="flex items-baseline gap-1 font-mono">
+        <span id="statProjectedPeak" class="text-xl font-extrabold text-purple-300">2.34</span>
+        <span id="statUnit2" class="text-xs text-slate-400">m</span>
+      </div>
+      <div id="statDelta" class="text-[11px] text-emerald-400 font-mono">+0.24m (&Delta; nominal)</div>
+    </div>
+
+    <!-- Stat 3: Lead-Time Margin -->
+    <div class="glass-card p-4 rounded-2xl space-y-1">
+      <div class="flex items-center justify-between text-slate-400 text-xs">
+        <span>Lead-Time Margin</span>
+        <i class="fa-solid fa-stopwatch text-amber-400"></i>
+      </div>
+      <div id="statLeadMargin" class="text-xl font-extrabold text-emerald-400 font-mono">50+ MINS</div>
+      <div class="text-[11px] text-slate-400">Before danger breach</div>
+    </div>
+
+    <!-- Stat 4: Jetson Edge AI Engine -->
+    <div class="glass-card p-4 rounded-2xl space-y-1">
+      <div class="flex items-center justify-between text-slate-400 text-xs">
+        <span>Hardware AI Engine</span>
+        <i class="fa-solid fa-microchip text-emerald-400"></i>
+      </div>
+      <div class="text-xl font-extrabold text-white font-mono">JETSON ORIN</div>
+      <div class="text-[11px] text-slate-400">1024-core Ampere &middot; PyTorch 2.14</div>
+    </div>
+
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 4. FUTURE TRAJECTORY CANVAS CHART -->
+  <!-- ========================================================================= -->
+  <div class="glass-card rounded-2xl p-5 sm:p-6 space-y-4">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-dark-750 pb-3">
+      <div>
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-wave-square text-cyan-400"></i>
+          <span id="chartHeading">FLD1: River Water Level · Past History vs Projected Horizon</span>
+        </h3>
+        <p class="text-xs text-slate-400 mt-0.5">
+          Solid line: 10 recorded steps (t-9 to t) &middot; Glowing dashed line: 5 future recurrent GRU projections (t+10m to t+50m)
+        </p>
+      </div>
+      <div class="flex items-center gap-3 text-xs font-mono">
+        <span class="flex items-center gap-1 text-slate-400">
+          <span class="w-3 h-0.5 bg-slate-400 inline-block"></span> History
+        </span>
+        <span class="flex items-center gap-1 text-cyan-400">
+          <span class="w-3 h-0.5 border-b-2 border-dashed border-cyan-400 inline-block"></span> GRU Forecast
+        </span>
+        <span class="flex items-center gap-1 text-rose-400">
+          <span class="w-3 h-0.5 bg-rose-500 inline-block"></span> Critical Breach Line
+        </span>
+      </div>
+    </div>
+
+    <!-- Canvas Container -->
+    <div class="w-full h-80 sm:h-96 relative">
+      <canvas id="forecastCanvas"></canvas>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 5. 5-STEP FUTURE TIMELINE CARDS -->
+  <!-- ========================================================================= -->
+  <div>
+    <h3 class="text-sm font-bold text-white uppercase tracking-wider font-mono mb-3 flex items-center gap-2">
+      <i class="fa-solid fa-timeline text-purple-400"></i>
+      <span>Predictive Horizon Step Breakdown (+10m to +50m)</span>
+    </h3>
+
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3" id="timelineCardsContainer">
+      <!-- Generated dynamically in script -->
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 6. DUAL-BRAIN ARCHITECTURE EXPLAINER (FOR SIH EVALUATORS) -->
+  <!-- ========================================================================= -->
+  <div class="glass-card rounded-2xl p-5 sm:p-6 space-y-4 border-l-4 border-l-purple-500">
+    <div class="flex items-center gap-2.5">
+      <div class="w-8 h-8 rounded-lg bg-purple-500/20 border border-purple-500/40 flex items-center justify-center text-purple-300">
+        <i class="fa-solid fa-diagram-project"></i>
+      </div>
+      <div>
+        <h4 class="font-bold text-white text-sm">Dual-Brain Edge AI Hierarchy (SIH26178 Architecture)</h4>
+        <p class="text-xs text-slate-400">Ultra-fast tripwire classification paired with deep recurrent predictive forecasting</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+      <div class="p-3.5 rounded-xl bg-dark-850/80 border border-dark-750 space-y-1.5">
+        <div class="flex items-center justify-between">
+          <span class="font-bold text-cyan-400 font-mono">BRAIN 1: Fast Tripwire Classifier</span>
+          <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300">&lt; 1 ms Latency</span>
+        </div>
+        <p class="text-slate-300 text-[11px] leading-relaxed">
+          4x Random Forest classifiers trained on 80,000+ real Kaggle/CPCB sensor logs. Intercepts incoming LoRa packets to instantly trigger local hardware sirens (GPIO18 Buzzer, GPIO23 Strobe) and GSM SOS alerts with zero delay.
+        </p>
+      </div>
+
+      <div class="p-3.5 rounded-xl bg-dark-850/80 border border-dark-750 space-y-1.5">
+        <div class="flex items-center justify-between">
+          <span class="font-bold text-purple-400 font-mono">BRAIN 2: Jetson Deep Forecaster</span>
+          <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300">50-min Lead Time</span>
+        </div>
+        <p class="text-slate-300 text-[11px] leading-relaxed">
+          4x PyTorch 2-layer GRU recurrent forecasters (hidden dim 64) with dual heads (multi-step regression + sigmoid hazard breach risk probability). Computes actionable evacuation countdown margins before physical catastrophe occurs.
+        </p>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  let activeNode = 'FLD1';
+  let forecastChart = null;
+  let cachedData = null;
+
+  const nodeColorSchemes = {
+    FLD1: { primary: '#06B6D4', rgba: 'rgba(6, 182, 212, 0.2)', unit: 'm', title: 'River Water Level' },
+    SLD2: { primary: '#F59E0B', rgba: 'rgba(245, 158, 11, 0.2)', unit: '°', title: 'Slope Incline Angle' },
+    FIR3: { primary: '#F43F5E', rgba: 'rgba(244, 63, 94, 0.2)', unit: 'ppb', title: 'Combustion Gas (TVOC)' },
+    POL4: { primary: '#A855F7', rgba: 'rgba(168, 85, 247, 0.2)', unit: 'µg/m³', title: 'Particulate Dust (PM2.5)' }
+  };
+
+  function switchForecastNode(nodeId) {
+    activeNode = nodeId;
+    ['FLD1', 'SLD2', 'FIR3', 'POL4'].forEach(id => {
+      const btn = document.getElementById(`btn${id.charAt(0) + id.slice(1).toLowerCase()}`);
+      if (btn) {
+        if (id === nodeId) {
+          btn.className = 'px-3 py-1.5 rounded-lg font-bold bg-dark-750 text-cyan-300 border border-dark-700 shadow-sm flex items-center gap-1.5 transition';
+        } else {
+          btn.className = 'px-3 py-1.5 rounded-lg font-bold text-slate-400 hover:text-white flex items-center gap-1.5 transition';
+        }
+      }
+    });
+
+    if (cachedData) {
+      renderForecastView(cachedData);
+    }
+  }
+
+  function renderForecastView(data) {
+    const f = data.forecasts ? data.forecasts[activeNode] : null;
+    if (!f) return;
+
+    const theme = nodeColorSchemes[activeNode];
+
+    // 1. Update Lead-Time Banner
+    const banner = document.getElementById('leadTimeBanner');
+    const iconContainer = document.getElementById('leadTimeIconContainer');
+    const icon = document.getElementById('leadTimeIcon');
+    const title = document.getElementById('leadTimeTitle');
+    const sub = document.getElementById('leadTimeSubtitle');
+    const riskHead = document.getElementById('riskProbabilityHead');
+
+    riskHead.textContent = `${f.risk_probability_pct}%`;
+
+    if (f.threat_level === 'CRITICAL') {
+      banner.className = 'p-5 rounded-2xl border transition-all duration-300 bg-rose-950/30 border-rose-500/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-pulse-slow';
+      iconContainer.className = 'w-12 h-12 rounded-xl bg-rose-500/20 border border-rose-500/50 flex items-center justify-center text-rose-400 text-2xl flex-shrink-0 animate-bounce';
+      icon.className = 'fa-solid fa-triangle-exclamation';
+      title.className = 'text-base sm:text-lg font-black font-mono text-rose-300 tracking-tight';
+      title.textContent = `🚨 ${f.lead_time_label}`;
+      sub.textContent = `GRU recurrent forecaster projects hazard breach above critical threshold (${f.thresholds.critical} ${f.unit}). Evacuation window active!`;
+      riskHead.className = 'text-lg font-extrabold text-rose-400';
+    } else {
+      banner.className = 'p-5 rounded-2xl border transition-all duration-300 bg-emerald-950/20 border-emerald-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4';
+      iconContainer.className = 'w-12 h-12 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 text-2xl flex-shrink-0';
+      icon.className = 'fa-solid fa-circle-check';
+      title.className = 'text-base sm:text-lg font-black font-mono text-emerald-300 tracking-tight';
+      title.textContent = `NORMAL · 50+ MINUTE HORIZON SAFE`;
+      sub.textContent = `Recurrent GRU trajectory projects sensor levels remaining below critical warning thresholds across all 5 future timesteps.`;
+      riskHead.className = 'text-lg font-extrabold text-emerald-400';
+    }
+
+    // 2. Update Stat Cards
+    document.getElementById('statCurrentVal').textContent = f.current_value;
+    document.getElementById('statUnit1').textContent = f.unit;
+    document.getElementById('statUnit2').textContent = f.unit;
+    
+    const peak = Math.max(...f.future_steps.map(s => s.predicted_value));
+    document.getElementById('statProjectedPeak').textContent = peak;
+
+    const delta = (peak - f.current_value).toFixed(2);
+    const deltaEl = document.getElementById('statDelta');
+    if (delta > 0) {
+      deltaEl.textContent = `+${delta}${f.unit} (Surge)`;
+      deltaEl.className = f.threat_level === 'CRITICAL' ? 'text-[11px] text-rose-400 font-mono font-bold' : 'text-[11px] text-amber-400 font-mono';
+    } else {
+      deltaEl.textContent = `${delta}${f.unit} (Stable)`;
+      deltaEl.className = 'text-[11px] text-emerald-400 font-mono';
+    }
+
+    const marginEl = document.getElementById('statLeadMargin');
+    if (f.lead_time_minutes) {
+      marginEl.textContent = `${f.lead_time_minutes} MINS`;
+      marginEl.className = 'text-xl font-extrabold text-rose-400 font-mono';
+    } else {
+      marginEl.textContent = '50+ MINS';
+      marginEl.className = 'text-xl font-extrabold text-emerald-400 font-mono';
+    }
+
+    document.getElementById('chartHeading').textContent = `${activeNode}: ${f.target_name} (${f.unit}) · Past History vs Projected Horizon`;
+
+    // 3. Render 5-Step Timeline Cards
+    const timelineContainer = document.getElementById('timelineCardsContainer');
+    timelineContainer.innerHTML = f.future_steps.map((step, idx) => {
+      const isBreach = step.predicted_value >= f.thresholds.critical;
+      const isWarn = step.predicted_value >= f.thresholds.warning;
+      let badgeClass = 'bg-emerald-500/20 text-emerald-300';
+      let statusText = 'SAFE';
+      if (isBreach) {
+        badgeClass = 'bg-rose-500/20 text-rose-300 font-bold';
+        statusText = 'CRITICAL';
+      } else if (isWarn) {
+        badgeClass = 'bg-amber-500/20 text-amber-300 font-bold';
+        statusText = 'WARNING';
+      }
+
+      return `
+        <div class="glass-card p-3.5 rounded-xl space-y-2 border-t-2 ${isBreach ? 'border-t-rose-500' : 'border-t-cyan-500'}">
+          <div class="flex items-center justify-between text-[11px]">
+            <span class="font-mono text-cyan-400 font-bold">${step.step}</span>
+            <span class="text-[9px] font-mono px-1.5 py-0.2 rounded ${badgeClass}">${statusText}</span>
+          </div>
+          <div>
+            <span class="text-lg font-black font-mono text-white">${step.predicted_value}</span>
+            <span class="text-[10px] text-slate-400 font-mono">${f.unit}</span>
+          </div>
+          <div class="text-[10px] text-slate-400">Step ${idx + 1} &middot; t+${step.time_min}m</div>
+        </div>
+      `;
+    }).join('');
+
+    // 4. Update Chart.js Trajectory Canvas
+    renderTrajectoryChart(f, theme);
+  }
+
+  function renderTrajectoryChart(forecast, theme) {
+    const ctx = document.getElementById('forecastCanvas').getContext('2d');
+
+    const historyLabels = forecast.history_values.map((_, i) => `t-${forecast.history_values.length - 1 - i}`);
+    const futureLabels = forecast.future_steps.map(s => s.step);
+    const allLabels = [...historyLabels, ...futureLabels];
+
+    // History curve dataset (filled up to t)
+    const historyData = [...forecast.history_values, ...new Array(forecast.future_steps.length).fill(null)];
+
+    // Future forecast curve dataset (starts at last history point t)
+    const futureData = new Array(forecast.history_values.length - 1).fill(null);
+    futureData.push(forecast.current_value);
+    forecast.future_steps.forEach(s => futureData.push(s.predicted_value));
+
+    // Threshold horizontal lines
+    const critLine = new Array(allLabels.length).fill(forecast.thresholds.critical);
+    const warnLine = new Array(allLabels.length).fill(forecast.thresholds.warning);
+
+    if (forecastChart) {
+      forecastChart.destroy();
+    }
+
+    forecastChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: allLabels,
+        datasets: [
+          {
+            label: 'Recorded History',
+            data: historyData,
+            borderColor: '#94A3B8',
+            backgroundColor: 'rgba(148, 163, 184, 0.1)',
+            borderWidth: 2.5,
+            pointRadius: 3,
+            pointBackgroundColor: '#94A3B8',
+            tension: 0.25,
+            fill: false
+          },
+          {
+            label: 'Jetson GRU Predictive Forecast',
+            data: futureData,
+            borderColor: theme.primary,
+            backgroundColor: theme.rgba,
+            borderWidth: 3,
+            borderDash: [6, 4],
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            pointBackgroundColor: theme.primary,
+            tension: 0.35,
+            fill: true
+          },
+          {
+            label: `Critical Danger Threshold (${forecast.thresholds.critical} ${forecast.unit})`,
+            data: critLine,
+            borderColor: '#F43F5E',
+            borderWidth: 1.5,
+            borderDash: [4, 4],
+            pointRadius: 0,
+            fill: false
+          },
+          {
+            label: `Warning Threshold (${forecast.thresholds.warning} ${forecast.unit})`,
+            data: warnLine,
+            borderColor: '#F59E0B',
+            borderWidth: 1.2,
+            borderDash: [4, 4],
+            pointRadius: 0,
+            fill: false
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            backgroundColor: '#0B0F19',
+            borderColor: '#334155',
+            borderWidth: 1,
+            titleFont: { family: 'JetBrains Mono', size: 11 },
+            bodyFont: { family: 'Inter', size: 12 },
+            callbacks: {
+              label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y} ${forecast.unit}`
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: 'rgba(51, 65, 85, 0.25)' },
+            ticks: { color: '#94A3B8', font: { family: 'JetBrains Mono', size: 10 } }
+          },
+          y: {
+            grid: { color: 'rgba(51, 65, 85, 0.35)' },
+            ticks: { color: '#94A3B8', font: { family: 'JetBrains Mono', size: 10 } }
+          }
+        }
+      }
+    });
+  }
+
+  window.addEventListener('sentinel_data', (event) => {
+    cachedData = event.detail;
+    renderForecastView(cachedData);
+  });
+</script>
+{% endblock %}
+

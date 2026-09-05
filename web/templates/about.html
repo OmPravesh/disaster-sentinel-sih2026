@@ -1,0 +1,601 @@
+{% extends "base.html" %}
+
+{% block title %}About System · Disaster Sentinel{% endblock %}
+
+{% block content %}
+<div class="space-y-10 max-w-6xl mx-auto pb-16">
+
+  <!-- ========================================================================= -->
+  <!-- 1. HERO SECTION: BRANDING & PROJECT PURPOSE -->
+  <!-- ========================================================================= -->
+  <div class="p-8 sm:p-10 bg-white border border-slate-border rounded-2xl space-y-5 shadow-sm relative overflow-hidden">
+    <!-- Subtle Background Ambient Tint -->
+    <div class="absolute -top-24 -right-24 w-80 h-80 bg-blue-50/60 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="flex flex-wrap items-center gap-2 relative z-10">
+      <span class="text-xs font-mono font-bold px-3 py-1 rounded-full bg-blue-50 text-[#155DFC] border border-blue-200 uppercase tracking-wider">
+        Smart India Hackathon 2026
+      </span>
+      <span class="text-xs font-mono font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200 uppercase tracking-wider">
+        Problem Statement: SIH26178 &middot; Qualcomm
+      </span>
+    </div>
+
+    <div class="space-y-2 relative z-10">
+      <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black text-[#0F172A] tracking-tight">
+        DISASTER SENTINEL
+      </h1>
+      <p class="text-base sm:text-lg font-bold text-[#155DFC]">
+        AI + IoT Powered Multi-Hazard Early Warning System
+      </p>
+    </div>
+
+    <p class="text-sm sm:text-base text-slate-600 leading-relaxed font-normal max-w-3xl relative z-10">
+      Disaster Sentinel combines IoT sensing, edge AI, and resilient wireless telemetry to predict and intercept multiple natural disasters before threshold breaches occur.
+    </p>
+
+    <div class="pt-2 flex flex-wrap items-center gap-3 text-xs relative z-10">
+      <a href="/monitoring" class="px-5 py-2.5 rounded-xl bg-[#155DFC] hover:bg-[#1340B4] text-white font-semibold transition flex items-center gap-2 shadow-sm">
+        <span>Explore Live Monitoring</span>
+        <i class="fa-solid fa-arrow-right text-[10px]"></i>
+      </a>
+      <a href="/map" class="px-5 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold transition flex items-center gap-2 shadow-sm">
+        <i class="fa-solid fa-location-dot text-[#155DFC] text-xs"></i>
+        <span>View Disaster Map</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 2. THE PROBLEM & OUR SOLUTION (PROJECT VALUE) -->
+  <!-- ========================================================================= -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+    <!-- The Problem -->
+    <div class="p-6 sm:p-7 bg-white border border-rose-200 rounded-2xl space-y-4 shadow-sm">
+      <div class="flex items-center gap-3 border-b border-slate-100 pb-3">
+        <div class="w-10 h-10 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 text-base">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <div>
+          <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-rose-600">THE PROBLEM</span>
+          <h2 class="text-base font-extrabold text-[#0F172A] mt-0.5">Why Conventional Disaster Systems Fail</h2>
+        </div>
+      </div>
+
+      <p class="text-xs text-slate-500 leading-relaxed">
+        Remote and disaster-prone mountain corridors, river valleys, and forests often face critical operational bottlenecks:
+      </p>
+
+      <ul class="space-y-2.5 text-xs text-slate-600">
+        <li class="flex items-start gap-2.5">
+          <i class="fa-solid fa-circle-xmark text-rose-500 text-xs mt-0.5 flex-shrink-0"></i>
+          <span><strong>Limited Connectivity:</strong> Storms, landslides, and floods quickly sever commercial cellular towers and broadband fiber links.</span>
+        </li>
+        <li class="flex items-start gap-2.5">
+          <i class="fa-solid fa-circle-xmark text-rose-500 text-xs mt-0.5 flex-shrink-0"></i>
+          <span><strong>Delayed Warnings:</strong> Traditional systems only sound sirens <em>after</em> a breach has already occurred, giving zero lead time.</span>
+        </li>
+        <li class="flex items-start gap-2.5">
+          <i class="fa-solid fa-circle-xmark text-rose-500 text-xs mt-0.5 flex-shrink-0"></i>
+          <span><strong>Power Constraints:</strong> Remote disaster zones lack national grid power, rendering power-hungry sensor networks unusable.</span>
+        </li>
+        <li class="flex items-start gap-2.5">
+          <i class="fa-solid fa-circle-xmark text-rose-500 text-xs mt-0.5 flex-shrink-0"></i>
+          <span><strong>Lack of Real-Time Monitoring:</strong> Fragmented or manual reporting creates severe blind spots during escalating events.</span>
+        </li>
+        <li class="flex items-start gap-2.5">
+          <i class="fa-solid fa-circle-xmark text-rose-500 text-xs mt-0.5 flex-shrink-0"></i>
+          <span><strong>Limited Prediction Capability:</strong> Simple threshold tripwires fail to forecast rate-of-change and temporal progression.</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Our Solution -->
+    <div class="p-6 sm:p-7 bg-white border border-emerald-200 rounded-2xl space-y-4 shadow-sm">
+      <div class="flex items-center gap-3 border-b border-slate-100 pb-3">
+        <div class="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 text-base">
+          <i class="fa-solid fa-shield-check"></i>
+        </div>
+        <div>
+          <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-600">OUR SOLUTION</span>
+          <h2 class="text-base font-extrabold text-[#0F172A] mt-0.5">What Disaster Sentinel Delivers</h2>
+        </div>
+      </div>
+
+      <p class="text-xs text-slate-500 leading-relaxed">
+        Disaster Sentinel provides an end-to-end, resilient infrastructure designed specifically for harsh, remote environments:
+      </p>
+
+      <ul class="space-y-2.5 text-xs text-slate-600">
+        <li class="flex items-start gap-2.5">
+          <i class="fa-solid fa-circle-check text-emerald-600 text-xs mt-0.5 flex-shrink-0"></i>
+          <span><strong>Real-Time Sensing:</strong> Ruggedized, solar-powered edge stations stream multi-parameter telemetry continuously.</span>
+        </li>
+        <li class="flex items-start gap-2.5">
+          <i class="fa-solid fa-circle-check text-emerald-600 text-xs mt-0.5 flex-shrink-0"></i>
+          <span><strong>Local AI-Based Prediction:</strong> On-device recurrent deep learning projects future hazard trajectories 50 minutes ahead.</span>
+        </li>
+        <li class="flex items-start gap-2.5">
+          <i class="fa-solid fa-circle-check text-emerald-600 text-xs mt-0.5 flex-shrink-0"></i>
+          <span><strong>Multi-Hazard Monitoring:</strong> Floods, landslides, wildfires, and toxic smog unified in one coordinated operations hub.</span>
+        </li>
+        <li class="flex items-start gap-2.5">
+          <i class="fa-solid fa-circle-check text-emerald-600 text-xs mt-0.5 flex-shrink-0"></i>
+          <span><strong>Early Warnings:</strong> Actionable civil defense guidance dispatched before threshold breaches claim lives.</span>
+        </li>
+        <li class="flex items-start gap-2.5">
+          <i class="fa-solid fa-circle-check text-emerald-600 text-xs mt-0.5 flex-shrink-0"></i>
+          <span><strong>Emergency Response Support:</strong> Autonomous acoustic village sirens, warning strobes, and satellite SOS dispatch.</span>
+        </li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 3. HOW IT WORKS: END-TO-END VISUAL FLOW -->
+  <!-- ========================================================================= -->
+  <div class="p-6 sm:p-8 bg-white border border-slate-border rounded-2xl space-y-6 shadow-sm">
+    <div class="border-b border-slate-100 pb-4">
+      <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-[#155DFC] block">SYSTEM WORKFLOW</span>
+      <h2 class="text-lg font-extrabold text-[#0F172A] mt-0.5">How It Works: End-to-End Operational Pipeline</h2>
+      <p class="text-xs text-slate-500 mt-1">
+        A seamless 7-stage pipeline from physical micro-sensors in the field to autonomous civil defense response.
+      </p>
+    </div>
+
+    <!-- 7-Stage Horizontal / Grid Visual Flow -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3 text-center">
+      
+      <!-- Stage 1 -->
+      <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2 flex flex-col justify-between hover:bg-white hover:border-blue-300 hover:shadow-sm transition">
+        <div class="space-y-1.5">
+          <div class="w-8 h-8 rounded-lg bg-blue-50 border border-blue-200 flex items-center justify-center text-[#155DFC] mx-auto text-sm">
+            <i class="fa-solid fa-gauge-high"></i>
+          </div>
+          <span class="text-[9px] font-mono text-[#155DFC] font-bold block uppercase">STAGE 01</span>
+          <h3 class="text-xs font-bold text-[#0F172A]">SENSORS</h3>
+        </div>
+        <p class="text-[11px] text-slate-500 leading-normal">
+          Continuous physical signal acquisition in the field.
+        </p>
+      </div>
+
+      <!-- Stage 2 -->
+      <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2 flex flex-col justify-between hover:bg-white hover:border-indigo-300 hover:shadow-sm transition">
+        <div class="space-y-1.5">
+          <div class="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-600 mx-auto text-sm">
+            <i class="fa-solid fa-microchip"></i>
+          </div>
+          <span class="text-[9px] font-mono text-indigo-600 font-bold block uppercase">STAGE 02</span>
+          <h3 class="text-xs font-bold text-[#0F172A]">COLLECTION</h3>
+        </div>
+        <p class="text-[11px] text-slate-500 leading-normal">
+          ESP32 signal conditioning &amp; analog calibration.
+        </p>
+      </div>
+
+      <!-- Stage 3 -->
+      <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2 flex flex-col justify-between hover:bg-white hover:border-sky-300 hover:shadow-sm transition">
+        <div class="space-y-1.5">
+          <div class="w-8 h-8 rounded-lg bg-sky-50 border border-sky-200 flex items-center justify-center text-sky-600 mx-auto text-sm">
+            <i class="fa-solid fa-tower-broadcast"></i>
+          </div>
+          <span class="text-[9px] font-mono text-sky-600 font-bold block uppercase">STAGE 03</span>
+          <h3 class="text-xs font-bold text-[#0F172A]">WIRELESS</h3>
+        </div>
+        <p class="text-[11px] text-slate-500 leading-normal">
+          Long-range LoRa RF link operating without internet.
+        </p>
+      </div>
+
+      <!-- Stage 4 -->
+      <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2 flex flex-col justify-between hover:bg-white hover:border-purple-300 hover:shadow-sm transition">
+        <div class="space-y-1.5">
+          <div class="w-8 h-8 rounded-lg bg-purple-50 border border-purple-200 flex items-center justify-center text-purple-600 mx-auto text-sm">
+            <i class="fa-solid fa-brain"></i>
+          </div>
+          <span class="text-[9px] font-mono text-purple-600 font-bold block uppercase">STAGE 04</span>
+          <h3 class="text-xs font-bold text-[#0F172A]">EDGE AI</h3>
+        </div>
+        <p class="text-[11px] text-slate-500 leading-normal">
+          On-device Jetson inference directly in the field.
+        </p>
+      </div>
+
+      <!-- Stage 5 -->
+      <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2 flex flex-col justify-between hover:bg-white hover:border-amber-300 hover:shadow-sm transition">
+        <div class="space-y-1.5">
+          <div class="w-8 h-8 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 mx-auto text-sm">
+            <i class="fa-solid fa-chart-line"></i>
+          </div>
+          <span class="text-[9px] font-mono text-amber-600 font-bold block uppercase">STAGE 05</span>
+          <h3 class="text-xs font-bold text-[#0F172A]">PREDICTION</h3>
+        </div>
+        <p class="text-[11px] text-slate-500 leading-normal">
+          Future trajectory curves &amp; early lead time estimation.
+        </p>
+      </div>
+
+      <!-- Stage 6 -->
+      <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2 flex flex-col justify-between hover:bg-white hover:border-rose-300 hover:shadow-sm transition">
+        <div class="space-y-1.5">
+          <div class="w-8 h-8 rounded-lg bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 mx-auto text-sm">
+            <i class="fa-solid fa-bell"></i>
+          </div>
+          <span class="text-[9px] font-mono text-rose-600 font-bold block uppercase">STAGE 06</span>
+          <h3 class="text-xs font-bold text-[#0F172A]">ALERTS</h3>
+        </div>
+        <p class="text-[11px] text-slate-500 leading-normal">
+          Multi-channel situational warnings &amp; SOP guidance.
+        </p>
+      </div>
+
+      <!-- Stage 7 -->
+      <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2 flex flex-col justify-between hover:bg-white hover:border-emerald-300 hover:shadow-sm transition">
+        <div class="space-y-1.5">
+          <div class="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 mx-auto text-sm">
+            <i class="fa-solid fa-bullhorn"></i>
+          </div>
+          <span class="text-[9px] font-mono text-emerald-600 font-bold block uppercase">STAGE 07</span>
+          <h3 class="text-xs font-bold text-[#0F172A]">RESPONSE</h3>
+        </div>
+        <p class="text-[11px] text-slate-500 leading-normal">
+          Village piezo sirens &amp; NDRF satellite dispatch.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 4. WHAT WE MONITOR: THE FOUR HAZARDS -->
+  <!-- ========================================================================= -->
+  <div class="space-y-4">
+    <div class="border-b border-slate-200/80 pb-3">
+      <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-[#155DFC] block">MULTI-HAZARD DOMAINS</span>
+      <h2 class="text-base font-extrabold text-[#0F172A] tracking-tight">WHAT WE MONITOR</h2>
+      <p class="text-xs text-slate-500 mt-0.5">Four catastrophic natural hazard domains unified under one coordinated intelligence system.</p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+      <!-- FLOOD -->
+      <div class="p-5 bg-white border border-slate-border hover:border-blue-300 rounded-2xl space-y-3 shadow-sm transition group">
+        <div class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 text-base">
+          <i class="fa-solid fa-water"></i>
+        </div>
+        <h3 class="text-sm font-bold text-[#0F172A] uppercase tracking-wider">FLOOD</h3>
+        <p class="text-xs text-slate-600 leading-relaxed">
+          Monitors water levels and rainfall conditions to identify potential flooding before riverbanks breach.
+        </p>
+      </div>
+
+      <!-- LANDSLIDE -->
+      <div class="p-5 bg-white border border-slate-border hover:border-amber-300 rounded-2xl space-y-3 shadow-sm transition group">
+        <div class="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 text-base">
+          <i class="fa-solid fa-mountain"></i>
+        </div>
+        <h3 class="text-sm font-bold text-[#0F172A] uppercase tracking-wider">LANDSLIDE</h3>
+        <p class="text-xs text-slate-600 leading-relaxed">
+          Monitors slope movement and ground conditions to identify landslide and shear failure risk along mountain corridors.
+        </p>
+      </div>
+
+      <!-- FIRE -->
+      <div class="p-5 bg-white border border-slate-border hover:border-rose-300 rounded-2xl space-y-3 shadow-sm transition group">
+        <div class="w-10 h-10 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 text-base">
+          <i class="fa-solid fa-fire-flame-curved"></i>
+        </div>
+        <h3 class="text-sm font-bold text-[#0F172A] uppercase tracking-wider">FIRE</h3>
+        <p class="text-xs text-slate-600 leading-relaxed">
+          Monitors environmental conditions and fire indicators to detect wildfire risk and smoldering combustion early.
+        </p>
+      </div>
+
+      <!-- POLLUTION -->
+      <div class="p-5 bg-white border border-slate-border hover:border-purple-300 rounded-2xl space-y-3 shadow-sm transition group">
+        <div class="w-10 h-10 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center text-purple-600 text-base">
+          <i class="fa-solid fa-smog"></i>
+        </div>
+        <h3 class="text-sm font-bold text-[#0F172A] uppercase tracking-wider">POLLUTION</h3>
+        <p class="text-xs text-slate-600 leading-relaxed">
+          Monitors air-quality conditions and harmful pollutants to detect hazardous atmospheric inversion layers.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 5. INNOVATION: WHAT MAKES DISASTER SENTINEL DIFFERENT? -->
+  <!-- ========================================================================= -->
+  <div class="p-6 sm:p-8 bg-white border border-slate-border rounded-2xl space-y-6 shadow-sm">
+    <div class="border-b border-slate-100 pb-4">
+      <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-[#155DFC] block">KEY INNOVATIONS</span>
+      <h2 class="text-lg font-extrabold text-[#0F172A] mt-0.5">WHAT MAKES DISASTER SENTINEL DIFFERENT?</h2>
+      <p class="text-xs text-slate-500 mt-1">Core technical breakthroughs engineered specifically for the Smart India Hackathon 2026 challenge.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 text-xs">
+      
+      <!-- Innovation 1: Edge AI -->
+      <div class="p-5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2 hover:bg-white hover:border-slate-300 hover:shadow-sm transition">
+        <div class="flex items-center gap-2 font-bold text-[#155DFC]">
+          <i class="fa-solid fa-microchip text-sm"></i>
+          <span class="text-sm font-extrabold text-[#0F172A]">EDGE AI</span>
+        </div>
+        <p class="text-slate-600 leading-relaxed">
+          Predictions can be processed closer to the disaster zone instead of depending entirely on cloud connectivity, eliminating latency and single-point-of-failure risks.
+        </p>
+      </div>
+
+      <!-- Innovation 2: Multi-Hazard Platform -->
+      <div class="p-5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2 hover:bg-white hover:border-slate-300 hover:shadow-sm transition">
+        <div class="flex items-center gap-2 font-bold text-blue-600">
+          <i class="fa-solid fa-cubes-stacked text-sm"></i>
+          <span class="text-sm font-extrabold text-[#0F172A]">MULTI-HAZARD PLATFORM</span>
+        </div>
+        <p class="text-slate-600 leading-relaxed">
+          One system monitors four different hazards simultaneously, breaking down data silos and providing civil defense with unified situational awareness.
+        </p>
+      </div>
+
+      <!-- Innovation 3: Low-Connectivity Operation -->
+      <div class="p-5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2 hover:bg-white hover:border-slate-300 hover:shadow-sm transition">
+        <div class="flex items-center gap-2 font-bold text-purple-600">
+          <i class="fa-solid fa-tower-broadcast text-sm"></i>
+          <span class="text-sm font-extrabold text-[#0F172A]">LOW-CONNECTIVITY OPERATION</span>
+        </div>
+        <p class="text-slate-600 leading-relaxed">
+          The architecture is designed for areas where internet connectivity may be unreliable or non-existent, leveraging robust 868.1 MHz LoRa RF transceivers.
+        </p>
+      </div>
+
+      <!-- Innovation 4: Predictive Warning -->
+      <div class="p-5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2 hover:bg-white hover:border-slate-300 hover:shadow-sm transition">
+        <div class="flex items-center gap-2 font-bold text-amber-600">
+          <i class="fa-solid fa-clock-rotate-left text-sm"></i>
+          <span class="text-sm font-extrabold text-[#0F172A]">PREDICTIVE WARNING</span>
+        </div>
+        <p class="text-slate-600 leading-relaxed">
+          The system doesn't only report current conditions; it uses recurrent deep learning (GRU) to estimate future risk and lead times up to 50 minutes in advance.
+        </p>
+      </div>
+
+      <!-- Innovation 5: Automated Response -->
+      <div class="p-5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2 md:col-span-2 lg:col-span-2 hover:bg-white hover:border-slate-300 hover:shadow-sm transition">
+        <div class="flex items-center gap-2 font-bold text-rose-600">
+          <i class="fa-solid fa-satellite-dish text-sm"></i>
+          <span class="text-sm font-extrabold text-[#0F172A]">AUTOMATED RESPONSE</span>
+        </div>
+        <p class="text-slate-600 leading-relaxed">
+          Critical events can trigger appropriate warning and emergency-response mechanisms autonomously — engaging village sirens, warning strobes, and cellular/satellite SOS telegrams to NDRF Command.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 6. WHY EDGE AI? (ARCHITECTURAL COMPARISON) -->
+  <!-- ========================================================================= -->
+  <div class="p-6 sm:p-8 bg-white border border-slate-border rounded-2xl space-y-6 shadow-sm">
+    <div class="border-b border-slate-100 pb-4">
+      <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-purple-600 block">ARCHITECTURAL RATIONALE</span>
+      <h2 class="text-lg font-extrabold text-[#0F172A] mt-0.5">WHY EDGE AI?</h2>
+      <p class="text-xs text-slate-500 mt-1">Comparing conventional cloud-dependent systems with Disaster Sentinel's autonomous edge paradigm.</p>
+    </div>
+
+    <!-- Visual Pipeline Comparison -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs">
+      
+      <!-- Traditional Cloud Architecture -->
+      <div class="p-5 rounded-xl bg-rose-50/40 border border-rose-200 space-y-3">
+        <div class="flex items-center justify-between text-rose-700 font-bold">
+          <span class="uppercase tracking-wider font-mono text-[11px]">Conventional Cloud Approach</span>
+          <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-200 font-semibold">High Risk</span>
+        </div>
+
+        <div class="font-mono text-center py-2.5 px-3 rounded-lg bg-white border border-rose-200 text-slate-700 text-[11px] leading-loose shadow-2xs">
+          Sensors <span class="text-rose-500 font-bold">&rarr;</span> Internet <span class="text-rose-500 font-bold">&rarr;</span> Cloud <span class="text-rose-500 font-bold">&rarr;</span> Analysis <span class="text-rose-500 font-bold">&rarr;</span> Alert
+        </div>
+
+        <p class="text-[11px] text-slate-600 leading-relaxed">
+          If storms destroy cell towers, power cuts disconnect fiber, or cloud servers experience latency, the entire disaster alert chain fails immediately.
+        </p>
+      </div>
+
+      <!-- Disaster Sentinel Edge Architecture -->
+      <div class="p-5 rounded-xl bg-emerald-50/40 border border-emerald-200 space-y-3">
+        <div class="flex items-center justify-between text-emerald-700 font-bold">
+          <span class="uppercase tracking-wider font-mono text-[11px]">Disaster Sentinel Edge Approach</span>
+          <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 font-semibold">Resilient</span>
+        </div>
+
+        <div class="font-mono text-center py-2.5 px-3 rounded-lg bg-white border border-emerald-200 text-slate-800 text-[11px] leading-loose shadow-2xs">
+          Sensors <span class="text-emerald-600 font-bold">&rarr;</span> Local Edge Processing <span class="text-emerald-600 font-bold">&rarr;</span> AI Prediction <span class="text-emerald-600 font-bold">&rarr;</span> Alert
+        </div>
+
+        <p class="text-[11px] text-slate-600 leading-relaxed">
+          Inference runs locally on the field-deployed hub. Warnings are issued instantly even with zero broadband or internet connectivity.
+        </p>
+      </div>
+
+    </div>
+
+    <!-- Practical Benefits Grid -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-1">
+      <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1 hover:bg-white hover:border-slate-300 transition">
+        <i class="fa-solid fa-wifi-slash text-[#155DFC] text-xs"></i>
+        <h4 class="font-bold text-[#0F172A] text-[12px]">Zero Internet Dependency</h4>
+        <p class="text-[11px] text-slate-500">Functions entirely off-grid during severe storm cell collapse.</p>
+      </div>
+      <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1 hover:bg-white hover:border-slate-300 transition">
+        <i class="fa-solid fa-bolt text-amber-500 text-xs"></i>
+        <h4 class="font-bold text-[#0F172A] text-[12px]">Sub-Millisecond Decisions</h4>
+        <p class="text-[11px] text-slate-500">Immediate local evaluation without round-trip cloud latency.</p>
+      </div>
+      <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1 hover:bg-white hover:border-slate-300 transition">
+        <i class="fa-solid fa-mountain text-emerald-600 text-xs"></i>
+        <h4 class="font-bold text-[#0F172A] text-[12px]">Remote Corridor Ready</h4>
+        <p class="text-[11px] text-slate-500">Engineered for isolated Himalayan ridges and dense forest reserves.</p>
+      </div>
+      <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1 hover:bg-white hover:border-slate-300 transition">
+        <i class="fa-solid fa-cloud-arrow-down text-purple-600 text-xs"></i>
+        <h4 class="font-bold text-[#0F172A] text-[12px]">Reduced Cloud Overhead</h4>
+        <p class="text-[11px] text-slate-500">Decreases recurring bandwidth costs and infrastructure vulnerability.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 7. TECHNOLOGY STACK -->
+  <!-- ========================================================================= -->
+  <div class="p-6 sm:p-8 bg-white border border-slate-border rounded-2xl space-y-5 shadow-sm">
+    <div class="border-b border-slate-100 pb-3 flex items-center justify-between">
+      <div>
+        <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-[#155DFC] block">IMPLEMENTATION STACK</span>
+        <h2 class="text-base font-extrabold text-[#0F172A] mt-0.5">Technology Stack</h2>
+      </div>
+      <span class="text-xs text-slate-500 font-mono">Modern SaaS &middot; Python &middot; PyTorch</span>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+      
+      <!-- EDGE HARDWARE -->
+      <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5 hover:bg-white hover:border-slate-300 hover:shadow-sm transition">
+        <span class="text-[10px] uppercase font-bold text-[#155DFC] block font-mono">EDGE HARDWARE</span>
+        <h3 class="text-sm font-bold text-[#0F172A]">ESP32 &middot; Jetson Orin Nano</h3>
+        <p class="text-[11px] text-slate-600 leading-relaxed">
+          Low-power field microcontrollers coupled with an NVIDIA 1024-core Ampere edge gateway hub.
+        </p>
+      </div>
+
+      <!-- COMMUNICATION -->
+      <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5 hover:bg-white hover:border-slate-300 hover:shadow-sm transition">
+        <span class="text-[10px] uppercase font-bold text-blue-600 block font-mono">COMMUNICATION</span>
+        <h3 class="text-sm font-bold text-[#0F172A]">LoRa Mesh &middot; GSM Fallback</h3>
+        <p class="text-[11px] text-slate-600 leading-relaxed">
+          Long-range 868.1 MHz RF transmission up to 15 km with SIM800L cellular satellite uplink.
+        </p>
+      </div>
+
+      <!-- AI / ML -->
+      <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5 hover:bg-white hover:border-slate-300 hover:shadow-sm transition">
+        <span class="text-[10px] uppercase font-bold text-purple-600 block font-mono">AI / ML MODELS</span>
+        <h3 class="text-sm font-bold text-[#0F172A]">PyTorch GRU &middot; Random Forest</h3>
+        <p class="text-[11px] text-slate-600 leading-relaxed">
+          Sub-millisecond tripwire classification combined with 5-step recurrent sequence forecasting.
+        </p>
+      </div>
+
+      <!-- WEB PLATFORM -->
+      <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5 hover:bg-white hover:border-slate-300 hover:shadow-sm transition">
+        <span class="text-[10px] uppercase font-bold text-emerald-600 block font-mono">WEB PLATFORM</span>
+        <h3 class="text-sm font-bold text-[#0F172A]">Flask &middot; Vector GIS &middot; Chart.js</h3>
+        <p class="text-[11px] text-slate-600 leading-relaxed">
+          Responsive dashboard with real-time multi-hazard telemetry, SOP response, and incident logs.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 8. TECHNICAL ARCHITECTURE: COLLAPSED ADVANCED INFORMATION (LEVEL 3) -->
+  <!-- ========================================================================= -->
+  <div class="p-6 bg-white border border-slate-border rounded-2xl space-y-4 shadow-sm">
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="text-sm font-bold text-[#0F172A] uppercase tracking-wider font-mono">TECHNICAL ARCHITECTURE</h3>
+        <p class="text-xs text-slate-500 mt-0.5">Deep engineering schematics, dual-brain AI pipeline, and packet protocols.</p>
+      </div>
+      <button onclick="toggleTechArchitecture()" id="btnToggleTechArch" class="px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 shadow-2xs flex items-center gap-1.5 transition cursor-pointer">
+        <span id="lblTechArch">View Technical Details</span>
+        <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition" id="arrowTechArch"></i>
+      </button>
+    </div>
+
+    <!-- Collapsible Advanced Information -->
+    <div id="techArchContent" class="hidden pt-4 border-t border-slate-100 space-y-5 text-xs font-mono text-slate-600">
+      
+      <!-- Dual-Brain AI Architecture -->
+      <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2">
+        <h4 class="font-bold text-[#0F172A] font-sans text-xs flex items-center gap-2">
+          <i class="fa-solid fa-brain text-purple-600"></i>
+          <span>Dual-Brain Edge AI Pipeline</span>
+        </h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px]">
+          <div class="p-3 rounded-lg bg-white border border-slate-200 space-y-1">
+            <span class="text-blue-700 font-bold block font-sans">Brain 1: Fast Reflex Tripwire (Random Forest)</span>
+            <p class="text-slate-600">Classifies instant sensor readings in &lt;1 ms into Safe, Warning, or Hazardous states across all 4 hazard nodes.</p>
+          </div>
+          <div class="p-3 rounded-lg bg-white border border-slate-200 space-y-1">
+            <span class="text-purple-700 font-bold block font-sans">Brain 2: Temporal Forecaster (PyTorch GRU)</span>
+            <p class="text-slate-600">Takes 10-step sequence windows and projects future values at +10m, +20m, +30m, +40m, +50m with lead time breach alarms.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Communication & Bus Protocols -->
+      <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2">
+        <h4 class="font-bold text-[#0F172A] font-sans text-xs flex items-center gap-2">
+          <i class="fa-solid fa-network-wired text-[#155DFC]"></i>
+          <span>Hardware Bus Topology &amp; Protocols</span>
+        </h4>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-[11px]">
+          <div class="p-3 rounded-lg bg-white border border-slate-200">
+            <strong class="text-[#0F172A] block font-sans">LoRa SPI Link:</strong>
+            <span>SX1278 (Ra-02) Star-Mesh Hybrid (with ACK), 32-byte binary payload with CRC-16.</span>
+          </div>
+          <div class="p-3 rounded-lg bg-white border border-slate-200">
+            <strong class="text-[#0F172A] block font-sans">Sensor Buses:</strong>
+            <span>I2C Fast Mode (400 kHz) for BME280 (0x76) &amp; MPU6050 (0x68). ADC1 for rain, soil, gas &amp; flame.</span>
+          </div>
+          <div class="p-3 rounded-lg bg-white border border-slate-200">
+            <strong class="text-[#0F172A] block font-sans">Emergency Alert &amp; GSM:</strong>
+            <span>SIM800L UART1 SMS dispatch, with GPIO18 Acoustic Siren &amp; GPIO23 Optical Strobe.</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 9. SIH 2026 SUBTLE FOOTER INFORMATION -->
+  <!-- ========================================================================= -->
+  <div class="p-5 rounded-2xl bg-white border border-slate-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-600 shadow-sm">
+    <div class="flex items-center gap-3">
+      <span class="w-2 h-2 rounded-full bg-[#155DFC]"></span>
+      <span class="font-medium text-[#0F172A]">Smart India Hackathon 2026 &middot; Hardware Edition</span>
+    </div>
+    <div class="font-mono text-[11px] text-slate-400">
+      Problem Statement: SIH26178 &middot; Built for Edge-First Multi-Hazard Interception
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function toggleTechArchitecture() {
+    const content = document.getElementById('techArchContent');
+    const lbl = document.getElementById('lblTechArch');
+    const arrow = document.getElementById('arrowTechArch');
+
+    if (content.classList.contains('hidden')) {
+      content.classList.remove('hidden');
+      lbl.textContent = 'Hide Technical Details';
+      arrow.className = 'fa-solid fa-chevron-up text-[10px] text-slate-400 transition';
+    } else {
+      content.classList.add('hidden');
+      lbl.textContent = 'View Technical Details';
+      arrow.className = 'fa-solid fa-chevron-down text-[10px] text-slate-400 transition';
+    }
+  }
+</script>
+{% endblock %}

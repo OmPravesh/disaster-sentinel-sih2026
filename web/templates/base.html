@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Disaster Sentinel · Autonomous Disaster Intelligence Platform{% endblock %}</title>
+
+  <!-- Google Fonts: Inter (UI) & JetBrains Mono (Telemetry/Data) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            page: '#F9FAFB',
+            panel: '#FFFFFF',
+            brand: {
+              DEFAULT: '#1340B4',
+              action: '#155DFC',
+              light: '#EFF6FF',
+              dark: '#0D2B7A'
+            },
+            navy: {
+              900: '#0F172A',
+              800: '#1E293B',
+              700: '#334155'
+            },
+            slate: {
+              muted: '#64748B',
+              border: '#E5E7EB',
+              subtle: '#F1F5F9'
+            },
+            hazard: {
+              critical: '#FB2C36',
+              warning: '#FF6900',
+              safe: '#16A34A',
+              info: '#155DFC'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- FontAwesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <!-- Chart.js 4 -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body {
+      background-color: #F9FAFB;
+      color: #0F172A;
+      font-family: 'Inter', sans-serif;
+    }
+    .card-base {
+      background: #FFFFFF;
+      border: 1px solid #E5E7EB;
+      border-radius: 1rem;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
+      transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+    }
+    .card-base:hover {
+      border-color: #CBD5E1;
+      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05), 0 8px 10px -6px rgba(15, 23, 42, 0.03);
+    }
+    .nav-link-active {
+      background-color: #EFF6FF !important;
+      color: #155DFC !important;
+      font-weight: 600 !important;
+    }
+    .nav-link-active i {
+      color: #155DFC !important;
+    }
+    /* Clean custom scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #F1F5F9; }
+    ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+  </style>
+
+  <script>
+    // Global Chart.js Light-Mode Styling Configuration
+    if (window.Chart) {
+      Chart.defaults.font.family = "'Inter', sans-serif";
+      Chart.defaults.color = "#64748B";
+      Chart.defaults.plugins.tooltip.backgroundColor = "#0F172A";
+      Chart.defaults.plugins.tooltip.titleColor = "#FFFFFF";
+      Chart.defaults.plugins.tooltip.bodyColor = "#F1F5F9";
+      Chart.defaults.plugins.tooltip.padding = 10;
+      Chart.defaults.plugins.tooltip.cornerRadius = 8;
+      Chart.defaults.plugins.tooltip.boxPadding = 4;
+    }
+  </script>
+
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="min-h-screen flex flex-col bg-page text-navy-900 antialiased selection:bg-brand-light selection:text-brand-action">
+
+  <!-- ========================================================================= -->
+  <!-- 0. DYNAMIC CONDITIONAL EMERGENCY ALERT BAR (HIDDEN WHEN ALL SYSTEMS SAFE) -->
+  <!-- ========================================================================= -->
+  <div id="dynamicEmergencyBar" class="hidden bg-rose-600 text-white px-4 py-2.5 border-b border-rose-700 shadow-sm transition-all duration-300">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-3 text-xs">
+      <div class="flex items-center gap-2.5 truncate">
+        <span class="w-2.5 h-2.5 rounded-full bg-white animate-ping flex-shrink-0"></span>
+        <span id="emergencyBarTitle" class="font-extrabold tracking-wide uppercase flex items-center gap-1.5">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <span>CRITICAL &mdash; DISASTER DETECTED</span>
+        </span>
+        <span class="text-rose-200 hidden sm:inline">&bull;</span>
+        <span id="emergencyBarSubtitle" class="text-rose-100 truncate">Regional safety threshold exceeded. Immediate response advised.</span>
+      </div>
+      <a id="emergencyBarLink" href="/alerts" class="px-3.5 py-1 bg-white hover:bg-rose-50 text-rose-700 font-bold rounded-lg text-xs whitespace-nowrap shadow-sm transition flex items-center gap-1.5 flex-shrink-0">
+        <span>View Alert Details</span>
+        <i class="fa-solid fa-arrow-right text-[10px]"></i>
+      </a>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 1. TOP GLOBAL NAVIGATION BAR (CLEAN SAAS HEADER) -->
+  <!-- ========================================================================= -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-border shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        
+        <!-- Left: Brand Logo & Subtitle -->
+        <div class="flex items-center gap-3">
+          <a href="/" class="flex items-center gap-3 group">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand to-brand-action flex items-center justify-center text-white shadow-sm shadow-blue-500/20 group-hover:scale-105 transition">
+              <i class="fa-solid fa-shield-halved text-lg"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="font-extrabold tracking-tight text-navy-900 text-base sm:text-lg">DISASTER SENTINEL</span>
+              </div>
+              <p class="text-[11px] text-slate-muted hidden sm:block font-medium">AI + IoT Disaster Intelligence Platform</p>
+            </div>
+          </a>
+        </div>
+
+        <!-- Center: 7 Major Navigation Links -->
+        <nav class="hidden lg:flex items-center gap-1">
+          <a href="/" class="px-3 py-2 rounded-xl text-xs font-medium text-slate-muted hover:text-navy-900 hover:bg-slate-subtle transition flex items-center gap-1.5 {% if active_page == 'overview' %}nav-link-active{% endif %}">
+            <i class="fa-solid fa-gauge-high text-xs text-slate-400"></i>
+            <span>Overview</span>
+          </a>
+          <a href="/monitoring" class="px-3 py-2 rounded-xl text-xs font-medium text-slate-muted hover:text-navy-900 hover:bg-slate-subtle transition flex items-center gap-1.5 {% if active_page == 'monitoring' %}nav-link-active{% endif %}">
+            <i class="fa-solid fa-satellite-dish text-xs text-slate-400"></i>
+            <span>Live Monitoring</span>
+          </a>
+          <a href="/map" class="px-3 py-2 rounded-xl text-xs font-medium text-slate-muted hover:text-navy-900 hover:bg-slate-subtle transition flex items-center gap-1.5 {% if active_page == 'map' %}nav-link-active{% endif %}">
+            <i class="fa-solid fa-map-location-dot text-xs text-slate-400"></i>
+            <span>Disaster Map</span>
+          </a>
+          <a href="/alerts" class="px-3 py-2 rounded-xl text-xs font-medium text-slate-muted hover:text-navy-900 hover:bg-slate-subtle transition flex items-center gap-1.5 relative {% if active_page == 'alerts' %}nav-link-active{% endif %}">
+            <i class="fa-solid fa-triangle-exclamation text-xs text-amber-500"></i>
+            <span>Alerts</span>
+            <span id="navAlertBadge" class="hidden text-[9px] font-mono font-bold px-1.5 py-0.2 rounded-full bg-rose-600 text-white">0</span>
+          </a>
+          <a href="/analytics" class="px-3 py-2 rounded-xl text-xs font-medium text-slate-muted hover:text-navy-900 hover:bg-slate-subtle transition flex items-center gap-1.5 {% if active_page == 'analytics' %}nav-link-active{% endif %}">
+            <i class="fa-solid fa-chart-line text-xs text-slate-400"></i>
+            <span>Analytics &amp; ML</span>
+          </a>
+          <a href="/hardware" class="px-3 py-2 rounded-xl text-xs font-medium text-slate-muted hover:text-navy-900 hover:bg-slate-subtle transition flex items-center gap-1.5 {% if active_page == 'hardware' %}nav-link-active{% endif %}">
+            <i class="fa-solid fa-microchip text-xs text-slate-400"></i>
+            <span>IoT Hardware</span>
+          </a>
+          <a href="/about" class="px-3 py-2 rounded-xl text-xs font-medium text-slate-muted hover:text-navy-900 hover:bg-slate-subtle transition flex items-center gap-1.5 {% if active_page == 'about' %}nav-link-active{% endif %}">
+            <i class="fa-solid fa-circle-info text-xs text-slate-400"></i>
+            <span>About</span>
+          </a>
+        </nav>
+
+        <!-- Right: Status Pill & Emergency Actions -->
+        <div class="flex items-center gap-2 sm:gap-3">
+          
+          <!-- Live Global Status Pill -->
+          <div id="globalStatusPill" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+            <span id="globalStatusDot" class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span id="globalStatusText">ALL SYSTEMS SAFE</span>
+          </div>
+
+          <!-- Quick Simulation Lab Trigger Button (For SIH Evaluator Demos) -->
+          <button onclick="openSimDrawer()" title="Open SIH Simulation Lab" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white hover:bg-gray-50 text-brand-action border border-slate-border hover:border-blue-300 shadow-sm transition">
+            <i class="fa-solid fa-flask text-xs"></i>
+            <span>Sim Lab</span>
+          </button>
+
+          <!-- Audio Siren Mute Toggle -->
+          <button id="audioToggleBtn" onclick="toggleGlobalAudio()" title="Mute/Unmute Emergency Siren Audio" class="w-9 h-9 rounded-xl bg-white hover:bg-gray-50 text-slate-muted hover:text-navy-900 flex items-center justify-center border border-slate-border shadow-sm transition text-xs">
+            <i id="audioIcon" class="fa-solid fa-volume-high"></i>
+          </button>
+
+          <!-- Emergency SOS Trigger Button -->
+          <button onclick="openSosModal()" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-sm transition">
+            <i class="fa-solid fa-satellite-dish text-xs"></i>
+            <span>SEND SOS</span>
+          </button>
+
+          <!-- Mobile Hamburger Toggle -->
+          <button onclick="toggleMobileMenu()" class="lg:hidden w-9 h-9 rounded-xl bg-white text-slate-700 flex items-center justify-center border border-slate-border shadow-sm">
+            <i class="fa-solid fa-bars text-sm"></i>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Mobile Drawer Menu (7 Pages) -->
+    <div id="mobileMenu" class="hidden lg:hidden border-t border-slate-border bg-white px-4 py-3 space-y-1 shadow-md">
+      <a href="/" class="block px-3 py-2 rounded-xl text-sm font-medium text-navy-900 hover:bg-slate-subtle {% if active_page == 'overview' %}nav-link-active{% endif %}">
+        <i class="fa-solid fa-gauge-high mr-2 text-brand-action"></i> Overview
+      </a>
+      <a href="/monitoring" class="block px-3 py-2 rounded-xl text-sm font-medium text-navy-900 hover:bg-slate-subtle {% if active_page == 'monitoring' %}nav-link-active{% endif %}">
+        <i class="fa-solid fa-satellite-dish mr-2 text-brand-action"></i> Live Monitoring
+      </a>
+      <a href="/map" class="block px-3 py-2 rounded-xl text-sm font-medium text-navy-900 hover:bg-slate-subtle {% if active_page == 'map' %}nav-link-active{% endif %}">
+        <i class="fa-solid fa-map-location-dot mr-2 text-brand-action"></i> Disaster Map
+      </a>
+      <a href="/alerts" class="block px-3 py-2 rounded-xl text-sm font-medium text-navy-900 hover:bg-slate-subtle {% if active_page == 'alerts' %}nav-link-active{% endif %}">
+        <i class="fa-solid fa-triangle-exclamation mr-2 text-amber-500"></i> Alerts &amp; Emergency
+      </a>
+      <a href="/analytics" class="block px-3 py-2 rounded-xl text-sm font-medium text-navy-900 hover:bg-slate-subtle {% if active_page == 'analytics' %}nav-link-active{% endif %}">
+        <i class="fa-solid fa-chart-line mr-2 text-emerald-600"></i> Analytics &amp; ML
+      </a>
+      <a href="/hardware" class="block px-3 py-2 rounded-xl text-sm font-medium text-navy-900 hover:bg-slate-subtle {% if active_page == 'hardware' %}nav-link-active{% endif %}">
+        <i class="fa-solid fa-microchip mr-2 text-blue-600"></i> IoT Hardware
+      </a>
+      <a href="/about" class="block px-3 py-2 rounded-xl text-sm font-medium text-navy-900 hover:bg-slate-subtle {% if active_page == 'about' %}nav-link-active{% endif %}">
+        <i class="fa-solid fa-circle-info mr-2 text-indigo-600"></i> About System
+      </a>
+      <div class="pt-2 border-t border-slate-border">
+        <button onclick="openSimDrawer()" class="w-full px-3 py-2 rounded-xl text-sm font-semibold text-brand-action bg-brand-light flex items-center justify-center gap-2">
+          <i class="fa-solid fa-flask"></i> Open Simulation Lab
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- 2. MAIN CONTENT CONTAINER -->
+  <!-- ========================================================================= -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-7">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- 3. FOOTER -->
+  <!-- ========================================================================= -->
+  <footer class="mt-auto border-t border-slate-border bg-white py-6 text-xs text-slate-muted">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+        <span class="font-bold text-navy-900">Disaster Sentinel</span>
+        <span class="text-slate-300">|</span>
+        <span>Smart India Hackathon (SIH) 2026 &middot; Problem Statement SIH26178 (Qualcomm)</span>
+      </div>
+      <div class="flex items-center gap-4 text-slate-muted">
+        <a href="/monitoring" class="hover:text-brand-action transition">Monitoring</a>
+        <a href="/map" class="hover:text-brand-action transition">Map</a>
+        <a href="/alerts" class="hover:text-brand-action transition">Alerts</a>
+        <a href="/hardware" class="hover:text-brand-action transition">Hardware Diagnostics</a>
+        <a href="/about" class="hover:text-brand-action transition">System Architecture</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================================================= -->
+  <!-- 4. SLIDE-OVER PRESENTATION SIMULATION DRAWER (LIGHT SAAS PANEL) -->
+  <!-- ========================================================================= -->
+  <div id="simDrawerBackdrop" onclick="closeSimDrawer()" class="fixed inset-0 bg-navy-900/40 backdrop-blur-sm z-50 hidden transition-opacity"></div>
+  <div id="simDrawer" class="fixed top-0 right-0 h-full w-full max-w-md bg-white border-l border-slate-border shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
+    
+    <!-- Header -->
+    <div class="px-5 py-4 border-b border-slate-border flex items-center justify-between bg-slate-subtle">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-brand-action">
+          <i class="fa-solid fa-flask text-sm"></i>
+        </div>
+        <div>
+          <h3 class="font-bold text-navy-900 text-sm">Presentation Simulation Lab</h3>
+          <p class="text-[11px] text-slate-muted">Evaluate multi-hazard detection &amp; predictions</p>
+        </div>
+      </div>
+      <button onclick="closeSimDrawer()" class="text-slate-400 hover:text-navy-900 p-1.5 rounded-lg hover:bg-gray-100 transition">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="flex-1 overflow-y-auto p-5 space-y-4">
+      <div class="p-3.5 rounded-xl bg-blue-50/70 border border-blue-200/80 text-xs text-navy-800 leading-relaxed">
+        <p class="font-bold text-brand-action mb-1 flex items-center gap-1.5">
+          <i class="fa-solid fa-circle-info"></i> SIH Evaluator Testing
+        </p>
+        Triggering a scenario updates sensor buffers, activates Brain 1 Random Forest tripwires, and generates PyTorch GRU 50-minute forward trajectory forecasts.
+      </div>
+
+      <div class="space-y-3">
+        <!-- Flood -->
+        <button onclick="triggerSimulation('flash_flood')" class="w-full p-4 rounded-xl card-base hover:border-blue-400 text-left border-l-4 border-l-blue-600 group transition">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-sm text-navy-900 group-hover:text-brand-action flex items-center gap-2">
+              <i class="fa-solid fa-water text-blue-600"></i>
+              <span>Flash Flood Catchment Surge</span>
+            </span>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 font-bold">FLD1</span>
+          </div>
+          <p class="text-xs text-slate-muted mt-1.5">Water level surges from 2.1m to 13.25m. GRU projects spill breach in 10 mins.</p>
+        </button>
+
+        <!-- Landslide -->
+        <button onclick="triggerSimulation('landslide_collapse')" class="w-full p-4 rounded-xl card-base hover:border-amber-400 text-left border-l-4 border-l-amber-500 group transition">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-sm text-navy-900 group-hover:text-amber-600 flex items-center gap-2">
+              <i class="fa-solid fa-mountain text-amber-500"></i>
+              <span>Himalayan Slope Shear Failure</span>
+            </span>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-bold">SLD2</span>
+          </div>
+          <p class="text-xs text-slate-muted mt-1.5">Slope tilt reaches 58.5°, soil saturation 86%. Rapid displacement warning.</p>
+        </button>
+
+        <!-- Fire -->
+        <button onclick="triggerSimulation('forest_fire')" class="w-full p-4 rounded-xl card-base hover:border-rose-400 text-left border-l-4 border-l-rose-500 group transition">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-sm text-navy-900 group-hover:text-rose-600 flex items-center gap-2">
+              <i class="fa-solid fa-fire-flame-curved text-rose-500"></i>
+              <span>Forest Fire Pyrolysis Surge</span>
+            </span>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 font-bold">FIR3</span>
+          </div>
+          <p class="text-xs text-slate-muted mt-1.5">TVOC spikes to 18,450 ppb, temp reaches 78.4°C. Flame sensor tripwire.</p>
+        </button>
+
+        <!-- Smog -->
+        <button onclick="triggerSimulation('toxic_smog')" class="w-full p-4 rounded-xl card-base hover:border-purple-400 text-left border-l-4 border-l-purple-500 group transition">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-sm text-navy-900 group-hover:text-purple-600 flex items-center gap-2">
+              <i class="fa-solid fa-smog text-purple-500"></i>
+              <span>Toxic Smog Temperature Inversion</span>
+            </span>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200 font-bold">POL4</span>
+          </div>
+          <p class="text-xs text-slate-muted mt-1.5">PM2.5 reaches 275 µg/m³, NO2 spikes. Atmospheric inversion active.</p>
+        </button>
+
+        <!-- Reset All Clear -->
+        <button onclick="triggerSimulation('all_clear')" class="w-full p-4 rounded-xl card-base hover:border-emerald-400 text-left border-l-4 border-l-emerald-500 group transition mt-4 bg-emerald-50/30">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-sm text-emerald-800 group-hover:text-emerald-700 flex items-center gap-2">
+              <i class="fa-solid fa-circle-check text-emerald-600"></i>
+              <span>Reset All Systems to Safe</span>
+            </span>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold">ALL</span>
+          </div>
+          <p class="text-xs text-slate-muted mt-1.5">Restores nominal safe baselines across all 4 field stations.</p>
+        </button>
+      </div>
+
+      <div id="simFeedback" class="hidden p-3.5 rounded-xl bg-slate-subtle border border-slate-border text-xs text-center font-medium"></div>
+    </div>
+
+    <!-- Footer -->
+    <div class="p-4 border-t border-slate-border bg-slate-subtle flex justify-between items-center text-xs text-slate-muted">
+      <span>NVIDIA Jetson Edge Hub</span>
+      <button onclick="closeSimDrawer()" class="px-4 py-2 rounded-xl bg-white hover:bg-gray-100 text-navy-900 font-semibold border border-slate-border shadow-sm">Close</button>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 5. NDRF EMERGENCY SOS BROADCAST MODAL (CLEAN SAAS MODAL) -->
+  <!-- ========================================================================= -->
+  <div id="sosModalBackdrop" onclick="closeSosModal()" class="fixed inset-0 bg-navy-900/50 backdrop-blur-sm z-50 hidden transition-opacity"></div>
+  <div id="sosModal" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-white border border-rose-300 rounded-2xl shadow-2xl z-50 hidden p-6 space-y-4">
+    <div class="flex items-center justify-between border-b border-slate-border pb-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 text-lg">
+          <i class="fa-solid fa-satellite-dish"></i>
+        </div>
+        <div>
+          <h3 class="font-bold text-navy-900 text-base">NDRF Emergency SOS Broadcast</h3>
+          <p class="text-xs text-slate-muted">SIM800L Satellite GSM &middot; Autonomous Priority Uplink</p>
+        </div>
+      </div>
+      <button onclick="closeSosModal()" class="text-slate-400 hover:text-navy-900 p-1 rounded-lg hover:bg-gray-100"><i class="fa-solid fa-xmark text-lg"></i></button>
+    </div>
+
+    <div class="space-y-3 text-xs">
+      <div class="p-3.5 rounded-xl bg-slate-subtle border border-slate-border space-y-1.5 font-mono">
+        <div class="flex justify-between text-slate-muted">
+          <span>Target Recipient:</span>
+          <span class="text-navy-900 font-bold">+91-11-24363260 (NDRF Command)</span>
+        </div>
+        <div class="flex justify-between text-slate-muted">
+          <span>Uplink Protocol:</span>
+          <span class="text-brand-action font-semibold">GSM AT+CMGS via SIM800L UART1</span>
+        </div>
+        <div class="flex justify-between text-slate-muted">
+          <span>Origin Gateway:</span>
+          <span class="text-navy-800">JETSON-ORIN-NANO-01</span>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-navy-800 font-semibold mb-1">Pre-Formatted Distress Payload:</label>
+        <textarea id="sosPayloadText" rows="3" readonly class="w-full bg-slate-subtle border border-slate-border rounded-xl p-3 font-mono text-[11px] text-rose-700 focus:outline-none resize-none">CRITICAL DISASTER SOS: Active emergency alert triggered across monitored sectors. Deploy rapid response units to GPS coordinates immediately.</textarea>
+      </div>
+
+      <div id="sosResultBanner" class="hidden p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 font-mono text-[11px]">
+        <i class="fa-solid fa-circle-check mr-1.5 text-emerald-600"></i> SMS Broadcast Packet dispatched successfully to NDRF HQ via SIM800L GSM!
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-2.5 pt-2">
+      <button onclick="closeSosModal()" class="px-4 py-2 rounded-xl bg-white hover:bg-gray-100 text-slate-muted hover:text-navy-900 font-medium text-xs border border-slate-border">Cancel</button>
+      <button id="sendSosBtn" onclick="dispatchSosBroadcast()" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs flex items-center gap-2 shadow-sm">
+        <i class="fa-solid fa-paper-plane"></i>
+        <span>Broadcast Emergency SOS</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 6. GLOBAL TELEMETRY ENGINE & SCRIPT DISPATCHER -->
+  <!-- ========================================================================= -->
+  <script>
+    let globalAudioMuted = false;
+    let previousAlertCount = 0;
+    const API_BASE = window.location.port === '5000' ? '' : 'http://127.0.0.1:5000';
+
+    // Siren Audio Synthesizer via Web Audio API
+    function playGlobalSiren() {
+      if (globalAudioMuted) return;
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(440, ctx.currentTime);
+        osc.frequency.linearRampToValueAtTime(880, ctx.currentTime + 0.3);
+        osc.frequency.linearRampToValueAtTime(440, ctx.currentTime + 0.6);
+        gain.gain.setValueAtTime(0.12, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.7);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.7);
+      } catch (e) {
+        console.warn("Audio blocked or not supported", e);
+      }
+    }
+
+    function toggleGlobalAudio() {
+      globalAudioMuted = !globalAudioMuted;
+      const icon = document.getElementById('audioIcon');
+      if (globalAudioMuted) {
+        icon.className = 'fa-solid fa-volume-xmark text-slate-400';
+      } else {
+        icon.className = 'fa-solid fa-volume-high text-brand-action';
+      }
+    }
+
+    // Slide-over & Modal controls
+    function openSimDrawer() {
+      document.getElementById('simDrawer').classList.remove('translate-x-full');
+      document.getElementById('simDrawerBackdrop').classList.remove('hidden');
+    }
+    function closeSimDrawer() {
+      document.getElementById('simDrawer').classList.add('translate-x-full');
+      document.getElementById('simDrawerBackdrop').classList.add('hidden');
+    }
+    function openSosModal() {
+      document.getElementById('sosModal').classList.remove('hidden');
+      document.getElementById('sosModalBackdrop').classList.remove('hidden');
+      document.getElementById('sosResultBanner').classList.add('hidden');
+    }
+    function closeSosModal() {
+      document.getElementById('sosModal').classList.add('hidden');
+      document.getElementById('sosModalBackdrop').classList.add('hidden');
+    }
+    function toggleMobileMenu() {
+      document.getElementById('mobileMenu').classList.toggle('hidden');
+    }
+
+    // Trigger Simulation Scenario
+    async function triggerSimulation(scenario) {
+      const fb = document.getElementById('simFeedback');
+      fb.className = 'p-3.5 rounded-xl bg-blue-50 border border-blue-200 text-xs text-blue-700 block';
+      fb.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> Injecting ${scenario} surge telemetry...`;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/simulate/${scenario}`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          fb.className = 'p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 block';
+          fb.innerHTML = `<i class="fa-solid fa-check mr-1.5"></i> Injected ${scenario.replace('_', ' ').toUpperCase()}! Network state updated.`;
+          pollTelemetryOnce();
+        }
+      } catch (err) {
+        fb.className = 'p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 block';
+        fb.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1.5"></i> Error simulating scenario: ${err.message}`;
+      }
+    }
+
+    // Dispatch Emergency SOS
+    async function dispatchSosBroadcast() {
+      const btn = document.getElementById('sendSosBtn');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Dispatching...`;
+      try {
+        const res = await fetch(`${API_BASE}/api/sos`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('sosResultBanner').classList.remove('hidden');
+          document.getElementById('sosPayloadText').value = data.sms.message;
+        }
+      } catch (err) {
+        alert("Failed to send SOS: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Broadcast Emergency SOS`;
+      }
+    }
+
+    // Global Polling Loop
+    async function pollTelemetryOnce() {
+      try {
+        const [nodeRes, forecastRes, incidentRes] = await Promise.all([
+          fetch(`${API_BASE}/api/nodes`).then(r => r.json()),
+          fetch(`${API_BASE}/api/forecast`).then(r => r.json()),
+          fetch(`${API_BASE}/api/incidents`).then(r => r.json())
+        ]);
+
+        if (nodeRes.success) {
+          const hub = nodeRes.hub;
+          const nodes = nodeRes.nodes;
+          const forecasts = forecastRes.forecasts || {};
+          const incidents = incidentRes.incidents || [];
+
+          // Update Dynamic Emergency Bar & Global Status Pill
+          const emergencyBar = document.getElementById('dynamicEmergencyBar');
+          const emergencyTitle = document.getElementById('emergencyBarTitle');
+          const emergencySub = document.getElementById('emergencyBarSubtitle');
+          const pill = document.getElementById('globalStatusPill');
+          const pillDot = document.getElementById('globalStatusDot');
+          const pillText = document.getElementById('globalStatusText');
+          const navAlertBadge = document.getElementById('navAlertBadge');
+
+          if (hub.active_alerts_count > 0) {
+            let hazardTitle = "DISASTER DETECTED";
+            let hazardSub = "Critical threshold exceeded. Immediate response protocol advised.";
+            if (nodes.FLD1 && nodes.FLD1.status === 'Hazardous') {
+              hazardTitle = "FLOOD DETECTED";
+              hazardSub = `Ganga Catchment • Water level ${nodes.FLD1.sensors.River_Water_Level_m}m`;
+            } else if (nodes.SLD2 && nodes.SLD2.status === 'Hazardous') {
+              hazardTitle = "LANDSLIDE WARNING";
+              hazardSub = `Himalayan Foothills • Slope tilt ${nodes.SLD2.sensors.Slope_Angle}°`;
+            } else if (nodes.FIR3 && nodes.FIR3.status === 'Hazardous') {
+              hazardTitle = "WILDFIRE DETECTED";
+              hazardSub = `Pine Forest Perimeter • TVOC ${nodes.FIR3.sensors['TVOC[ppb]']} ppb`;
+            } else if (nodes.POL4 && nodes.POL4.status === 'Hazardous') {
+              hazardTitle = "TOXIC SMOG DETECTED";
+              hazardSub = `Industrial Basin • PM2.5 ${nodes.POL4.sensors.pm25} µg/m³`;
+            }
+
+            if (emergencyBar) {
+              emergencyBar.classList.remove('hidden');
+              emergencyTitle.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1.5"></i> CRITICAL &mdash; ${hazardTitle}`;
+              emergencySub.textContent = hazardSub;
+            }
+
+            pill.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200 animate-pulse';
+            if (pillDot) pillDot.className = 'w-2 h-2 rounded-full bg-rose-600 animate-ping';
+            pillText.textContent = `ACTIVE ALERT (${hub.active_alerts_count})`;
+
+            if (navAlertBadge) {
+              navAlertBadge.classList.remove('hidden');
+              navAlertBadge.textContent = hub.active_alerts_count;
+            }
+            if (hub.active_alerts_count > previousAlertCount) {
+              playGlobalSiren();
+            }
+          } else {
+            if (emergencyBar) emergencyBar.classList.add('hidden');
+            pill.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200';
+            if (pillDot) pillDot.className = 'w-2 h-2 rounded-full bg-emerald-500';
+            pillText.textContent = 'ALL SYSTEMS SAFE';
+            if (navAlertBadge) {
+              navAlertBadge.classList.add('hidden');
+            }
+          }
+          previousAlertCount = hub.active_alerts_count;
+
+          // Dispatch event to page-specific listeners
+          window.dispatchEvent(new CustomEvent('sentinel_data', {
+            detail: { hub, nodes, forecasts, incidents }
+          }));
+        }
+      } catch (e) {
+        console.warn("Global polling error:", e);
+      }
+    }
+
+    // Auto-poll every 2.5 seconds
+    pollTelemetryOnce();
+    setInterval(pollTelemetryOnce, 2500);
+  </script>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

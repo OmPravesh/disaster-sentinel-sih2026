@@ -1,0 +1,465 @@
+{% extends "base.html" %}
+
+{% block title %}Sensor Network · Disaster Sentinel{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <!-- ========================================================================= -->
+  <!-- 1. PAGE HEADER & HAZARD FILTER -->
+  <!-- ========================================================================= -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-dark-800 pb-5">
+    <div>
+      <h1 class="text-2xl font-extrabold text-white tracking-tight flex items-center gap-2.5">
+        <span>Sensor Network & Field Stations</span>
+        <span class="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">4 NODES ONLINE</span>
+      </h1>
+      <p class="text-xs sm:text-sm text-slate-400 mt-1">
+        Telemetry, hardware layer specifications, and live threshold gauges from ESP32 edge nodes.
+      </p>
+    </div>
+
+    <!-- Hazard Filter Buttons -->
+    <div class="flex items-center gap-1.5 p-1 rounded-xl bg-dark-850 border border-dark-750 text-xs">
+      <button onclick="filterStations('all')" id="btnFilterAll" class="px-3 py-1.5 rounded-lg font-medium transition bg-dark-750 text-white shadow-sm">All</button>
+      <button onclick="filterStations('Flood')" id="btnFilterFlood" class="px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-cyan-300 transition">Flood</button>
+      <button onclick="filterStations('Landslide')" id="btnFilterLandslide" class="px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-amber-300 transition">Landslide</button>
+      <button onclick="filterStations('Fire')" id="btnFilterFire" class="px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-rose-300 transition">Fire</button>
+      <button onclick="filterStations('Pollution')" id="btnFilterPollution" class="px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-purple-300 transition">Pollution</button>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 2. FOUR EXPANDED FIELD STATION PANELS -->
+  <!-- ========================================================================= -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" id="stationCardsContainer">
+
+    <!-- Station 1: FLD1 (Flood) -->
+    <div id="cardFLD1" data-hazard="Flood" class="glass-card rounded-2xl p-5 sm:p-6 space-y-4 border-l-4 border-l-cyan-500">
+      <div class="flex items-start justify-between border-b border-dark-750 pb-3">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300">FLD1</span>
+            <span class="text-xs font-mono text-slate-400">SX1278 SPI LoRa</span>
+            <span class="text-xs text-slate-500">|</span>
+            <span class="text-xs font-mono text-emerald-400 flex items-center gap-1">
+              <i class="fa-solid fa-signal text-[10px]"></i> <span id="rssiFLD1">-68 dBm</span>
+            </span>
+          </div>
+          <h3 class="text-base font-bold text-white mt-1">Ganga Catchment · River Station #4</h3>
+          <p class="text-xs text-slate-400">GPS: 25.3176° N, 82.9739° E · Elevation: 1,850m</p>
+        </div>
+        <span id="badgeNodeFLD1" class="px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/20 text-emerald-300">SAFE</span>
+      </div>
+
+      <!-- Primary Gauge Bar: River Water Level -->
+      <div class="p-3.5 rounded-xl bg-dark-850/80 border border-dark-750 space-y-2">
+        <div class="flex justify-between items-baseline text-xs">
+          <span class="text-slate-300 font-medium">Primary Metric: River Water Level</span>
+          <div class="font-mono">
+            <span id="primaryValFLD1" class="text-lg font-black text-cyan-400">2.10</span>
+            <span class="text-slate-400">/ 10.0 m (Danger)</span>
+          </div>
+        </div>
+        <div class="w-full h-2 rounded-full bg-dark-700 overflow-hidden">
+          <div id="barFLD1" class="h-full bg-gradient-to-r from-cyan-500 to-emerald-400 transition-all duration-500" style="width: 21%;"></div>
+        </div>
+        <div class="flex justify-between text-[10px] text-slate-400 font-mono">
+          <span>0m (Dry)</span>
+          <span>6.0m (Warning)</span>
+          <span class="text-rose-400">10.0m (Breach)</span>
+        </div>
+      </div>
+
+      <!-- Sensor Telemetry Grid -->
+      <div class="grid grid-cols-3 gap-2.5 text-xs">
+        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+          <span class="text-[10px] text-slate-400 block">Rainfall</span>
+          <span id="rainValFLD1" class="font-mono font-bold text-slate-200 text-sm">12.24</span> <span class="text-[10px] text-slate-400">mm</span>
+        </div>
+        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+          <span class="text-[10px] text-slate-400 block">Intensity</span>
+          <span id="intensValFLD1" class="font-mono font-bold text-slate-200 text-sm">1.54</span> <span class="text-[10px] text-slate-400">mm/h</span>
+        </div>
+        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+          <span class="text-[10px] text-slate-400 block">Pressure</span>
+          <span id="pressValFLD1" class="font-mono font-bold text-slate-200 text-sm">1005.4</span> <span class="text-[10px] text-slate-400">hPa</span>
+        </div>
+        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+          <span class="text-[10px] text-slate-400 block">Temperature</span>
+          <span id="tempValFLD1" class="font-mono font-bold text-slate-200 text-sm">31.5</span> <span class="text-[10px] text-slate-400">°C</span>
+        </div>
+        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+          <span class="text-[10px] text-slate-400 block">Humidity</span>
+          <span id="humValFLD1" class="font-mono font-bold text-slate-200 text-sm">78.0</span> <span class="text-[10px] text-slate-400">%</span>
+        </div>
+        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+          <span class="text-[10px] text-slate-400 block">Battery</span>
+          <span class="font-mono font-bold text-emerald-400 text-sm">95%</span> <span class="text-[10px] text-slate-400">3.98V</span>
+        </div>
+      </div>
+
+      <!-- Hardware Layer & Deep Dive Link -->
+      <div class="pt-3 border-t border-dark-750 flex items-center justify-between text-xs">
+        <div class="text-[11px] text-slate-400">
+          <span class="font-semibold text-slate-300">Hardware:</span> HC-SR04 / YL-83 / BME280
+        </div>
+        <a href="/forecast" class="text-cyan-400 hover:text-cyan-300 font-semibold flex items-center gap-1">
+          <span>AI Forecast</span> <i class="fa-solid fa-arrow-right text-[10px]"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- Station 2: SLD2 (Landslide) -->
+    <div id="cardSLD2" data-hazard="Landslide" class="glass-card rounded-2xl p-5 sm:p-6 space-y-4 border-l-4 border-l-amber-500">
+      <div class="flex items-start justify-between border-b border-dark-750 pb-3">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300">SLD2</span>
+            <span class="text-xs font-mono text-slate-400">SX1278 SPI LoRa</span>
+            <span class="text-xs text-slate-500">|</span>
+            <span class="text-xs font-mono text-emerald-400 flex items-center gap-1">
+              <i class="fa-solid fa-signal text-[10px]"></i> <span id="rssiSLD2">-72 dBm</span>
+            </span>
+          </div>
+          <h3 class="text-base font-bold text-white mt-1">Himalayan Foothill Slope · Sector 2B</h3>
+          <p class="text-xs text-slate-400">GPS: 30.3165° N, 78.0322° E · Elevation: 2,350m</p>
+        </div>
+        <span id="badgeNodeSLD2" class="px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/20 text-emerald-300">SAFE</span>
+      </div>
+
+      <!-- Primary Gauge Bar: Slope Angle -->
+      <div class="p-3.5 rounded-xl bg-dark-850/80 border border-dark-750 space-y-2">
+        <div class="flex justify-between items-baseline text-xs">
+          <span class="text-slate-300 font-medium">Primary Metric: Slope Incline Angle</span>
+          <div class="font-mono">
+            <span id="primaryValSLD2" class="text-lg font-black text-amber-400">12.0</span>
+            <span class="text-slate-400">/ 45.0° (Danger)</span>
+          </div>
+        </div>
+        <div class="w-full h-2 rounded-full bg-dark-700 overflow-hidden">
+          <div id="barSLD2" class="h-full bg-gradient-to-r from-amber-500 to-emerald-400 transition-all duration-500" style="width: 26%;"></div>
+        </div>
+        <div class="flex justify-between text-[10px] text-slate-400 font-mono">
+          <span>0° (Flat)</span>
+          <span>30.0° (Warning)</span>
+          <span class="text-rose-400">45.0° (Shear Collapse)</span>
+        </div>
+      </div>
+
+      <!-- Sensor Telemetry Grid -->
+      <div class="grid grid-cols-3 gap-2.5 text-xs">
+        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+          <span class="text-[10px] text-slate-400 block">Soil Saturation</span>
+          <span id="satValSLD2" class="font-mono font-bold text-slate-200 text-sm">0.15</span> <span class="text-[10px] text-slate-400">ratio</span>
+        </div>
+        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+          <span class="text-[10px] text-slate-400 block">Rainfall</span>
+          <span id="rainValSLD2" class="font-mono font-bold text-slate-200 text-sm">10.0</span> <span class="text-[10px] text-slate-400">mm</span>
+        </div>
+        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+          <span class="text-[10px] text-slate-400 block">Temperature</span>
+          <span id="tempValSLD2" class="font-mono font-bold text-slate-200 text-sm">22.0</span> <span class="text-[10px] text-slate-400">°C</span>
+        </div>
+        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+          <span class="text-[10px] text-slate-400 block">Humidity</span>
+          <span id="humValSLD2" class="font-mono font-bold text-slate-200 text-sm">45.0</span> <span class="text-[10px] text-slate-400">%</span>
+        </div>
+        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+          <span class="text-[10px] text-slate-400 block">Pore Pressure</span>
+          <span class="font-mono font-bold text-slate-200 text-sm">18.4</span> <span class="text-[10px] text-slate-400">kPa</span>
+        </div>
+        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+          <span class="text-[10px] text-slate-400 block">Battery</span>
+          <span class="font-mono font-bold text-emerald-400 text-sm">89%</span> <span class="text-[10px] text-slate-400">3.88V</span>
+        </div>
+      </div>
+
+      <!-- Hardware Layer & Deep Dive Link -->
+      <div class="pt-3 border-t border-dark-750 flex items-center justify-between text-xs">
+        <div class="text-[11px] text-slate-400">
+          <span class="font-semibold text-slate-300">Hardware:</span> MPU6050 6-Axis / Capacitive Soil / BME280
+        </div>
+        <a href="/forecast" class="text-amber-400 hover:text-amber-300 font-semibold flex items-center gap-1">
+          <span>AI Forecast</span> <i class="fa-solid fa-arrow-right text-[10px]"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- Station 3: FIR3 (Wildfire) -->
+    <div id="cardFIR3" data-hazard="Fire" class="glass-card rounded-2xl p-5 sm:p-6 space-y-4 border-l-4 border-l-rose-500">
+      <div class="flex items-start justify-between border-b border-dark-750 pb-3">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-rose-500/20 text-rose-300">FIR3</span>
+            <span class="text-xs font-mono text-slate-400">SX1278 SPI LoRa</span>
+            <span class="text-xs text-slate-500">|</span>
+            <span class="text-xs font-mono text-emerald-400 flex items-center gap-1">
+              <i class="fa-solid fa-signal text-[10px]"></i> <span id="rssiFIR3">-65 dBm</span>
+            </span>
+          </div>
+          <h3 class="text-base font-bold text-white mt-1">Pine Forest Perimeter · Zone 9</h3>
+          <p class="text-xs text-slate-400">GPS: 29.3919° N, 79.4542° E · Elevation: 1,970m</p>
+        </div>
+        <span id="badgeNodeFIR3" class="px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/20 text-emerald-300">SAFE</span>
+      </div>
+
+      <!-- Primary Gauge Bar: TVOC Combustion Gas -->
+      <div class="p-3.5 rounded-xl bg-dark-850/80 border border-dark-750 space-y-2">
+        <div class="flex justify-between items-baseline text-xs">
+          <span class="text-slate-300 font-medium">Primary Metric: Combustion Gas (TVOC)</span>
+          <div class="font-mono">
+            <span id="primaryValFIR3" class="text-lg font-black text-rose-400">818</span>
+            <span class="text-slate-400">/ 5,000 ppb (Danger)</span>
+          </div>
+        </div>
+        <div class="w-full h-2 rounded-full bg-dark-700 overflow-hidden">
+          <div id="barFIR3" class="h-full bg-gradient-to-r from-rose-500 to-emerald-400 transition-all duration-500" style="width: 16%;"></div>
+        </div>
+        <div class="flex justify-between text-[10px] text-slate-400 font-mono">
+          <span>0 ppb (Clean)</span>
+          <span>1,500 ppb (Warning)</span>
+          <span class="text-rose-400">5,000 ppb (Active Fire)</span>
+        </div>
+      </div>
+
+      <!-- Sensor Telemetry Grid -->
+      <div class="grid grid-cols-3 gap-2.5 text-xs">
+        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+          <span class="text-[10px] text-slate-400 block">Temperature</span>
+          <span id="tempValFIR3" class="font-mono font-bold text-slate-200 text-sm">24.9</span> <span class="text-[10px] text-slate-400">°C</span>
+        </div>
+        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+          <span class="text-[10px] text-slate-400 block">Humidity</span>
+          <span id="humValFIR3" class="font-mono font-bold text-slate-200 text-sm">50.8</span> <span class="text-[10px] text-slate-400">%</span>
+        </div>
+        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+          <span class="text-[10px] text-slate-400 block">eCO2 Gas</span>
+          <span id="eco2ValFIR3" class="font-mono font-bold text-slate-200 text-sm">717</span> <span class="text-[10px] text-slate-400">ppm</span>
+        </div>
+        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+          <span class="text-[10px] text-slate-400 block">Baro Pressure</span>
+          <span id="pressValFIR3" class="font-mono font-bold text-slate-200 text-sm">939.1</span> <span class="text-[10px] text-slate-400">hPa</span>
+        </div>
+        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+          <span class="text-[10px] text-slate-400 block">Smoke PM2.5</span>
+          <span id="pmValFIR3" class="font-mono font-bold text-slate-200 text-sm">2.5</span> <span class="text-[10px] text-slate-400">&micro;g/m&sup3;</span>
+        </div>
+        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+          <span class="text-[10px] text-slate-400 block">Battery</span>
+          <span class="font-mono font-bold text-emerald-400 text-sm">92%</span> <span class="text-[10px] text-slate-400">3.92V</span>
+        </div>
+      </div>
+
+      <!-- Hardware Layer & Deep Dive Link -->
+      <div class="pt-3 border-t border-dark-750 flex items-center justify-between text-xs">
+        <div class="text-[11px] text-slate-400">
+          <span class="font-semibold text-slate-300">Hardware:</span> SGP30 MOX Gas / KY-026 Flame / BME280
+        </div>
+        <a href="/forecast" class="text-rose-400 hover:text-rose-300 font-semibold flex items-center gap-1">
+          <span>AI Forecast</span> <i class="fa-solid fa-arrow-right text-[10px]"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- Station 4: POL4 (Pollution) -->
+    <div id="cardPOL4" data-hazard="Pollution" class="glass-card rounded-2xl p-5 sm:p-6 space-y-4 border-l-4 border-l-purple-500">
+      <div class="flex items-start justify-between border-b border-dark-750 pb-3">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-purple-500/20 text-purple-300">POL4</span>
+            <span class="text-xs font-mono text-slate-400">SX1278 SPI LoRa</span>
+            <span class="text-xs text-slate-500">|</span>
+            <span class="text-xs font-mono text-emerald-400 flex items-center gap-1">
+              <i class="fa-solid fa-signal text-[10px]"></i> <span id="rssiPOL4">-70 dBm</span>
+            </span>
+          </div>
+          <h3 class="text-base font-bold text-white mt-1">Industrial Basin Cluster A</h3>
+          <p class="text-xs text-slate-400">GPS: 28.6139° N, 77.2090° E · Elevation: 216m</p>
+        </div>
+        <span id="badgeNodePOL4" class="px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/20 text-emerald-300">SAFE</span>
+      </div>
+
+      <!-- Primary Gauge Bar: PM2.5 -->
+      <div class="p-3.5 rounded-xl bg-dark-850/80 border border-dark-750 space-y-2">
+        <div class="flex justify-between items-baseline text-xs">
+          <span class="text-slate-300 font-medium">Primary Metric: Fine Particulate PM2.5</span>
+          <div class="font-mono">
+            <span id="primaryValPOL4" class="text-lg font-black text-purple-400">11.5</span>
+            <span class="text-slate-400">/ 150 &micro;g/m&sup3; (Danger)</span>
+          </div>
+        </div>
+        <div class="w-full h-2 rounded-full bg-dark-700 overflow-hidden">
+          <div id="barPOL4" class="h-full bg-gradient-to-r from-purple-500 to-emerald-400 transition-all duration-500" style="width: 8%;"></div>
+        </div>
+        <div class="flex justify-between text-[10px] text-slate-400 font-mono">
+          <span>0 &micro;g/m&sup3; (Good)</span>
+          <span>60 &micro;g/m&sup3; (Moderate)</span>
+          <span class="text-rose-400">150 &micro;g/m&sup3; (Severe Hazardous)</span>
+        </div>
+      </div>
+
+      <!-- Sensor Telemetry Grid -->
+      <div class="grid grid-cols-3 gap-2.5 text-xs">
+        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+          <span class="text-[10px] text-slate-400 block">Dust PM10</span>
+          <span id="pm10ValPOL4" class="font-mono font-bold text-slate-200 text-sm">42.0</span> <span class="text-[10px] text-slate-400">&micro;g/m&sup3;</span>
+        </div>
+        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+          <span class="text-[10px] text-slate-400 block">NO2 Gas</span>
+          <span id="no2ValPOL4" class="font-mono font-bold text-slate-200 text-sm">14.5</span> <span class="text-[10px] text-slate-400">ppm</span>
+        </div>
+        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+          <span class="text-[10px] text-slate-400 block">Carbon Monoxide</span>
+          <span id="coValPOL4" class="font-mono font-bold text-slate-200 text-sm">2.1</span> <span class="text-[10px] text-slate-400">ppm</span>
+        </div>
+        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+          <span class="text-[10px] text-slate-400 block">AQI Equivalent</span>
+          <span class="font-mono font-bold text-emerald-400 text-sm">38</span> <span class="text-[10px] text-slate-400">(Good)</span>
+        </div>
+        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+          <span class="text-[10px] text-slate-400 block">Inversion Layer</span>
+          <span class="font-mono font-bold text-slate-200 text-sm">None</span> <span class="text-[10px] text-slate-400">Stable</span>
+        </div>
+        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+          <span class="text-[10px] text-slate-400 block">Battery</span>
+          <span class="font-mono font-bold text-emerald-400 text-sm">87%</span> <span class="text-[10px] text-slate-400">3.84V</span>
+        </div>
+      </div>
+
+      <!-- Hardware Layer & Deep Dive Link -->
+      <div class="pt-3 border-t border-dark-750 flex items-center justify-between text-xs">
+        <div class="text-[11px] text-slate-400">
+          <span class="font-semibold text-slate-300">Hardware:</span> MQ-135 Multi-Gas / Sharp GP2Y1010 Optical Dust
+        </div>
+        <a href="/forecast" class="text-purple-400 hover:text-purple-300 font-semibold flex items-center gap-1">
+          <span>AI Forecast</span> <i class="fa-solid fa-arrow-right text-[10px]"></i>
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function filterStations(hazard) {
+    const cards = document.querySelectorAll('#stationCardsContainer > div');
+    const buttons = ['btnFilterAll', 'btnFilterFlood', 'btnFilterLandslide', 'btnFilterFire', 'btnFilterPollution'];
+    
+    buttons.forEach(id => {
+      const btn = document.getElementById(id);
+      btn.className = 'px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white transition';
+    });
+    
+    const activeBtn = document.getElementById(`btnFilter${hazard}`);
+    if (activeBtn) {
+      activeBtn.className = 'px-3 py-1.5 rounded-lg font-medium transition bg-dark-750 text-white shadow-sm';
+    }
+
+    cards.forEach(card => {
+      if (hazard === 'all' || card.getAttribute('data-hazard') === hazard) {
+        card.classList.remove('hidden');
+      } else {
+        card.classList.add('hidden');
+      }
+    });
+  }
+
+  window.addEventListener('sentinel_data', (event) => {
+    const { nodes } = event.detail;
+
+    // FLD1
+    if (nodes.FLD1) {
+      const s = nodes.FLD1.sensors;
+      document.getElementById('primaryValFLD1').textContent = s.River_Water_Level_m;
+      document.getElementById('rainValFLD1').textContent = s.Rainfall_mm;
+      document.getElementById('intensValFLD1').textContent = s.Rainfall_Intensity_mm_hr;
+      document.getElementById('pressValFLD1').textContent = s.Atmospheric_Pressure_hPa;
+      document.getElementById('tempValFLD1').textContent = s.Temperature_C;
+      document.getElementById('humValFLD1').textContent = s.Relative_Humidity_pct;
+      
+      const pct = Math.min(100, (s.River_Water_Level_m / 10.0) * 100);
+      document.getElementById('barFLD1').style.width = pct + '%';
+      
+      const b = document.getElementById('badgeNodeFLD1');
+      if (nodes.FLD1.status === 'Hazardous') {
+        b.className = 'px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-rose-500/20 text-rose-300 animate-pulse';
+        b.textContent = 'CRITICAL SURGE';
+      } else {
+        b.className = 'px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/20 text-emerald-300';
+        b.textContent = 'SAFE';
+      }
+    }
+
+    // SLD2
+    if (nodes.SLD2) {
+      const s = nodes.SLD2.sensors;
+      document.getElementById('primaryValSLD2').textContent = s.Slope_Angle;
+      document.getElementById('satValSLD2').textContent = s.Soil_Saturation;
+      document.getElementById('rainValSLD2').textContent = s.Rainfall_mm;
+      document.getElementById('tempValSLD2').textContent = s.Temperature_C;
+      document.getElementById('humValSLD2').textContent = s.Humidity_percent;
+
+      const pct = Math.min(100, (s.Slope_Angle / 45.0) * 100);
+      document.getElementById('barSLD2').style.width = pct + '%';
+
+      const b = document.getElementById('badgeNodeSLD2');
+      if (nodes.SLD2.status === 'Hazardous') {
+        b.className = 'px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-rose-500/20 text-rose-300 animate-pulse';
+        b.textContent = 'CRITICAL SHEAR';
+      } else {
+        b.className = 'px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/20 text-emerald-300';
+        b.textContent = 'SAFE';
+      }
+    }
+
+    // FIR3
+    if (nodes.FIR3) {
+      const s = nodes.FIR3.sensors;
+      document.getElementById('primaryValFIR3').textContent = s['TVOC[ppb]'];
+      document.getElementById('tempValFIR3').textContent = s['Temperature[C]'];
+      document.getElementById('humValFIR3').textContent = s['Humidity[%]'];
+      document.getElementById('eco2ValFIR3').textContent = s['eCO2[ppm]'];
+      document.getElementById('pressValFIR3').textContent = s['Pressure[hPa]'];
+      document.getElementById('pmValFIR3').textContent = s['PM2.5'];
+
+      const pct = Math.min(100, (s['TVOC[ppb]'] / 5000.0) * 100);
+      document.getElementById('barFIR3').style.width = pct + '%';
+
+      const b = document.getElementById('badgeNodeFIR3');
+      if (nodes.FIR3.status === 'Hazardous') {
+        b.className = 'px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-rose-500/20 text-rose-300 animate-pulse';
+        b.textContent = 'ACTIVE COMBUSTION';
+      } else {
+        b.className = 'px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/20 text-emerald-300';
+        b.textContent = 'SAFE';
+      }
+    }
+
+    // POL4
+    if (nodes.POL4) {
+      const s = nodes.POL4.sensors;
+      document.getElementById('primaryValPOL4').textContent = s.pm25;
+      document.getElementById('pm10ValPOL4').textContent = s.pm10;
+      document.getElementById('no2ValPOL4').textContent = s.no2;
+      document.getElementById('coValPOL4').textContent = s.co;
+
+      const pct = Math.min(100, (s.pm25 / 150.0) * 100);
+      document.getElementById('barPOL4').style.width = pct + '%';
+
+      const b = document.getElementById('badgeNodePOL4');
+      if (nodes.POL4.status === 'Hazardous') {
+        b.className = 'px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-rose-500/20 text-rose-300 animate-pulse';
+        b.textContent = 'SEVERE SMOG';
+      } else {
+        b.className = 'px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/20 text-emerald-300';
+        b.textContent = 'SAFE';
+      }
+    }
+  });
+</script>
+{% endblock %}
+

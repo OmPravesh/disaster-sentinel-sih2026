@@ -1,0 +1,1036 @@
+{% extends "base.html" %}
+
+{% block title %}Disaster Map · Disaster Sentinel{% endblock %}
+
+{% block content %}
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+<div class="space-y-6 pb-12">
+
+  <!-- ========================================================================= -->
+  <!-- 1. PAGE HEADER: CLEAN & SIMPLE -->
+  <!-- ========================================================================= -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+    <div>
+      <div class="flex items-center gap-2">
+        <span class="text-[11px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200">
+          State of Uttarakhand (India)
+        </span>
+        <span class="text-slate-300">&bull;</span>
+        <span class="text-xs text-slate-500">SIH 2026 GIS Engine</span>
+      </div>
+      <h1 class="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5 mt-1">
+        <span>Uttarakhand Multi-Hazard Disaster Map</span>
+      </h1>
+      <p class="text-xs sm:text-sm text-slate-500 mt-1">
+        Live geospatial surveillance across 4 strategic hazard nodes: Rishikesh, Chamoli, Almora, and Dehradun.
+      </p>
+    </div>
+
+    <!-- Quick Status Pill & Controls -->
+    <div class="flex flex-wrap items-center gap-2.5">
+      <!-- Filter Tabs -->
+      <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-medium">
+        <button onclick="filterMapLayer('all')" id="layerAll" class="px-3 py-1.5 rounded-lg bg-white text-slate-900 font-semibold shadow-sm transition">
+          All Nodes (4)
+        </button>
+        <button onclick="filterMapLayer('risk')" id="layerRisk" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-rose-700 transition">
+          Danger Areas
+        </button>
+        <button onclick="filterMapLayer('safe')" id="layerSafe" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-emerald-700 transition">
+          Safe Areas
+        </button>
+      </div>
+
+      <!-- Configure API Key Button -->
+      <button onclick="openApiKeyModal()" class="px-3 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 border border-slate-200 text-xs font-semibold flex items-center gap-1.5 transition shadow-sm" title="Configure Map API Key or switch providers">
+        <i class="fa-solid fa-key text-amber-500 text-xs"></i>
+        <span id="headerApiKeyBtnText">Map API Key</span>
+      </button>
+
+      <!-- Center Map Button -->
+      <button onclick="centerMapDefault()" class="px-3 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 border border-slate-200 text-xs font-semibold flex items-center gap-1.5 transition shadow-sm">
+        <i class="fa-solid fa-crosshairs text-blue-600 text-xs"></i>
+        <span>Center View</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 2. MAIN MAP HERO & LOCATION INSPECTOR (SPLIT VIEW) -->
+  <!-- ========================================================================= -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- Left: Main GIS Map Canvas (THE HERO, 8 Cols) -->
+    <div class="lg:col-span-8 card-base p-4 sm:p-5 bg-white border border-slate-border rounded-2xl shadow-sm flex flex-col space-y-3">
+      
+      <!-- Statewide Live Danger Status Banner -->
+      <div id="statewideDangerBanner" class="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-between text-xs transition shadow-sm">
+        <div class="flex items-center gap-2.5">
+          <span id="statewideBannerDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+          <div>
+            <span id="statewideBannerTitle" class="font-bold tracking-tight uppercase block sm:inline">Uttarakhand Region: All 4 Nodes Safe</span>
+            <span class="text-slate-300 hidden sm:inline">&bull;</span>
+            <span id="statewideBannerDesc" class="text-slate-600 text-[11px] sm:text-xs">Normal parameters across Rishikesh, Chamoli, Almora &amp; Dehradun.</span>
+          </div>
+        </div>
+        <span id="statewideBannerBadge" class="text-[10px] font-bold px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-200 uppercase whitespace-nowrap">
+          Normal · Level 0
+        </span>
+      </div>
+
+      <!-- Real Interactive Leaflet GIS Map Container -->
+      <div class="relative w-full h-[540px] rounded-xl border border-slate-200 overflow-hidden shadow-inner bg-[#F1F5F9]">
+        <div id="uttarakhandMap" class="w-full h-full z-0"></div>
+
+        <!-- Floating Controls: Map Style Selector & Recenter (Top Right) -->
+        <div class="absolute top-3 right-3 flex flex-wrap items-center gap-1.5 z-[1000] pointer-events-auto">
+          
+          <!-- Map Style Switcher Dropdown -->
+          <div class="bg-white/95 backdrop-blur rounded-xl border border-slate-200 shadow-md p-1 flex items-center gap-1 text-[11px] font-medium">
+            <button onclick="switchBaseMap('osm')" id="btnStyleOsm" class="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 font-bold transition">
+              Street
+            </button>
+            <button onclick="switchBaseMap('topo')" id="btnStyleTopo" class="px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition">
+              Topo
+            </button>
+            <button onclick="switchBaseMap('satellite')" id="btnStyleSatellite" class="px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition">
+              Satellite
+            </button>
+            <button onclick="switchBaseMap('hot')" id="btnStyleHot" class="px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition">
+              Disaster
+            </button>
+            <button onclick="openApiKeyModal()" class="px-2 py-1 rounded-lg text-amber-600 hover:bg-amber-50 transition ml-0.5" title="Custom Carto/Mapbox API Key">
+              <i class="fa-solid fa-key text-[10px]"></i>
+            </button>
+          </div>
+
+          <!-- Recenter Button -->
+          <button onclick="centerMapDefault()" title="Reset view to full Uttarakhand state" class="bg-white/95 hover:bg-slate-50 text-slate-700 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-semibold shadow-md flex items-center gap-1.5 transition">
+            <i class="fa-solid fa-crosshairs text-blue-600"></i>
+            <span class="hidden sm:inline">Full View</span>
+          </button>
+        </div>
+
+        <!-- Clean Map Legend Overlay (Bottom Left) -->
+        <div class="absolute bottom-3 left-3 bg-white/95 backdrop-blur px-3 py-2 rounded-xl border border-slate-200 text-[11px] text-slate-600 flex flex-wrap items-center gap-3 shadow-md z-[1000] pointer-events-auto">
+          <span class="flex items-center gap-1.5 font-medium">
+            <span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span> Active Danger Zone
+          </span>
+          <span class="flex items-center gap-1.5 font-medium">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Safe Monitoring Radius
+          </span>
+          <span class="flex items-center gap-1.5 border-l border-slate-200 pl-2 text-slate-500 hidden sm:flex">
+            <span id="activeMapStyleLabel" class="font-mono text-[10px] text-blue-600 font-semibold">OSM Standard (No Watermark)</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Quick Location Selector Bar (Uttarakhand Locations) -->
+      <div class="flex items-center gap-2 pt-1 text-xs overflow-x-auto no-scrollbar">
+        <span class="text-slate-500 text-[11px] font-medium mr-1 whitespace-nowrap">Focus Node:</span>
+        <button onclick="inspectLocation('flood')" id="locBtnFlood" class="px-3 py-1.5 rounded-xl bg-blue-50 text-blue-700 font-semibold border border-blue-200 shadow-sm transition whitespace-nowrap flex items-center gap-1.5">
+          <i class="fa-solid fa-water text-xs"></i>
+          <span>Rishikesh (Flood)</span>
+        </button>
+        <button onclick="inspectLocation('landslide')" id="locBtnLandslide" class="px-3 py-1.5 rounded-xl bg-slate-50 text-slate-600 hover:text-slate-900 border border-slate-200 transition whitespace-nowrap flex items-center gap-1.5">
+          <i class="fa-solid fa-mountain text-xs"></i>
+          <span>Chamoli (Landslide)</span>
+        </button>
+        <button onclick="inspectLocation('fire')" id="locBtnFire" class="px-3 py-1.5 rounded-xl bg-slate-50 text-slate-600 hover:text-slate-900 border border-slate-200 transition whitespace-nowrap flex items-center gap-1.5">
+          <i class="fa-solid fa-fire-flame-curved text-xs"></i>
+          <span>Almora (Wildfire)</span>
+        </button>
+        <button onclick="inspectLocation('pollution')" id="locBtnPollution" class="px-3 py-1.5 rounded-xl bg-slate-50 text-slate-600 hover:text-slate-900 border border-slate-200 transition whitespace-nowrap flex items-center gap-1.5">
+          <i class="fa-solid fa-smog text-xs"></i>
+          <span>Dehradun (Air Quality)</span>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Right: Location & Risk Inspector (4 Cols, Focused & Progressive) -->
+    <div class="lg:col-span-4 card-base p-5 sm:p-6 bg-white border border-slate-border rounded-2xl shadow-sm flex flex-col justify-between space-y-5">
+      <div class="space-y-4">
+        
+        <!-- Inspector Header -->
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div class="flex items-center gap-2.5">
+            <div id="inspectorIconContainer" class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-sm border border-blue-100">
+              <i id="inspectorIcon" class="fa-solid fa-water"></i>
+            </div>
+            <div>
+              <span id="inspectorHazardType" class="text-xs font-bold text-slate-900 uppercase tracking-wide">Flood</span>
+              <span id="inspectorDistrict" class="text-[11px] text-slate-400 block">Dehradun / Tehri Garhwal</span>
+            </div>
+          </div>
+          <span id="inspectorStatusBadge" class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase">
+            Safe
+          </span>
+        </div>
+
+        <!-- Location Title & Subtitle -->
+        <div>
+          <h2 id="inspectorLocationTitle" class="text-base font-bold text-slate-900">Rishikesh · Ganga Basin</h2>
+          <p id="inspectorStationSubtitle" class="text-xs text-slate-500 mt-0.5">River Station #4 · Ganga Catchment, Uttarakhand</p>
+        </div>
+
+        <!-- Primary Vital Measurement Card -->
+        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
+          <div class="flex justify-between items-center text-xs">
+            <span id="inspectorMetricLabel" class="text-slate-500 font-medium">River Water Level:</span>
+            <span id="inspectorThreshold" class="text-[11px] text-slate-400 font-mono">Normal (&lt; 6.0 m)</span>
+          </div>
+          <div class="flex items-baseline justify-between pt-0.5">
+            <span id="inspectorMetricValue" class="text-3xl font-extrabold text-slate-900 font-mono">2.10 m</span>
+            <span id="inspectorRiskLevel" class="text-xs font-semibold text-emerald-600">LOW RISK</span>
+          </div>
+        </div>
+
+        <!-- Plain-Language Human Situation Summary -->
+        <div id="inspectorSituationContainer" class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 transition">
+          <div class="flex items-center gap-1.5 mb-1">
+            <span id="inspectorDangerIndicatorDot" class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span id="inspectorDangerIndicatorTitle" class="text-xs font-bold text-emerald-700 uppercase">Current Status: Safe</span>
+          </div>
+          <p id="inspectorSituationNote" class="text-xs text-slate-600 leading-relaxed">
+            Water level is within normal baseline. Zero catchment overflow risk projected along Rishikesh Ganga riverbanks.
+          </p>
+        </div>
+
+        <!-- Progressive Disclosure Toggle -->
+        <button onclick="toggleInspectorDetails()" id="btnToggleInspectorDetails" class="w-full py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-slate-900 text-xs font-semibold border border-slate-200 flex items-center justify-between px-3.5 transition">
+          <span id="inspectorToggleText">View Additional Details</span>
+          <i id="inspectorToggleIcon" class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform"></i>
+        </button>
+
+        <!-- Expanded Detail Container (Hidden by Default) -->
+        <div id="inspectorDetailsExpanded" class="hidden space-y-2.5 pt-1 text-xs animate-fadeIn">
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5 text-[11px]">
+            <div class="flex justify-between text-slate-500">
+              <span>GPS Coordinates:</span>
+              <span id="detCoords" class="text-slate-800 font-mono font-medium">30.0869&deg; N, 78.2676&deg; E</span>
+            </div>
+            <div class="flex justify-between text-slate-500">
+              <span>Elevation:</span>
+              <span id="detElevation" class="text-slate-800 font-mono">372 m AMSL</span>
+            </div>
+            <div class="flex justify-between text-slate-500">
+              <span>State / Territory:</span>
+              <span class="text-slate-800 font-medium">Uttarakhand, India</span>
+            </div>
+            <div class="flex justify-between text-slate-500">
+              <span>Danger Threshold:</span>
+              <span id="detThreshold" class="text-rose-600 font-mono font-medium">10.0 m (Critical Level)</span>
+            </div>
+            <div class="flex justify-between text-slate-500">
+              <span>Evacuation Radius:</span>
+              <span id="detEvacuation" class="text-slate-800">5.0 km downstream riverbank</span>
+            </div>
+            <div class="flex justify-between text-slate-500 pt-1 border-t border-slate-200">
+              <span>LoRa Link Status:</span>
+              <span class="text-emerald-600 font-medium">Online &middot; SX1278 SPI0 Active</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="pt-4 border-t border-slate-100 space-y-2">
+        <a id="inspectorMonitoringLink" href="/monitoring#flood" class="w-full py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 font-semibold text-xs flex items-center justify-center gap-2 border border-slate-200 shadow-sm transition">
+          <i class="fa-solid fa-chart-line text-blue-600 text-xs"></i>
+          <span>Open in Live Monitoring</span>
+        </a>
+        <button onclick="openSosModal()" class="w-full py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-sm transition">
+          <i class="fa-solid fa-bullhorn text-xs"></i>
+          <span>Emergency Response Dispatch</span>
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ========================================================================= -->
+<!-- 3. MAP API KEY & PROVIDER CONFIGURATION MODAL -->
+<!-- ========================================================================= -->
+<div id="apiKeyModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[2000] hidden flex items-center justify-center p-4">
+  <div class="bg-white border border-slate-200 rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-2xl animate-fadeIn">
+    
+    <!-- Modal Header -->
+    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-sm border border-amber-200">
+          <i class="fa-solid fa-key"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-slate-900">Map Tile Provider &amp; API Key</h3>
+          <p class="text-xs text-slate-500">Configure map tile servers or enter custom API keys.</p>
+        </div>
+      </div>
+      <button onclick="closeApiKeyModal()" class="w-7 h-7 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 flex items-center justify-center text-xs transition">
+        <i class="fa-solid fa-xmark text-sm"></i>
+      </button>
+    </div>
+
+    <!-- Free Zero-Watermark Notice -->
+    <div class="p-3.5 rounded-xl bg-blue-50/80 border border-blue-200 text-xs text-blue-900 leading-relaxed">
+      <div class="flex items-start gap-2">
+        <i class="fa-solid fa-circle-check text-blue-600 mt-0.5"></i>
+        <div>
+          <strong class="font-semibold">Zero-Watermark Free Mode Active:</strong>
+          <p class="text-slate-600 mt-0.5">
+            By default, Disaster Sentinel uses <strong>OpenStreetMap</strong> and <strong>Esri World Topo</strong>, which require <strong>no API key</strong> and display <strong>zero watermarks</strong>. If you have a custom <strong>CARTO</strong> or <strong>Mapbox</strong> key, you can enter it below.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Provider Selection -->
+    <div class="space-y-2 text-xs">
+      <label class="font-semibold text-slate-700 block">Select Map Style / Provider:</label>
+      <div class="grid grid-cols-2 gap-2">
+        
+        <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition">
+          <input type="radio" name="tileProviderChoice" value="osm" checked onchange="handleProviderChoiceChange('osm')" class="text-blue-600">
+          <div>
+            <span class="font-bold text-slate-800 block">OSM Standard</span>
+            <span class="text-[10px] text-emerald-600 font-medium">Free &middot; No Key</span>
+          </div>
+        </label>
+
+        <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition">
+          <input type="radio" name="tileProviderChoice" value="topo" onchange="handleProviderChoiceChange('topo')" class="text-blue-600">
+          <div>
+            <span class="font-bold text-slate-800 block">Esri World Topo</span>
+            <span class="text-[10px] text-emerald-600 font-medium">Himalayan Terrain</span>
+          </div>
+        </label>
+
+        <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition">
+          <input type="radio" name="tileProviderChoice" value="satellite" onchange="handleProviderChoiceChange('satellite')" class="text-blue-600">
+          <div>
+            <span class="font-bold text-slate-800 block">Esri Satellite</span>
+            <span class="text-[10px] text-emerald-600 font-medium">Photorealistic View</span>
+          </div>
+        </label>
+
+        <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition">
+          <input type="radio" name="tileProviderChoice" value="carto" onchange="handleProviderChoiceChange('carto')" class="text-blue-600">
+          <div>
+            <span class="font-bold text-slate-800 block">CARTO Positron</span>
+            <span class="text-[10px] text-amber-600 font-medium">Requires Key</span>
+          </div>
+        </label>
+
+      </div>
+    </div>
+
+    <!-- API Key Input Field -->
+    <div class="space-y-1.5 text-xs">
+      <div class="flex items-center justify-between">
+        <label for="customApiKeyInput" class="font-semibold text-slate-700">CARTO / Mapbox API Key:</label>
+        <span id="currentKeyStatusPill" class="text-[10px] font-mono text-slate-400">No Key Stored</span>
+      </div>
+      <div class="relative">
+        <input type="text" id="customApiKeyInput" placeholder="Paste your API key here (e.g. carto.com or mapbox key)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-mono text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+        <button onclick="clearApiKey()" id="btnClearKey" class="hidden absolute right-2.5 top-2.5 text-slate-400 hover:text-rose-600 text-xs">
+          Clear
+        </button>
+      </div>
+      <p class="text-[11px] text-slate-400">
+        Your key is stored locally in your browser's <code class="font-mono text-slate-600 bg-slate-100 px-1 py-0.5 rounded">localStorage</code> and attached automatically to authenticated requests.
+      </p>
+    </div>
+
+    <!-- Modal Actions -->
+    <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2 text-xs">
+      <button onclick="closeApiKeyModal()" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition">
+        Close
+      </button>
+      <button onclick="saveApiKeySettings()" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-sm transition flex items-center gap-1.5">
+        <i class="fa-solid fa-floppy-disk text-xs"></i>
+        <span>Save &amp; Apply</span>
+      </button>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<script>
+  let activeLocation = 'flood';
+  let cachedTelemetry = null;
+  let map = null;
+  let activeTileLayer = null;
+  let markers = {};
+  let dangerCircles = {};
+  let currentLayerFilter = 'all';
+  let currentBaseMapType = 'osm'; // osm | topo | satellite | hot | carto
+
+  const locationDataMeta = {
+    flood: {
+      nodeId: "FLD1",
+      hazard: "Flood",
+      iconClass: "fa-water",
+      accentColor: "blue",
+      title: "Rishikesh · Ganga Basin",
+      station: "River Station #4 · Ganga Basin, Uttarakhand",
+      district: "Dehradun / Tehri Garhwal",
+      metricName: "River Water Level",
+      thresholdSafe: "Normal (< 6.0 m)",
+      thresholdDanger: "Critical Danger (> 10.0 m)",
+      unit: "m",
+      coords: "30.0869° N, 78.2676° E",
+      lat: 30.0869,
+      lng: 78.2676,
+      elevation: "372 m AMSL",
+      evacRadius: "5.0 km downstream riverbank",
+      safeRadiusMeters: 4000,
+      dangerRadiusMeters: 8000,
+      link: "/monitoring#flood"
+    },
+    landslide: {
+      nodeId: "SLD2",
+      hazard: "Landslide",
+      iconClass: "fa-mountain",
+      accentColor: "amber",
+      title: "Chamoli · Garhwal Slopes",
+      station: "Sector 2B · Mountain Slope Sensor Array",
+      district: "Chamoli District, Uttarakhand",
+      metricName: "Slope Incline Angle",
+      thresholdSafe: "Stable (< 30.0°)",
+      thresholdDanger: "Critical Shear (> 45.0°)",
+      unit: "°",
+      coords: "30.3844° N, 79.2811° E",
+      lat: 30.3844,
+      lng: 79.2811,
+      elevation: "1,550 m AMSL",
+      evacRadius: "2.5 km slope perimeter",
+      safeRadiusMeters: 3500,
+      dangerRadiusMeters: 7000,
+      link: "/monitoring#landslide"
+    },
+    fire: {
+      nodeId: "FIR3",
+      hazard: "Wildfire",
+      iconClass: "fa-fire-flame-curved",
+      accentColor: "rose",
+      title: "Almora · Kumaon Pine Forest",
+      station: "Binsar Reserve · Canopy Tower",
+      district: "Almora District, Uttarakhand",
+      metricName: "Combustion Gas (TVOC)",
+      thresholdSafe: "Normal (< 1,500 ppb)",
+      thresholdDanger: "Combustion Spike (> 5,000 ppb)",
+      unit: "ppb",
+      coords: "29.6200° N, 79.6800° E",
+      lat: 29.6200,
+      lng: 79.6800,
+      elevation: "1,860 m AMSL",
+      evacRadius: "8.0 km forest perimeter",
+      safeRadiusMeters: 4500,
+      dangerRadiusMeters: 9500,
+      link: "/monitoring#fire"
+    },
+    pollution: {
+      nodeId: "POL4",
+      hazard: "Air Quality",
+      iconClass: "fa-smog",
+      accentColor: "purple",
+      title: "Dehradun · Selaqui Valley",
+      station: "Selaqui Industrial Corridor · Cluster A",
+      district: "Dehradun District, Uttarakhand",
+      metricName: "Fine Particulate (PM2.5)",
+      thresholdSafe: "Good (< 60 µg/m³)",
+      thresholdDanger: "Severe Inversion (> 150 µg/m³)",
+      unit: "µg/m³",
+      coords: "30.3400° N, 77.8700° E",
+      lat: 30.3400,
+      lng: 77.8700,
+      elevation: "640 m AMSL",
+      evacRadius: "6.0 km valley basin",
+      safeRadiusMeters: 3800,
+      dangerRadiusMeters: 7500,
+      link: "/monitoring#pollution"
+    }
+  };
+
+  // --- Tile Layer Provider Factory (Supports Free No-Key and Authenticated Key) ---
+  function getTileLayerConfig(type) {
+    const savedKey = localStorage.getItem('sentinel_map_api_key') || '{{ map_api_key|default("") }}';
+
+    if (type === 'topo') {
+      return {
+        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+        options: {
+          attribution: '&copy; <a href="https://www.esri.com/">Esri</a> &copy; USGS, NOAA',
+          maxZoom: 18
+        },
+        label: 'Esri World Topographic (No Watermark)'
+      };
+    } else if (type === 'satellite') {
+      return {
+        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        options: {
+          attribution: '&copy; <a href="https://www.esri.com/">Esri</a>, Earthstar Geographics',
+          maxZoom: 18
+        },
+        label: 'Esri Satellite Imagery (No Watermark)'
+      };
+    } else if (type === 'hot') {
+      return {
+        url: 'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
+        options: {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; HOT Humanitarian',
+          maxZoom: 19
+        },
+        label: 'Humanitarian Disaster GIS (No Watermark)'
+      };
+    } else if (type === 'carto') {
+      // If user provided a key, attach ?api_key=
+      const url = savedKey 
+        ? `https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png?api_key=${savedKey}`
+        : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+      return {
+        url: url,
+        options: {
+          attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; OpenStreetMap',
+          subdomains: 'abcd',
+          maxZoom: 19
+        },
+        label: savedKey ? 'CARTO Positron (Authenticated API Key)' : 'CARTO Positron'
+      };
+    } else {
+      // Default: OpenStreetMap Standard (100% Free, Zero Watermark, Fast)
+      return {
+        url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+        options: {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          maxZoom: 19
+        },
+        label: 'OSM Standard (No Watermark)'
+      };
+    }
+  }
+
+  function switchBaseMap(type) {
+    currentBaseMapType = type;
+    localStorage.setItem('sentinel_map_provider', type);
+
+    if (map && activeTileLayer) {
+      map.removeLayer(activeTileLayer);
+    }
+
+    const cfg = getTileLayerConfig(type);
+    activeTileLayer = L.tileLayer(cfg.url, cfg.options).addTo(map);
+
+    // Update bottom label
+    document.getElementById('activeMapStyleLabel').textContent = cfg.label;
+
+    // Update switcher pill buttons
+    const btnMap = {
+      osm: document.getElementById('btnStyleOsm'),
+      topo: document.getElementById('btnStyleTopo'),
+      satellite: document.getElementById('btnStyleSatellite'),
+      hot: document.getElementById('btnStyleHot')
+    };
+
+    Object.keys(btnMap).forEach(k => {
+      if (btnMap[k]) {
+        if (k === type) {
+          btnMap[k].className = 'px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 font-bold transition';
+        } else {
+          btnMap[k].className = 'px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition';
+        }
+      }
+    });
+  }
+
+  // --- Initialize Leaflet GIS Map Centered on Uttarakhand ---
+  function initUttarakhandMap() {
+    if (map) return;
+
+    // Center coordinates for Uttarakhand, India
+    const uttarakhandCenter = [30.15, 79.10];
+
+    map = L.map('uttarakhandMap', {
+      center: uttarakhandCenter,
+      zoom: 8,
+      minZoom: 7,
+      maxZoom: 14,
+      scrollWheelZoom: true,
+      zoomControl: false
+    });
+
+    // Custom zoom control in bottom right to avoid clutter
+    L.control.zoom({ position: 'topright' }).addTo(map);
+
+    // Initialize Default Clean Base Layer (OSM or saved choice)
+    const savedChoice = localStorage.getItem('sentinel_map_provider') || 'osm';
+    switchBaseMap(savedChoice);
+
+    // State of Uttarakhand Geographical Boundary Polygon
+    const uttarakhandBoundary = [
+      [30.40, 77.70], [30.70, 77.75], [31.05, 77.85], [31.25, 78.10],
+      [31.45, 78.45], [31.30, 79.10], [31.05, 79.80], [30.90, 80.30],
+      [30.50, 80.95], [30.15, 80.60], [29.60, 80.40], [29.10, 80.15],
+      [28.85, 79.95], [28.70, 79.60], [28.90, 79.25], [29.20, 78.95],
+      [29.50, 78.60], [29.80, 78.15], [30.10, 77.95], [30.40, 77.70]
+    ];
+
+    L.polygon(uttarakhandBoundary, {
+      color: '#0284C7',
+      weight: 2.5,
+      dashArray: '5, 5',
+      fillColor: '#0284C7',
+      fillOpacity: 0.05
+    }).bindTooltip("State of Uttarakhand (India) · Multi-Hazard Surveillance Basin", {
+      sticky: true,
+      className: 'text-xs font-semibold text-slate-800 bg-white/95 rounded shadow px-2 py-1'
+    }).addTo(map);
+
+    // Create Initial Markers and Danger Circles for the 4 Uttarakhand Nodes
+    Object.keys(locationDataMeta).forEach(locKey => {
+      const meta = locationDataMeta[locKey];
+
+      // Circular safe / danger radius layer
+      const circle = L.circle([meta.lat, meta.lng], {
+        radius: meta.safeRadiusMeters,
+        color: '#10B981',
+        fillColor: '#10B981',
+        fillOpacity: 0.08,
+        weight: 1.5,
+        dashArray: '4, 4'
+      }).addTo(map);
+      dangerCircles[locKey] = circle;
+
+      // Custom HTML DivIcon
+      const marker = L.marker([meta.lat, meta.lng], {
+        icon: createMarkerIcon(locKey, false)
+      }).addTo(map);
+
+      marker.on('click', () => {
+        inspectLocation(locKey);
+      });
+
+      markers[locKey] = marker;
+    });
+
+    updateApiKeyButtonStatus();
+  }
+
+  // --- Dynamic Marker Icon Factory (Visual Danger vs Safe Indication) ---
+  function createMarkerIcon(locKey, isHazardous) {
+    const meta = locationDataMeta[locKey];
+
+    let iconHtml = '';
+    if (isHazardous) {
+      // High-Visibility Pulsing Crimson Danger Beacon
+      iconHtml = `
+        <div class="relative cursor-pointer group select-none">
+          <div class="absolute -inset-4 rounded-full bg-rose-500/40 animate-ping"></div>
+          <div class="relative w-11 h-11 rounded-2xl bg-rose-50 border-2 border-rose-600 shadow-xl flex items-center justify-center text-rose-600 group-hover:scale-110 transition animate-pulse">
+            <i class="fa-solid ${meta.iconClass} text-base"></i>
+          </div>
+          <div class="absolute top-12 left-1/2 -translate-x-1/2 whitespace-nowrap bg-rose-600 px-2.5 py-0.5 rounded-md border border-rose-700 shadow-lg text-[10px] font-bold text-white flex items-center gap-1">
+            <i class="fa-solid fa-triangle-exclamation text-[9px] animate-bounce"></i>
+            <span>DANGER</span>
+          </div>
+        </div>
+      `;
+    } else {
+      // Emerald Green Safe Baseline Beacon
+      iconHtml = `
+        <div class="relative cursor-pointer group select-none">
+          <div class="absolute -inset-2 rounded-full bg-emerald-400/30 animate-ping"></div>
+          <div class="relative w-10 h-10 rounded-2xl bg-white border-2 border-emerald-500 shadow-md flex items-center justify-center text-emerald-600 group-hover:scale-110 transition">
+            <i class="fa-solid ${meta.iconClass} text-sm"></i>
+          </div>
+          <div class="absolute top-11 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white/95 px-2 py-0.5 rounded-md border border-slate-200 shadow-sm text-[10px] font-bold text-slate-800 flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            <span>${meta.title.split('·')[0].trim()}</span>
+          </div>
+        </div>
+      `;
+    }
+
+    return L.divIcon({
+      html: iconHtml,
+      className: 'custom-leaflet-marker',
+      iconSize: [44, 44],
+      iconAnchor: [22, 22]
+    });
+  }
+
+  // --- Inspect Location Handler ---
+  function inspectLocation(locKey) {
+    activeLocation = locKey;
+    const meta = locationDataMeta[locKey];
+
+    // Pan map to location
+    if (map) {
+      map.flyTo([meta.lat, meta.lng], 10, {
+        duration: 1.0
+      });
+    }
+
+    // Update bottom selector buttons
+    const btnMap = {
+      'flood': document.getElementById('locBtnFlood'),
+      'landslide': document.getElementById('locBtnLandslide'),
+      'fire': document.getElementById('locBtnFire'),
+      'pollution': document.getElementById('locBtnPollution')
+    };
+
+    Object.keys(btnMap).forEach(k => {
+      if (k === locKey) {
+        btnMap[k].className = 'px-3 py-1.5 rounded-xl bg-blue-50 text-blue-700 font-semibold border border-blue-200 shadow-sm transition whitespace-nowrap flex items-center gap-1.5';
+      } else {
+        btnMap[k].className = 'px-3 py-1.5 rounded-xl bg-slate-50 text-slate-600 hover:text-slate-900 border border-slate-200 transition whitespace-nowrap flex items-center gap-1.5';
+      }
+    });
+
+    renderLocationInspector();
+  }
+
+  function toggleInspectorDetails() {
+    const details = document.getElementById('inspectorDetailsExpanded');
+    const text = document.getElementById('inspectorToggleText');
+    const icon = document.getElementById('inspectorToggleIcon');
+
+    if (details.classList.contains('hidden')) {
+      details.classList.remove('hidden');
+      text.textContent = 'Hide Additional Details';
+      icon.classList.add('rotate-180');
+    } else {
+      details.classList.add('hidden');
+      text.textContent = 'View Additional Details';
+      icon.classList.remove('rotate-180');
+    }
+  }
+
+  function centerMapDefault() {
+    if (map) {
+      map.flyTo([30.15, 79.10], 8, { duration: 1.0 });
+    }
+  }
+
+  function filterMapLayer(type) {
+    currentLayerFilter = type;
+    const layerAll = document.getElementById('layerAll');
+    const layerRisk = document.getElementById('layerRisk');
+    const layerSafe = document.getElementById('layerSafe');
+
+    [layerAll, layerRisk, layerSafe].forEach(btn => {
+      btn.className = 'px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition';
+    });
+
+    if (type === 'all') {
+      layerAll.className = 'px-3 py-1.5 rounded-lg bg-white text-slate-900 font-semibold shadow-sm transition';
+    } else if (type === 'risk') {
+      layerRisk.className = 'px-3 py-1.5 rounded-lg bg-rose-50 text-rose-700 border border-rose-200 font-semibold shadow-sm transition';
+    } else if (type === 'safe') {
+      layerSafe.className = 'px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold shadow-sm transition';
+    }
+
+    updateMapLayersVisibility();
+  }
+
+  function updateMapLayersVisibility() {
+    if (!map || !cachedTelemetry || !cachedTelemetry.nodes) return;
+    const nodes = cachedTelemetry.nodes;
+
+    Object.keys(locationDataMeta).forEach(locKey => {
+      const meta = locationDataMeta[locKey];
+      const node = nodes[meta.nodeId];
+      const isHazardous = node && node.status === 'Hazardous';
+
+      const marker = markers[locKey];
+      const circle = dangerCircles[locKey];
+
+      if (!marker || !circle) return;
+
+      let shouldShow = true;
+      if (currentLayerFilter === 'risk') {
+        shouldShow = isHazardous;
+      } else if (currentLayerFilter === 'safe') {
+        shouldShow = !isHazardous;
+      }
+
+      if (shouldShow) {
+        if (!map.hasLayer(marker)) map.addLayer(marker);
+        if (!map.hasLayer(circle)) map.addLayer(circle);
+      } else {
+        if (map.hasLayer(marker)) map.removeLayer(marker);
+        if (map.hasLayer(circle)) map.removeLayer(circle);
+      }
+    });
+  }
+
+  function renderLocationInspector() {
+    if (!cachedTelemetry) return;
+    const meta = locationDataMeta[activeLocation];
+    const node = cachedTelemetry.nodes[meta.nodeId];
+
+    document.getElementById('inspectorHazardType').textContent = meta.hazard;
+    document.getElementById('inspectorDistrict').textContent = meta.district;
+    document.getElementById('inspectorIcon').className = `fa-solid ${meta.iconClass}`;
+    document.getElementById('inspectorLocationTitle').textContent = meta.title;
+    document.getElementById('inspectorStationSubtitle').textContent = meta.station;
+    document.getElementById('inspectorMetricLabel').textContent = `${meta.metricName}:`;
+    document.getElementById('detCoords').textContent = meta.coords;
+    document.getElementById('detElevation').textContent = meta.elevation;
+    document.getElementById('detThreshold').textContent = meta.thresholdDanger;
+    document.getElementById('detEvacuation').textContent = meta.evacRadius;
+    document.getElementById('inspectorMonitoringLink').href = meta.link;
+
+    if (node) {
+      const badge = document.getElementById('inspectorStatusBadge');
+      const valEl = document.getElementById('inspectorMetricValue');
+      const riskEl = document.getElementById('inspectorRiskLevel');
+      const containerEl = document.getElementById('inspectorSituationContainer');
+      const dotEl = document.getElementById('inspectorDangerIndicatorDot');
+      const titleEl = document.getElementById('inspectorDangerIndicatorTitle');
+      const noteEl = document.getElementById('inspectorSituationNote');
+      const threshEl = document.getElementById('inspectorThreshold');
+
+      let val = 0;
+      if (activeLocation === 'flood') val = node.sensors.River_Water_Level_m;
+      if (activeLocation === 'landslide') val = node.sensors.Slope_Angle;
+      if (activeLocation === 'fire') val = node.sensors['TVOC[ppb]'];
+      if (activeLocation === 'pollution') val = node.sensors.pm25;
+
+      valEl.textContent = `${val} ${meta.unit}`;
+
+      if (node.status === 'Hazardous') {
+        badge.className = 'text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 uppercase';
+        badge.textContent = 'Critical Danger';
+        riskEl.className = 'text-xs font-bold text-rose-600 animate-pulse';
+        riskEl.textContent = 'HIGH RISK';
+        threshEl.textContent = meta.thresholdDanger;
+        threshEl.className = 'text-[11px] text-rose-600 font-mono font-medium';
+
+        containerEl.className = 'p-3.5 rounded-xl bg-rose-50 border border-rose-200 transition';
+        dotEl.className = 'w-2 h-2 rounded-full bg-rose-600 animate-ping';
+        titleEl.className = 'text-xs font-bold text-rose-700 uppercase';
+        titleEl.textContent = 'Danger: Threshold Breached';
+        noteEl.innerHTML = `<strong class="text-rose-700">Critical Threat Alert:</strong> Emergency thresholds breached at ${meta.title}. Multi-hazard perimeter alarm active. Local evacuation and response team dispatch advised.`;
+      } else {
+        badge.className = 'text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase';
+        badge.textContent = 'Safe';
+        riskEl.className = 'text-xs font-semibold text-emerald-600';
+        riskEl.textContent = 'LOW RISK';
+        threshEl.textContent = meta.thresholdSafe;
+        threshEl.className = 'text-[11px] text-slate-400 font-mono';
+
+        containerEl.className = 'p-3.5 rounded-xl bg-slate-50 border border-slate-200 transition';
+        dotEl.className = 'w-2 h-2 rounded-full bg-emerald-500';
+        titleEl.className = 'text-xs font-bold text-emerald-700 uppercase';
+        titleEl.textContent = 'Current Status: Safe';
+        noteEl.textContent = `All sensors in ${meta.title} operating within safe bounds. Zero risk indicators reported.`;
+      }
+    }
+  }
+
+  // --- API Key Modal & Settings Logic ---
+  function openApiKeyModal() {
+    const modal = document.getElementById('apiKeyModal');
+    const input = document.getElementById('customApiKeyInput');
+    const savedKey = localStorage.getItem('sentinel_map_api_key') || '';
+    input.value = savedKey;
+
+    const radios = document.getElementsByName('tileProviderChoice');
+    radios.forEach(r => {
+      if (r.value === currentBaseMapType) r.checked = true;
+    });
+
+    updateModalKeyStatus(savedKey);
+    modal.classList.remove('hidden');
+  }
+
+  function closeApiKeyModal() {
+    document.getElementById('apiKeyModal').classList.add('hidden');
+  }
+
+  function updateModalKeyStatus(key) {
+    const statusPill = document.getElementById('currentKeyStatusPill');
+    const clearBtn = document.getElementById('btnClearKey');
+    if (key && key.trim().length > 0) {
+      statusPill.textContent = 'Key Saved (' + key.slice(0, 6) + '...)';
+      statusPill.className = 'text-[10px] font-mono text-emerald-600 font-semibold';
+      clearBtn.classList.remove('hidden');
+    } else {
+      statusPill.textContent = 'No Key Stored (Free Mode)';
+      statusPill.className = 'text-[10px] font-mono text-slate-400';
+      clearBtn.classList.add('hidden');
+    }
+  }
+
+  function handleProviderChoiceChange(val) {
+    if (val === 'carto') {
+      const input = document.getElementById('customApiKeyInput');
+      input.focus();
+    }
+  }
+
+  function clearApiKey() {
+    localStorage.removeItem('sentinel_map_api_key');
+    document.getElementById('customApiKeyInput').value = '';
+    updateModalKeyStatus('');
+    updateApiKeyButtonStatus();
+    switchBaseMap('osm'); // reset to clean OSM
+  }
+
+  function saveApiKeySettings() {
+    const input = document.getElementById('customApiKeyInput');
+    const key = input.value.trim();
+
+    if (key) {
+      localStorage.setItem('sentinel_map_api_key', key);
+    } else {
+      localStorage.removeItem('sentinel_map_api_key');
+    }
+
+    // Determine chosen provider
+    let selectedProvider = 'osm';
+    const radios = document.getElementsByName('tileProviderChoice');
+    radios.forEach(r => {
+      if (r.checked) selectedProvider = r.value;
+    });
+
+    switchBaseMap(selectedProvider);
+    updateApiKeyButtonStatus();
+    closeApiKeyModal();
+  }
+
+  function updateApiKeyButtonStatus() {
+    const savedKey = localStorage.getItem('sentinel_map_api_key');
+    const btnText = document.getElementById('headerApiKeyBtnText');
+    if (btnText) {
+      if (savedKey) {
+        btnText.textContent = 'API Key (Active)';
+      } else {
+        btnText.textContent = 'Map Style & Key';
+      }
+    }
+  }
+
+  // --- React to Live Real-Time Telemetry & Simulation Events ---
+  window.addEventListener('sentinel_data', (event) => {
+    cachedTelemetry = event.detail;
+    const { nodes } = event.detail;
+
+    // Ensure Leaflet map is initialized
+    if (!map) {
+      initUttarakhandMap();
+    }
+
+    let dangerCount = 0;
+    const dangerAreas = [];
+
+    // Update each node marker & danger circle dynamically
+    Object.keys(locationDataMeta).forEach(locKey => {
+      const meta = locationDataMeta[locKey];
+      const node = nodes[meta.nodeId];
+      const isHazardous = node && node.status === 'Hazardous';
+
+      if (isHazardous) {
+        dangerCount++;
+        dangerAreas.push(meta.title.split('·')[0].trim());
+      }
+
+      const marker = markers[locKey];
+      const circle = dangerCircles[locKey];
+
+      if (marker) {
+        marker.setIcon(createMarkerIcon(locKey, isHazardous));
+      }
+
+      if (circle) {
+        if (isHazardous) {
+          // Expanding red danger zone
+          circle.setStyle({
+            radius: meta.dangerRadiusMeters,
+            color: '#EF4444',
+            fillColor: '#EF4444',
+            fillOpacity: 0.22,
+            weight: 2.5,
+            dashArray: '6, 6'
+          });
+        } else {
+          // Green safe monitoring zone
+          circle.setStyle({
+            radius: meta.safeRadiusMeters,
+            color: '#10B981',
+            fillColor: '#10B981',
+            fillOpacity: 0.08,
+            weight: 1.5,
+            dashArray: '4, 4'
+          });
+        }
+      }
+    });
+
+    // Update Statewide Danger Status Banner
+    const banner = document.getElementById('statewideDangerBanner');
+    const bannerDot = document.getElementById('statewideBannerDot');
+    const bannerTitle = document.getElementById('statewideBannerTitle');
+    const bannerDesc = document.getElementById('statewideBannerDesc');
+    const bannerBadge = document.getElementById('statewideBannerBadge');
+
+    if (dangerCount > 0) {
+      banner.className = 'p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 flex items-center justify-between text-xs transition shadow-sm animate-pulse';
+      bannerDot.className = 'w-2.5 h-2.5 rounded-full bg-rose-600 animate-ping';
+      bannerTitle.className = 'font-bold tracking-tight uppercase text-rose-700 block sm:inline';
+      bannerTitle.textContent = `⚠️ Critical Disaster Alert: Danger in ${dangerAreas.join(', ')}`;
+      bannerDesc.textContent = `${dangerCount} region(s) in Uttarakhand exceeding critical threshold. LoRa alarms & emergency sirens triggered.`;
+      bannerBadge.className = 'text-[10px] font-bold px-2.5 py-1 rounded-md bg-rose-600 text-white border border-rose-700 uppercase whitespace-nowrap shadow-sm';
+      bannerBadge.textContent = `EMERGENCY · LEVEL 3`;
+    } else {
+      banner.className = 'p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-between text-xs transition shadow-sm';
+      bannerDot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500';
+      bannerTitle.className = 'font-bold tracking-tight uppercase text-emerald-800 block sm:inline';
+      bannerTitle.textContent = 'Uttarakhand Region: All 4 Nodes Safe';
+      bannerDesc.textContent = 'Normal parameters across Rishikesh, Chamoli, Almora & Dehradun.';
+      bannerBadge.className = 'text-[10px] font-bold px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-200 uppercase whitespace-nowrap';
+      bannerBadge.textContent = 'Normal · Level 0';
+    }
+
+    updateMapLayersVisibility();
+    renderLocationInspector();
+  });
+
+  // Initialize Map on DOM Content Loaded
+  document.addEventListener('DOMContentLoaded', () => {
+    initUttarakhandMap();
+    renderLocationInspector();
+  });
+</script>
+
+<style>
+  /* Custom Leaflet Marker Styling */
+  .custom-leaflet-marker {
+    background: transparent;
+    border: none;
+  }
+  .leaflet-container {
+    font-family: 'Inter', sans-serif !important;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fadeIn {
+    animation: fadeIn 0.25s ease-out forwards;
+  }
+</style>
+{% endblock %}

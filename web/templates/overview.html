@@ -1,0 +1,654 @@
+{% extends "base.html" %}
+
+{% block title %}Overview · Disaster Sentinel{% endblock %}
+
+{% block content %}
+<div class="space-y-8 pb-10">
+
+  <!-- ========================================================================= -->
+  <!-- 1. SYSTEM STATUS: 5-SECOND SITUATIONAL AWARENESS -->
+  <!-- STATUS → ACTIVE THREAT → LOCATION → SEVERITY → RECOMMENDED ACTION -->
+  <!-- ========================================================================= -->
+  <section id="mainStatusSection" class="relative overflow-hidden rounded-2xl bg-white border border-slate-border p-6 sm:p-8 shadow-sm transition-all duration-300">
+    <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+      
+      <!-- Left: Status Badge, Headline & Context -->
+      <div class="flex items-start gap-5 flex-1">
+        
+        <!-- Status Icon Container (FontAwesome icon, no emoji) -->
+        <div id="statusIconContainer" class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 text-2xl sm:text-3xl flex-shrink-0 shadow-sm">
+          <i id="statusIcon" class="fa-solid fa-circle-check"></i>
+        </div>
+
+        <div class="space-y-1.5">
+          <!-- Severity & Category Tag -->
+          <div class="flex flex-wrap items-center gap-2.5">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-muted">System Status</span>
+            <span class="text-slate-300">&bull;</span>
+            <span id="statusSeverityBadge" class="text-[11px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+              Normal &middot; Level 0
+            </span>
+            <span class="text-slate-300">&bull;</span>
+            <span class="text-xs text-slate-muted flex items-center gap-1">
+              <i class="fa-regular fa-clock text-[10px]"></i>
+              <span id="statusLastUpdated">Just now</span>
+            </span>
+          </div>
+
+          <!-- Main Status Headline (Clean, no emoji) -->
+          <h1 id="statusHeadline" class="text-2xl sm:text-3xl font-extrabold text-navy-900 tracking-tight">
+            ALL SYSTEMS SAFE
+          </h1>
+
+          <!-- Active Threat & Location Details -->
+          <p id="statusThreatDetails" class="text-xs sm:text-sm font-medium text-emerald-700">
+            No active disaster threats detected across monitored regions.
+          </p>
+
+          <!-- Monitored Scope Description -->
+          <p id="statusSummary" class="text-xs text-slate-muted max-w-2xl leading-relaxed pt-0.5">
+            Surveillance is operational across all 4 Uttarakhand sectors: Rishikesh (Ganga Basin), Chamoli (Garhwal Slopes), Almora (Pine Forest), and Dehradun (Selaqui Valley).
+          </p>
+        </div>
+      </div>
+
+      <!-- Right: Direct Recommended Actions -->
+      <div class="flex flex-col sm:flex-row lg:flex-col items-stretch gap-2.5 w-full lg:w-auto flex-shrink-0 pt-2 lg:pt-0">
+        <a id="heroPrimaryAction" href="/monitoring" class="px-4 py-2.5 rounded-xl bg-white hover:bg-gray-50 text-navy-900 font-semibold text-xs border border-slate-border flex items-center justify-center gap-2 transition shadow-sm">
+          <i class="fa-solid fa-chart-line text-brand-action text-xs"></i>
+          <span>View Live Monitoring</span>
+          <i class="fa-solid fa-chevron-right text-[10px] text-slate-400"></i>
+        </a>
+        <a href="/map" class="px-4 py-2.5 rounded-xl bg-white hover:bg-gray-50 text-navy-900 font-semibold text-xs border border-slate-border flex items-center justify-center gap-2 transition shadow-sm">
+          <i class="fa-solid fa-map-location-dot text-brand-action text-xs"></i>
+          <span>Open Disaster Map</span>
+          <i class="fa-solid fa-chevron-right text-[10px] text-slate-400"></i>
+        </a>
+        <button onclick="openSosModal()" class="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs flex items-center justify-center gap-2 transition shadow-sm">
+          <i class="fa-solid fa-bullhorn text-xs"></i>
+          <span>Emergency Response</span>
+        </button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 2. DISASTER SUMMARY: 4 CLEAN HAZARD CARDS (SaaS UI Kit Top Metrics Row) -->
+  <!-- ========================================================================= -->
+  <section class="space-y-4">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-border pb-3">
+      <div>
+        <h2 class="text-base font-bold text-navy-900 tracking-tight">Monitored Uttarakhand Hazards</h2>
+        <p class="text-xs text-slate-muted">Current risk level and primary indicator across each Uttarakhand hazard domain.</p>
+      </div>
+      <a href="/monitoring" class="text-xs text-brand-action hover:underline font-semibold flex items-center gap-1 self-start sm:self-auto">
+        <span>Detailed Telemetry</span>
+        <i class="fa-solid fa-chevron-right text-[10px]"></i>
+      </a>
+    </div>
+
+    <!-- 4 Clean SaaS-Style Cards Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+
+      <!-- Card 1: FLOOD -->
+      <div id="cardFlood" class="card-base p-5 flex flex-col justify-between space-y-4 bg-white border border-slate-border hover:border-blue-300 transition-all rounded-2xl shadow-sm">
+        <div>
+          <!-- Header: Professional Icon & Risk Badge -->
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-11 h-11 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-base shadow-sm">
+                <i class="fa-solid fa-water"></i>
+              </div>
+              <div>
+                <h3 class="font-bold text-navy-900 text-sm">Flood</h3>
+                <span class="text-[11px] text-slate-muted block">Rishikesh · Ganga Basin</span>
+              </div>
+            </div>
+            <span id="badgeFlood" class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase">
+              Safe
+            </span>
+          </div>
+
+          <!-- ONE Important Metric -->
+          <div class="mt-4 p-3.5 rounded-xl bg-slate-subtle border border-slate-border/80">
+            <span class="text-[11px] text-slate-muted font-medium block">River Water Level</span>
+            <div class="flex items-baseline gap-1.5 mt-0.5">
+              <span id="metricFlood" class="text-2xl font-bold text-navy-900 font-mono">2.10</span>
+              <span class="text-xs text-slate-muted font-mono">meters</span>
+            </div>
+            <span id="metricFloodSub" class="text-[11px] text-slate-muted block mt-1">Normal Flow (&lt; 6.0 m)</span>
+          </div>
+        </div>
+
+        <a href="/monitoring#flood" class="w-full py-2 rounded-xl bg-white hover:bg-brand-light text-brand-action text-xs font-semibold flex items-center justify-center gap-1.5 border border-slate-border transition shadow-sm">
+          <span>View Details</span>
+          <i class="fa-solid fa-arrow-right text-[10px]"></i>
+        </a>
+      </div>
+
+      <!-- Card 2: LANDSLIDE -->
+      <div id="cardLandslide" class="card-base p-5 flex flex-col justify-between space-y-4 bg-white border border-slate-border hover:border-amber-300 transition-all rounded-2xl shadow-sm">
+        <div>
+          <!-- Header: Professional Icon & Risk Badge -->
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-11 h-11 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center text-base shadow-sm">
+                <i class="fa-solid fa-mountain"></i>
+              </div>
+              <div>
+                <h3 class="font-bold text-navy-900 text-sm">Landslide</h3>
+                <span class="text-[11px] text-slate-muted block">Chamoli · Garhwal Slopes</span>
+              </div>
+            </div>
+            <span id="badgeLandslide" class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase">
+              Safe
+            </span>
+          </div>
+
+          <!-- ONE Important Metric -->
+          <div class="mt-4 p-3.5 rounded-xl bg-slate-subtle border border-slate-border/80">
+            <span class="text-[11px] text-slate-muted font-medium block">Slope Incline Angle</span>
+            <div class="flex items-baseline gap-1.5 mt-0.5">
+              <span id="metricLandslide" class="text-2xl font-bold text-navy-900 font-mono">12.0</span>
+              <span class="text-xs text-slate-muted font-mono">degrees (&deg;)</span>
+            </div>
+            <span id="metricLandslideSub" class="text-[11px] text-slate-muted block mt-1">Stable Slope (&lt; 30.0&deg;)</span>
+          </div>
+        </div>
+
+        <a href="/monitoring#landslide" class="w-full py-2 rounded-xl bg-white hover:bg-amber-50 text-amber-700 text-xs font-semibold flex items-center justify-center gap-1.5 border border-slate-border transition shadow-sm">
+          <span>View Details</span>
+          <i class="fa-solid fa-arrow-right text-[10px]"></i>
+        </a>
+      </div>
+
+      <!-- Card 3: WILDFIRE -->
+      <div id="cardFire" class="card-base p-5 flex flex-col justify-between space-y-4 bg-white border border-slate-border hover:border-rose-300 transition-all rounded-2xl shadow-sm">
+        <div>
+          <!-- Header: Professional Icon & Risk Badge -->
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-11 h-11 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center text-base shadow-sm">
+                <i class="fa-solid fa-fire-flame-curved"></i>
+              </div>
+              <div>
+                <h3 class="font-bold text-navy-900 text-sm">Wildfire</h3>
+                <span class="text-[11px] text-slate-muted block">Almora · Kumaon Forest</span>
+              </div>
+            </div>
+            <span id="badgeFire" class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase">
+              Safe
+            </span>
+          </div>
+
+          <!-- ONE Important Metric -->
+          <div class="mt-4 p-3.5 rounded-xl bg-slate-subtle border border-slate-border/80">
+            <span class="text-[11px] text-slate-muted font-medium block">Combustion Gas (TVOC)</span>
+            <div class="flex items-baseline gap-1.5 mt-0.5">
+              <span id="metricFire" class="text-2xl font-bold text-navy-900 font-mono">818</span>
+              <span class="text-xs text-slate-muted font-mono">ppb</span>
+            </div>
+            <span id="metricFireSub" class="text-[11px] text-slate-muted block mt-1">Normal Baseline (&lt; 1,500 ppb)</span>
+          </div>
+        </div>
+
+        <a href="/monitoring#fire" class="w-full py-2 rounded-xl bg-white hover:bg-rose-50 text-rose-700 text-xs font-semibold flex items-center justify-center gap-1.5 border border-slate-border transition shadow-sm">
+          <span>View Details</span>
+          <i class="fa-solid fa-arrow-right text-[10px]"></i>
+        </a>
+      </div>
+
+      <!-- Card 4: POLLUTION -->
+      <div id="cardPollution" class="card-base p-5 flex flex-col justify-between space-y-4 bg-white border border-slate-border hover:border-purple-300 transition-all rounded-2xl shadow-sm">
+        <div>
+          <!-- Header: Professional Icon & Risk Badge -->
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-11 h-11 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center text-base shadow-sm">
+                <i class="fa-solid fa-smog"></i>
+              </div>
+              <div>
+                <h3 class="font-bold text-navy-900 text-sm">Air Quality</h3>
+                <span class="text-[11px] text-slate-muted block">Dehradun · Selaqui Valley</span>
+              </div>
+            </div>
+            <span id="badgePollution" class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase">
+              Safe
+            </span>
+          </div>
+
+          <!-- ONE Important Metric -->
+          <div class="mt-4 p-3.5 rounded-xl bg-slate-subtle border border-slate-border/80">
+            <span class="text-[11px] text-slate-muted font-medium block">Fine Particulate (PM2.5)</span>
+            <div class="flex items-baseline gap-1.5 mt-0.5">
+              <span id="metricPollution" class="text-2xl font-bold text-navy-900 font-mono">11.5</span>
+              <span class="text-xs text-slate-muted font-mono">&micro;g/m&sup3;</span>
+            </div>
+            <span id="metricPollutionSub" class="text-[11px] text-slate-muted block mt-1">Good Quality (&lt; 60 &micro;g/m&sup3;)</span>
+          </div>
+        </div>
+
+        <a href="/monitoring#pollution" class="w-full py-2 rounded-xl bg-white hover:bg-purple-50 text-purple-700 text-xs font-semibold flex items-center justify-center gap-1.5 border border-slate-border transition shadow-sm">
+          <span>View Details</span>
+          <i class="fa-solid fa-arrow-right text-[10px]"></i>
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 3. LIVE MAP PREVIEW: CLEAN GEOSPATIAL OVERVIEW -->
+  <!-- ========================================================================= -->
+  <section class="card-base p-6 sm:p-7 space-y-5 bg-white border border-slate-border rounded-2xl shadow-sm">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-border pb-4">
+      <div>
+        <h2 class="text-base font-bold text-navy-900 flex items-center gap-2">
+          <i class="fa-solid fa-map-location-dot text-brand-action"></i>
+          <span>Geospatial Risk Map &middot; Uttarakhand (India)</span>
+        </h2>
+        <p class="text-xs text-slate-muted mt-0.5">
+          Surveillance layout across 4 strategic regions in Uttarakhand with real-time danger indication.
+        </p>
+      </div>
+
+      <a href="/map" class="px-4 py-2 rounded-xl bg-white hover:bg-gray-50 text-navy-900 border border-slate-border text-xs font-semibold flex items-center gap-1.5 transition self-start sm:self-auto shadow-sm">
+        <span>Open Full GIS Map</span>
+        <i class="fa-solid fa-arrow-right text-[10px]"></i>
+      </a>
+    </div>
+
+    <!-- Map Canvas (Clean Modern Vector Canvas of Uttarakhand) -->
+    <div class="relative w-full aspect-[16/8] sm:aspect-[21/9] bg-[#F8FAFC] rounded-2xl border border-slate-border overflow-hidden flex items-center justify-center select-none shadow-inner">
+      
+      <!-- Coordinate Grid Background -->
+      <svg class="absolute inset-0 w-full h-full opacity-20 pointer-events-none">
+        <defs>
+          <pattern id="homeMapGrid" width="36" height="36" patternUnits="userSpaceOnUse">
+            <path d="M 36 0 L 0 0 0 36" fill="none" stroke="#94A3B8" stroke-width="0.7"/>
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#homeMapGrid)" />
+      </svg>
+
+      <!-- Geographic Regional Contours & Rivers -->
+      <svg class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 900 380" fill="none">
+        <!-- Mountain Range Top-Left (Garhwal Himalaya) -->
+        <path d="M 40 100 Q 180 20 320 70 T 560 50" stroke="#D97706" stroke-width="2.5" stroke-dasharray="6 4" opacity="0.5"/>
+        <path d="M 10 150 Q 200 60 360 110 T 600 90" stroke="#D97706" stroke-width="2" stroke-dasharray="6 4" opacity="0.35"/>
+        
+        <!-- Ganga River Basin Flow -->
+        <path d="M 0 290 C 220 270 300 210 460 190 C 660 160 760 90 900 70" stroke="#0284C7" stroke-width="8" opacity="0.5" stroke-linecap="round"/>
+        
+        <!-- Kumaon Forest Boundary (Right) -->
+        <rect x="580" y="160" width="260" height="170" rx="20" stroke="#059669" stroke-width="2" stroke-dasharray="6 4" opacity="0.4" fill="#059669" fill-opacity="0.05"/>
+
+        <!-- Dehradun Valley Basin Boundary (Bottom-Left) -->
+        <rect x="60" y="240" width="220" height="110" rx="16" stroke="#7C3AED" stroke-width="2" stroke-dasharray="6 4" opacity="0.4" fill="#7C3AED" fill-opacity="0.05"/>
+      </svg>
+
+      <!-- Station 1: Flood (Rishikesh · Ganga Basin) -->
+      <div class="absolute top-[52%] left-[45%] transform -translate-x-1/2 -translate-y-1/2 text-center cursor-pointer group" onclick="window.location.href='/map'">
+        <div id="mapBeaconFlood" class="w-4 h-4 rounded-full bg-emerald-500 mx-auto transition-all shadow-md"></div>
+        <div class="mt-1 px-2.5 py-1 rounded-xl bg-white/95 border border-slate-border text-[11px] font-semibold text-navy-900 flex items-center gap-1.5 whitespace-nowrap shadow-sm">
+          <i class="fa-solid fa-water text-blue-600 text-[10px]"></i>
+          <span>Rishikesh (Ganga)</span>
+        </div>
+      </div>
+
+      <!-- Station 2: Landslide (Chamoli · Garhwal Slopes) -->
+      <div class="absolute top-[22%] left-[32%] transform -translate-x-1/2 -translate-y-1/2 text-center cursor-pointer group" onclick="window.location.href='/map'">
+        <div id="mapBeaconLandslide" class="w-4 h-4 rounded-full bg-emerald-500 mx-auto transition-all shadow-md"></div>
+        <div class="mt-1 px-2.5 py-1 rounded-xl bg-white/95 border border-slate-border text-[11px] font-semibold text-navy-900 flex items-center gap-1.5 whitespace-nowrap shadow-sm">
+          <i class="fa-solid fa-mountain text-amber-600 text-[10px]"></i>
+          <span>Chamoli (Slopes)</span>
+        </div>
+      </div>
+
+      <!-- Station 3: Fire (Almora · Kumaon Forest) -->
+      <div class="absolute top-[58%] left-[76%] transform -translate-x-1/2 -translate-y-1/2 text-center cursor-pointer group" onclick="window.location.href='/map'">
+        <div id="mapBeaconFire" class="w-4 h-4 rounded-full bg-emerald-500 mx-auto transition-all shadow-md"></div>
+        <div class="mt-1 px-2.5 py-1 rounded-xl bg-white/95 border border-slate-border text-[11px] font-semibold text-navy-900 flex items-center gap-1.5 whitespace-nowrap shadow-sm">
+          <i class="fa-solid fa-fire-flame-curved text-rose-600 text-[10px]"></i>
+          <span>Almora (Forest)</span>
+        </div>
+      </div>
+
+      <!-- Station 4: Pollution (Dehradun · Selaqui Valley) -->
+      <div class="absolute top-[75%] left-[16%] transform -translate-x-1/2 -translate-y-1/2 text-center cursor-pointer group" onclick="window.location.href='/map'">
+        <div id="mapBeaconPollution" class="w-4 h-4 rounded-full bg-emerald-500 mx-auto transition-all shadow-md"></div>
+        <div class="mt-1 px-2.5 py-1 rounded-xl bg-white/95 border border-slate-border text-[11px] font-semibold text-navy-900 flex items-center gap-1.5 whitespace-nowrap shadow-sm">
+          <i class="fa-solid fa-smog text-purple-600 text-[10px]"></i>
+          <span>Dehradun (Valley)</span>
+        </div>
+      </div>
+
+      <!-- Overlay Legend -->
+      <div class="absolute bottom-3 left-3 bg-white/95 backdrop-blur px-3 py-1.5 rounded-xl border border-slate-border text-[11px] text-slate-muted flex items-center gap-3 shadow-sm">
+        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Safe Baseline</span>
+        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span> Threat Active</span>
+        <span class="flex items-center gap-1.5 border-l border-slate-200 pl-2 text-blue-600 font-semibold">Uttarakhand Basin</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 4. ACTIVE ALERTS & 5. EMERGENCY ACTIONS -->
+  <!-- ========================================================================= -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- Active Alerts (Left 2 Cols) -->
+    <section class="lg:col-span-2 card-base p-6 space-y-4 bg-white border border-slate-border rounded-2xl shadow-sm">
+      <div class="flex items-center justify-between border-b border-slate-border pb-3">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-triangle-exclamation text-amber-500 text-sm"></i>
+          <h2 class="text-sm font-bold text-navy-900">Recent Incident Alerts</h2>
+        </div>
+        <a href="/alerts" class="text-xs text-brand-action hover:underline font-semibold flex items-center gap-1">
+          <span>View All Alerts &rarr;</span>
+        </a>
+      </div>
+
+      <!-- Feed Container -->
+      <div id="overviewAlertsFeed" class="space-y-3">
+        <!-- Default Safe State -->
+        <div class="p-4 rounded-xl bg-slate-subtle border border-slate-border flex items-center justify-between text-xs">
+          <div class="flex items-center gap-3">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
+            <div>
+              <span class="font-bold text-navy-900">All Monitored Regions Operating in Safe Baseline</span>
+              <p class="text-slate-muted text-xs mt-0.5">Continuous telemetry surveillance active. Zero safety threshold breaches reported.</p>
+            </div>
+          </div>
+          <span class="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-mono text-[10px] font-bold border border-emerald-200">
+            NORMAL
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Emergency Actions Section (Right 1 Col) -->
+    <section class="card-base p-6 flex flex-col justify-between space-y-5 bg-white border border-slate-border rounded-2xl shadow-sm">
+      <div class="space-y-2.5">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 text-sm shadow-sm">
+            <i class="fa-solid fa-shield-halved"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-navy-900 text-sm">Emergency Actions</h3>
+            <span class="text-[11px] text-slate-muted">Response &amp; Coordination</span>
+          </div>
+        </div>
+
+        <p id="emergencySectionText" class="text-xs text-slate-600 leading-relaxed pt-1">
+          Standby protocol active. If any region breaches critical hazard thresholds, immediate civil defense and NDRF satellite SOS triggers will be authorized here.
+        </p>
+      </div>
+
+      <div class="space-y-2.5 pt-2 border-t border-slate-border">
+        <a href="/alerts" class="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-gray-50 text-navy-900 text-xs font-semibold flex items-center justify-between border border-slate-border transition shadow-sm">
+          <span>VIEW ACTIVE ALERTS</span>
+          <i class="fa-solid fa-chevron-right text-[10px] text-slate-400"></i>
+        </a>
+        <a href="/map" class="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-gray-50 text-navy-900 text-xs font-semibold flex items-center justify-between border border-slate-border transition shadow-sm">
+          <span>OPEN DISASTER MAP</span>
+          <i class="fa-solid fa-chevron-right text-[10px] text-slate-400"></i>
+        </a>
+        <button onclick="openSosModal()" class="w-full py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition">
+          <i class="fa-solid fa-bullhorn text-xs"></i>
+          <span>SEND EMERGENCY SOS</span>
+        </button>
+      </div>
+    </section>
+
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Friendly location lookup mapping internal IDs to clean user-facing names
+  const friendlyLocations = {
+    'FLD1': 'Ganga Catchment',
+    'SLD2': 'Himalayan Foothills',
+    'FIR3': 'Pine Forest Perimeter',
+    'POL4': 'Industrial Basin'
+  };
+
+  const friendlyIcons = {
+    'FLD1': 'fa-water text-blue-600',
+    'SLD2': 'fa-mountain text-amber-600',
+    'FIR3': 'fa-fire-flame-curved text-rose-600',
+    'POL4': 'fa-smog text-purple-600'
+  };
+
+  window.addEventListener('sentinel_data', (event) => {
+    const { hub, nodes, incidents } = event.detail;
+
+    // -------------------------------------------------------------
+    // 1. UPDATE MAIN STATUS HERO
+    // -------------------------------------------------------------
+    const mainSection = document.getElementById('mainStatusSection');
+    const statusIconContainer = document.getElementById('statusIconContainer');
+    const statusIcon = document.getElementById('statusIcon');
+    const severityBadge = document.getElementById('statusSeverityBadge');
+    const headline = document.getElementById('statusHeadline');
+    const threatDetails = document.getElementById('statusThreatDetails');
+    const summary = document.getElementById('statusSummary');
+    const lastUpdated = document.getElementById('statusLastUpdated');
+    const emergencyText = document.getElementById('emergencySectionText');
+
+    lastUpdated.textContent = `Just now`;
+
+    if (hub.active_alerts_count > 0) {
+      const activeList = [];
+      if (nodes.FLD1 && nodes.FLD1.status === 'Hazardous') activeList.push('Flood (Ganga Catchment)');
+      if (nodes.SLD2 && nodes.SLD2.status === 'Hazardous') activeList.push('Landslide (Himalayan Foothills)');
+      if (nodes.FIR3 && nodes.FIR3.status === 'Hazardous') activeList.push('Wildfire (Pine Forest)');
+      if (nodes.POL4 && nodes.POL4.status === 'Hazardous') activeList.push('Toxic Smog (Industrial Basin)');
+
+      const threatNames = activeList.length > 0 ? activeList.join(', ') : 'Multiple Sectors';
+
+      mainSection.className = 'relative overflow-hidden rounded-2xl bg-white border-2 border-rose-500 p-6 sm:p-8 shadow-md transition-all duration-300';
+      statusIconContainer.className = 'w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 text-2xl sm:text-3xl flex-shrink-0 shadow-sm';
+      statusIcon.className = 'fa-solid fa-triangle-exclamation';
+      
+      severityBadge.className = 'text-[11px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200';
+      severityBadge.textContent = 'Critical · Level 3';
+
+      headline.className = 'text-2xl sm:text-3xl font-extrabold text-rose-600 tracking-tight';
+      headline.textContent = 'CRITICAL ALERTS ACTIVE';
+
+      threatDetails.className = 'text-xs sm:text-sm font-bold text-rose-700';
+      threatDetails.textContent = `${hub.active_alerts_count} Active Threat(s): ${threatNames}`;
+
+      summary.textContent = 'One or more monitored regions have exceeded critical safety thresholds. Emergency sirens active. Immediate civil defense action recommended.';
+      
+      emergencyText.innerHTML = `<span class="text-rose-600 font-bold block mb-1">CRITICAL ALERT ACTIVE</span> Threat detected in monitored zones. Mobilize response units and initiate civil defense protocols.`;
+    } else {
+      mainSection.className = 'relative overflow-hidden rounded-2xl bg-white border border-slate-border p-6 sm:p-8 shadow-sm transition-all duration-300';
+      statusIconContainer.className = 'w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 text-2xl sm:text-3xl flex-shrink-0 shadow-sm';
+      statusIcon.className = 'fa-solid fa-circle-check';
+
+      severityBadge.className = 'text-[11px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200';
+      severityBadge.textContent = 'Normal · Level 0';
+
+      headline.className = 'text-2xl sm:text-3xl font-extrabold text-navy-900 tracking-tight';
+      headline.textContent = 'ALL SYSTEMS SAFE';
+
+      threatDetails.className = 'text-xs sm:text-sm font-medium text-emerald-700';
+      threatDetails.textContent = 'No active disaster threats detected across monitored regions.';
+
+      summary.textContent = 'Surveillance is operational across all 4 sectors: Ganga Catchment, Himalayan Foothills, Pine Forest Perimeter, and Industrial Basin.';
+
+      emergencyText.textContent = 'Standby protocol active. If any region breaches critical hazard thresholds, immediate civil defense and NDRF satellite SOS triggers will be authorized here.';
+    }
+
+    // -------------------------------------------------------------
+    // 2. UPDATE 4 CLEAN HAZARD CARDS (ONE METRIC ONLY)
+    // -------------------------------------------------------------
+
+    // Flood
+    if (nodes.FLD1) {
+      const isCrit = nodes.FLD1.status === 'Hazardous';
+      document.getElementById('metricFlood').textContent = nodes.FLD1.sensors.River_Water_Level_m;
+      const b = document.getElementById('badgeFlood');
+      const card = document.getElementById('cardFlood');
+      const sub = document.getElementById('metricFloodSub');
+      if (isCrit) {
+        b.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200 uppercase';
+        b.textContent = 'Critical';
+        card.classList.add('border-rose-400');
+        sub.textContent = 'Critical threshold exceeded (> 10.0 m)';
+        sub.className = 'text-[11px] text-rose-600 font-semibold block mt-1';
+      } else {
+        b.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase';
+        b.textContent = 'Safe';
+        card.classList.remove('border-rose-400');
+        sub.textContent = 'Normal Flow (< 6.0 m)';
+        sub.className = 'text-[11px] text-slate-muted block mt-1';
+      }
+    }
+
+    // Landslide
+    if (nodes.SLD2) {
+      const isCrit = nodes.SLD2.status === 'Hazardous';
+      document.getElementById('metricLandslide').textContent = nodes.SLD2.sensors.Slope_Angle;
+      const b = document.getElementById('badgeLandslide');
+      const card = document.getElementById('cardLandslide');
+      const sub = document.getElementById('metricLandslideSub');
+      if (isCrit) {
+        b.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200 uppercase';
+        b.textContent = 'Critical';
+        card.classList.add('border-rose-400');
+        sub.textContent = 'Shear displacement warning (> 45.0°)';
+        sub.className = 'text-[11px] text-rose-600 font-semibold block mt-1';
+      } else {
+        b.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase';
+        b.textContent = 'Safe';
+        card.classList.remove('border-rose-400');
+        sub.textContent = 'Stable Slope (< 30.0°)';
+        sub.className = 'text-[11px] text-slate-muted block mt-1';
+      }
+    }
+
+    // Fire
+    if (nodes.FIR3) {
+      const isCrit = nodes.FIR3.status === 'Hazardous';
+      document.getElementById('metricFire').textContent = nodes.FIR3.sensors['TVOC[ppb]'];
+      const b = document.getElementById('badgeFire');
+      const card = document.getElementById('cardFire');
+      const sub = document.getElementById('metricFireSub');
+      if (isCrit) {
+        b.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200 uppercase';
+        b.textContent = 'Critical';
+        card.classList.add('border-rose-400');
+        sub.textContent = 'Combustion spike & flame detected';
+        sub.className = 'text-[11px] text-rose-600 font-semibold block mt-1';
+      } else {
+        b.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase';
+        b.textContent = 'Safe';
+        card.classList.remove('border-rose-400');
+        sub.textContent = 'Normal Baseline (< 1,500 ppb)';
+        sub.className = 'text-[11px] text-slate-muted block mt-1';
+      }
+    }
+
+    // Pollution
+    if (nodes.POL4) {
+      const isCrit = nodes.POL4.status === 'Hazardous';
+      document.getElementById('metricPollution').textContent = nodes.POL4.sensors.pm25;
+      const b = document.getElementById('badgePollution');
+      const card = document.getElementById('cardPollution');
+      const sub = document.getElementById('metricPollutionSub');
+      if (isCrit) {
+        b.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200 uppercase';
+        b.textContent = 'Critical';
+        card.classList.add('border-rose-400');
+        sub.textContent = 'Severe atmospheric inversion (> 150 µg/m³)';
+        sub.className = 'text-[11px] text-rose-600 font-semibold block mt-1';
+      } else {
+        b.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase';
+        b.textContent = 'Safe';
+        card.classList.remove('border-rose-400');
+        sub.textContent = 'Good Quality (< 60 µg/m³)';
+        sub.className = 'text-[11px] text-slate-muted block mt-1';
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 3. UPDATE MAP BEACONS
+    // -------------------------------------------------------------
+    const updateBeacon = (id, isCrit) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (isCrit) {
+        el.className = 'w-4 h-4 rounded-full bg-rose-600 mx-auto shadow-md animate-ping';
+      } else {
+        el.className = 'w-4 h-4 rounded-full bg-emerald-500 mx-auto shadow-sm';
+      }
+    };
+    updateBeacon('mapBeaconFlood', nodes.FLD1 && nodes.FLD1.status === 'Hazardous');
+    updateBeacon('mapBeaconLandslide', nodes.SLD2 && nodes.SLD2.status === 'Hazardous');
+    updateBeacon('mapBeaconFire', nodes.FIR3 && nodes.FIR3.status === 'Hazardous');
+    updateBeacon('mapBeaconPollution', nodes.POL4 && nodes.POL4.status === 'Hazardous');
+
+    // -------------------------------------------------------------
+    // 4. UPDATE ACTIVE ALERTS FEED
+    // -------------------------------------------------------------
+    const feed = document.getElementById('overviewAlertsFeed');
+    if (incidents && incidents.length > 0) {
+      feed.innerHTML = incidents.slice(0, 3).map(inc => {
+        const isCrit = inc.severity === 'CRITICAL';
+        const badgeClass = isCrit ? 'bg-rose-50 text-rose-700 border-rose-200' : (inc.severity === 'WARNING' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200');
+        const iconBg = isCrit ? 'bg-rose-50 text-rose-600' : (inc.severity === 'WARNING' ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600');
+        const locName = friendlyLocations[inc.node_id] || inc.node_id;
+        const iconClass = friendlyIcons[inc.node_id] || 'fa-triangle-exclamation text-amber-500';
+
+        return `
+          <div class="p-4 rounded-xl bg-slate-subtle border border-slate-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs hover:border-blue-200 transition">
+            <div class="flex items-start gap-3">
+              <div class="w-9 h-9 rounded-xl ${iconBg} border border-slate-border flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm">
+                <i class="fa-solid ${iconClass} text-xs"></i>
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-navy-900 text-xs sm:text-sm">${inc.title}</span>
+                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${badgeClass} border uppercase">${inc.severity}</span>
+                </div>
+                <p class="text-slate-600 text-xs mt-1 leading-relaxed">${inc.details}</p>
+                <div class="flex items-center gap-2 mt-1.5 text-[11px] text-slate-muted">
+                  <span class="text-navy-800 font-semibold"><i class="fa-solid fa-location-dot text-brand-action mr-1"></i>${locName}</span>
+                  <span>&bull;</span>
+                  <span><i class="fa-regular fa-clock text-slate-400 mr-1"></i>${inc.timestamp.split(' ')[1] || inc.timestamp}</span>
+                </div>
+              </div>
+            </div>
+            <a href="/alerts" class="text-xs font-semibold text-brand-action hover:underline self-end sm:self-center whitespace-nowrap">
+              View Alert &rarr;
+            </a>
+          </div>
+        `;
+      }).join('');
+    } else {
+      feed.innerHTML = `
+        <div class="p-4 rounded-xl bg-slate-subtle border border-slate-border flex items-center justify-between text-xs">
+          <div class="flex items-center gap-3">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
+            <div>
+              <span class="font-bold text-navy-900">All Monitored Regions Operating in Safe Baseline</span>
+              <p class="text-slate-muted text-xs mt-0.5">Continuous telemetry surveillance active. Zero safety threshold breaches reported.</p>
+            </div>
+          </div>
+          <span class="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-mono text-[10px] font-bold border border-emerald-200">
+            NORMAL
+          </span>
+        </div>
+      `;
+    }
+
+  });
+</script>
+{% endblock %}

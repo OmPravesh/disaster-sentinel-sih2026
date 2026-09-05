@@ -397,8 +397,8 @@ class GRUPredictor:
         self.horizons = self.config.get("prediction_horizons", [15, 30, 60])
         
         # Ensure model directory exists
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        self.model_dir_abs = os.path.join(base_dir, "jetson", self.model_dir)
+        jetson_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self.model_dir_abs = os.path.join(jetson_dir, self.model_dir)
         os.makedirs(self.model_dir_abs, exist_ok=True)
         
         # Model storage

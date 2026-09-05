@@ -1,0 +1,2099 @@
+{% extends "base.html" %}
+
+{% block title %}IoT Hardware Diagnostics · Disaster Sentinel{% endblock %}
+
+{% block content %}
+<div class="space-y-8 pb-16">
+
+  <!-- ========================================================================= -->
+  <!-- 1. PAGE HEADER: CLEAN & PURPOSEFUL -->
+  <!-- ========================================================================= -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
+        <span>IoT Hardware</span>
+        <span class="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">ENGINEERING &amp; DIAGNOSTICS</span>
+      </h1>
+      <p class="text-xs sm:text-sm text-slate-500 mt-1">
+        Hardware health, connected nodes, communication status and diagnostics.
+      </p>
+    </div>
+
+    <!-- Quick Status Pill -->
+    <div class="flex items-center gap-2">
+      <span class="text-xs font-mono text-emerald-700 bg-emerald-50 px-3.5 py-2 rounded-xl border border-emerald-200 flex items-center gap-2 font-bold shadow-sm">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span>ALL HARDWARE ONLINE</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 2. LEVEL 1: HARDWARE HEALTH SUMMARY (IS MY HARDWARE WORKING?) -->
+  <!-- ========================================================================= -->
+  <div class="p-6 bg-white border border-slate-border rounded-2xl space-y-4 shadow-sm">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 text-sm">
+          <i class="fa-solid fa-server"></i>
+        </div>
+        <div>
+          <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider font-mono">Hardware Health Summary</h2>
+          <p class="text-[11px] text-slate-500">Real-time edge connectivity, communication mesh, and power status.</p>
+        </div>
+      </div>
+      <span class="text-xs text-slate-500 font-mono">Last Synchronized: <span id="hwLastSyncTime" class="text-slate-800 font-bold">Just now</span></span>
+    </div>
+
+    <!-- 6 Compact Status Cards -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-xs">
+      
+      <!-- Central Hub -->
+      <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] uppercase font-bold text-slate-500">Central Hub</span>
+          <i class="fa-solid fa-microchip text-blue-600 text-xs"></i>
+        </div>
+        <div class="text-sm font-bold text-slate-900 flex items-center gap-1.5 pt-0.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+          <span>Online</span>
+        </div>
+        <span class="text-[10px] text-slate-400 block font-mono">Jetson Orin Nano</span>
+      </div>
+
+      <!-- Field Nodes -->
+      <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] uppercase font-bold text-slate-500">Field Nodes</span>
+          <i class="fa-solid fa-network-wired text-blue-600 text-xs"></i>
+        </div>
+        <div class="text-sm font-bold text-emerald-700 flex items-center gap-1.5 pt-0.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+          <span>4 / 4 Online</span>
+        </div>
+        <span class="text-[10px] text-slate-400 block font-mono">ESP32 Mesh Nodes</span>
+      </div>
+
+      <!-- Sensors -->
+      <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] uppercase font-bold text-slate-500">Sensors</span>
+          <i class="fa-solid fa-gauge-high text-blue-600 text-xs"></i>
+        </div>
+        <div class="text-sm font-bold text-slate-900 flex items-center gap-1.5 pt-0.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+          <span>All Connected</span>
+        </div>
+        <span class="text-[10px] text-slate-400 block font-mono">12 Sensor Channels</span>
+      </div>
+
+      <!-- LoRa Mesh -->
+      <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] uppercase font-bold text-slate-500">LoRa Radio</span>
+          <i class="fa-solid fa-tower-broadcast text-blue-600 text-xs"></i>
+        </div>
+        <div class="text-sm font-bold text-emerald-700 flex items-center gap-1.5 pt-0.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+          <span>Connected</span>
+        </div>
+        <span class="text-[10px] text-slate-400 block font-mono">868.1 MHz SPI</span>
+      </div>
+
+      <!-- GSM Fallback -->
+      <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] uppercase font-bold text-slate-500">GSM Uplink</span>
+          <i class="fa-solid fa-satellite-dish text-blue-600 text-xs"></i>
+        </div>
+        <div class="text-sm font-bold text-slate-800 flex items-center gap-1.5 pt-0.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+          <span>Standby / Ready</span>
+        </div>
+        <span class="text-[10px] text-slate-400 block font-mono">SIM800L Cellular</span>
+      </div>
+
+      <!-- Actuators -->
+      <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] uppercase font-bold text-slate-500">Actuators</span>
+          <i class="fa-solid fa-bullhorn text-blue-600 text-xs"></i>
+        </div>
+        <div id="hwSummaryActuatorState" class="text-sm font-bold text-slate-700 flex items-center gap-1.5 pt-0.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+          <span>Ready</span>
+        </div>
+        <span class="text-[10px] text-slate-400 block font-mono">GPIO Relays</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 3. LEVEL 2: FIELD NODES OVERVIEW (4 CLEAN CARDS FIRST) -->
+  <!-- ========================================================================= -->
+  <div class="space-y-4">
+    <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+      <div>
+        <h2 class="text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
+          <span>Field Nodes</span>
+          <span class="text-xs font-mono font-semibold text-slate-500">· 4 Connected ESP32 Stations</span>
+        </h2>
+        <p class="text-xs text-slate-500 mt-0.5">Physical deployment status, sensor interfaces, and power levels.</p>
+      </div>
+      <button onclick="toggleAllNodeDetails()" id="btnToggleAllNodes" class="text-xs text-blue-600 hover:text-blue-700 font-semibold transition">
+        Expand All Details
+      </button>
+    </div>
+
+    <!-- 4 Clean Field Node Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+      <!-- NODE 1: FLOOD (FLD1) -->
+      <div class="p-5 sm:p-6 bg-white border border-slate-border rounded-2xl space-y-4 shadow-sm hover:border-slate-300 transition">
+        <div class="flex items-start justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 text-lg">
+              <i class="fa-solid fa-water"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-base font-bold text-slate-900 tracking-tight">Flood Node</span>
+                <span class="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">FLD1</span>
+              </div>
+              <div class="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5">
+                <i class="fa-solid fa-location-dot text-slate-400 text-[11px]"></i>
+                <span class="font-medium text-slate-700">Ganga Catchment · River Station #4</span>
+              </div>
+            </div>
+          </div>
+          <span class="px-2.5 py-1 rounded-full text-[11px] font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            <span>Online</span>
+          </span>
+        </div>
+
+        <!-- Node Metrics Callout -->
+        <div class="grid grid-cols-3 gap-2 p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs">
+          <div>
+            <span class="text-[10px] uppercase font-bold text-slate-500 block">Device</span>
+            <span class="text-xs font-bold text-slate-800 mt-0.5 block font-mono">ESP32</span>
+          </div>
+          <div>
+            <span class="text-[10px] uppercase font-bold text-slate-500 block">Sensors</span>
+            <span class="text-xs font-bold text-slate-800 mt-0.5 block font-mono">3 Connected</span>
+          </div>
+          <div>
+            <span class="text-[10px] uppercase font-bold text-slate-500 block">Battery</span>
+            <span class="text-xs font-bold text-emerald-600 mt-0.5 block font-mono flex items-center gap-1">
+              <i class="fa-solid fa-battery-full text-emerald-500 text-[10px]"></i>
+              <span>95%</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Node Primary Actions -->
+        <div class="flex items-center justify-between pt-1">
+          <span class="text-[11px] font-mono text-slate-500">LoRa RSSI: <strong class="text-slate-800">-68 dBm</strong></span>
+          <button onclick="toggleNodeDetails('nodeDetailsFLD1')" class="px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 shadow-sm flex items-center gap-1.5 transition cursor-pointer">
+            <span id="btnLblFLD1">View Details</span>
+            <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition" id="arrowFLD1"></i>
+          </button>
+        </div>
+
+        <!-- EXPANDABLE NODE DETAILS (LEVEL 2 & 3) -->
+        <div id="nodeDetailsFLD1" class="hidden pt-4 border-t border-slate-100 space-y-3.5 text-xs">
+          <!-- Sensors Breakdown -->
+          <div>
+            <span class="text-[11px] font-bold text-slate-900 uppercase tracking-wider block mb-2 font-mono">Connected Sensors (3-Layer Architecture):</span>
+            <div class="space-y-1.5">
+              <div class="flex justify-between p-2 rounded-lg bg-slate-50 border border-slate-200">
+                <span class="text-slate-800"><strong>Layer 1 (Primary):</strong> Ultrasonic Water Level</span>
+                <span class="text-slate-500 font-mono">HC-SR04 / JSN-SR04T (5V)</span>
+              </div>
+              <div class="flex justify-between p-2 rounded-lg bg-slate-50 border border-slate-200">
+                <span class="text-slate-800"><strong>Layer 2 (Corroborating):</strong> Rain Sensor</span>
+                <span class="text-slate-500 font-mono">YL-83 Rain Plate (3.3V)</span>
+              </div>
+              <div class="flex justify-between p-2 rounded-lg bg-slate-50 border border-slate-200">
+                <span class="text-slate-800"><strong>Layer 3 (Context):</strong> Barometer &amp; Ambient</span>
+                <span class="text-slate-500 font-mono">Bosch BME280 I2C (0x76)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Secondary Toggle: Advanced Specifications (Level 3) -->
+          <div class="pt-1">
+            <button onclick="toggleSubSpecs('subSpecsFLD1')" class="text-[11px] text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-1 transition">
+              <i class="fa-solid fa-microchip"></i>
+              <span>Pinout &amp; Hardware Specifications</span>
+              <i class="fa-solid fa-chevron-down text-[9px]"></i>
+            </button>
+            <div id="subSpecsFLD1" class="hidden mt-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200 font-mono text-[11px] space-y-1.5 text-slate-600">
+              <div class="flex justify-between"><span>Ultrasonic (TRIG / ECHO):</span><span class="text-slate-900">TRIG: GPIO 12 · ECHO: GPIO 13 (5V)</span></div>
+              <div class="flex justify-between"><span>YL-83 Rain Sensor (AO / DO):</span><span class="text-slate-900">AO: GPIO 34 (ADC1_CH6) · DO: GPIO 27</span></div>
+              <div class="flex justify-between"><span>BME280 I2C Bus:</span><span class="text-slate-900">SDA: GPIO 21 · SCL: GPIO 22 (0x76, 3.3V)</span></div>
+              <div class="flex justify-between"><span>Battery Divider (10k/10k):</span><span class="text-slate-900">GPIO 36 (ADC1_CH0)</span></div>
+              <div class="flex justify-between"><span>LoRa SX1278 SPI:</span><span class="text-blue-600 font-semibold">SCK:18 · MISO:19 · MOSI:23 · CS:5 · RST:14 · DIO0:2</span></div>
+              <div class="flex justify-between"><span>Power System:</span><span class="text-emerald-600 font-semibold">Solar 5-6V 2W + TP4056 + 18650 Li-ion 3.7V</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NODE 2: LANDSLIDE (SLD2) -->
+      <div class="p-5 sm:p-6 bg-white border border-slate-border rounded-2xl space-y-4 shadow-sm hover:border-slate-300 transition">
+        <div class="flex items-start justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600 text-lg">
+              <i class="fa-solid fa-mountain"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-base font-bold text-slate-900 tracking-tight">Landslide Node</span>
+                <span class="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">SLD2</span>
+              </div>
+              <div class="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5">
+                <i class="fa-solid fa-location-dot text-slate-400 text-[11px]"></i>
+                <span class="font-medium text-slate-700">Himalayan Foothills · Sector 2B</span>
+              </div>
+            </div>
+          </div>
+          <span class="px-2.5 py-1 rounded-full text-[11px] font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            <span>Online</span>
+          </span>
+        </div>
+
+        <!-- Node Metrics Callout -->
+        <div class="grid grid-cols-3 gap-2 p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs">
+          <div>
+            <span class="text-[10px] uppercase font-bold text-slate-500 block">Device</span>
+            <span class="text-xs font-bold text-slate-800 mt-0.5 block font-mono">ESP32</span>
+          </div>
+          <div>
+            <span class="text-[10px] uppercase font-bold text-slate-500 block">Sensors</span>
+            <span class="text-xs font-bold text-slate-800 mt-0.5 block font-mono">3 Connected</span>
+          </div>
+          <div>
+            <span class="text-[10px] uppercase font-bold text-slate-500 block">Battery</span>
+            <span class="text-xs font-bold text-emerald-600 mt-0.5 block font-mono flex items-center gap-1">
+              <i class="fa-solid fa-battery-full text-emerald-500 text-[10px]"></i>
+              <span>89%</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Node Primary Actions -->
+        <div class="flex items-center justify-between pt-1">
+          <span class="text-[11px] font-mono text-slate-500">LoRa RSSI: <strong class="text-slate-800">-72 dBm</strong></span>
+          <button onclick="toggleNodeDetails('nodeDetailsSLD2')" class="px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 shadow-sm flex items-center gap-1.5 transition cursor-pointer">
+            <span id="btnLblSLD2">View Details</span>
+            <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition" id="arrowSLD2"></i>
+          </button>
+        </div>
+
+        <!-- EXPANDABLE NODE DETAILS (LEVEL 2 & 3) -->
+        <div id="nodeDetailsSLD2" class="hidden pt-4 border-t border-slate-100 space-y-3.5 text-xs">
+          <!-- Sensors Breakdown -->
+          <div>
+            <span class="text-[11px] font-bold text-slate-900 uppercase tracking-wider block mb-2 font-mono">Connected Sensors (3-Layer Architecture):</span>
+            <div class="space-y-1.5">
+              <div class="flex justify-between p-2 rounded-lg bg-slate-50 border border-slate-200">
+                <span class="text-slate-800"><strong>Layer 1 (Primary):</strong> 6-Axis Gyro &amp; Tilt</span>
+                <span class="text-slate-500 font-mono">MPU6050 (0x68, 3.3V)</span>
+              </div>
+              <div class="flex justify-between p-2 rounded-lg bg-slate-50 border border-slate-200">
+                <span class="text-slate-800"><strong>Layer 2 (Corroborating):</strong> Soil Moisture Probe</span>
+                <span class="text-slate-500 font-mono">Capacitive v1.2 (3.3V)</span>
+              </div>
+              <div class="flex justify-between p-2 rounded-lg bg-slate-50 border border-slate-200">
+                <span class="text-slate-800"><strong>Layer 3 (Context):</strong> Barometer &amp; Ambient</span>
+                <span class="text-slate-500 font-mono">Bosch BME280 I2C (0x76)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Secondary Toggle: Advanced Specifications (Level 3) -->
+          <div class="pt-1">
+            <button onclick="toggleSubSpecs('subSpecsSLD2')" class="text-[11px] text-amber-600 hover:text-amber-700 font-semibold flex items-center gap-1 transition">
+              <i class="fa-solid fa-microchip"></i>
+              <span>Pinout &amp; Hardware Specifications</span>
+              <i class="fa-solid fa-chevron-down text-[9px]"></i>
+            </button>
+            <div id="subSpecsSLD2" class="hidden mt-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200 font-mono text-[11px] space-y-1.5 text-slate-600">
+              <div class="flex justify-between"><span>MPU6050 I2C (SDA / SCL):</span><span class="text-slate-900">SDA: GPIO 21 · SCL: GPIO 22 (0x68, 3.3V)</span></div>
+              <div class="flex justify-between"><span>Soil Moisture AOUT:</span><span class="text-slate-900">GPIO 32 (ADC1_CH4, 3.3V)</span></div>
+              <div class="flex justify-between"><span>BME280 I2C Bus:</span><span class="text-slate-900">SDA: GPIO 21 · SCL: GPIO 22 (0x76, 3.3V)</span></div>
+              <div class="flex justify-between"><span>Battery Divider (10k/10k):</span><span class="text-slate-900">GPIO 36 (ADC1_CH0)</span></div>
+              <div class="flex justify-between"><span>LoRa SX1278 SPI:</span><span class="text-amber-600 font-semibold">SCK:18 · MISO:19 · MOSI:23 · CS:5 · RST:14 · DIO0:2</span></div>
+              <div class="flex justify-between"><span>Power System:</span><span class="text-emerald-600 font-semibold">Solar 5-6V 2W + TP4056 + 18650 Li-ion 3.7V</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NODE 3: FIRE (FIR3) -->
+      <div class="p-5 sm:p-6 bg-white border border-slate-border rounded-2xl space-y-4 shadow-sm hover:border-slate-300 transition">
+        <div class="flex items-start justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600 text-lg">
+              <i class="fa-solid fa-fire-flame-curved"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-base font-bold text-slate-900 tracking-tight">Fire Node</span>
+                <span class="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200">FIR3</span>
+              </div>
+              <div class="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5">
+                <i class="fa-solid fa-location-dot text-slate-400 text-[11px]"></i>
+                <span class="font-medium text-slate-700">Reserved Forest · Zone 9</span>
+              </div>
+            </div>
+          </div>
+          <span class="px-2.5 py-1 rounded-full text-[11px] font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            <span>Online</span>
+          </span>
+        </div>
+
+        <!-- Node Metrics Callout -->
+        <div class="grid grid-cols-3 gap-2 p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs">
+          <div>
+            <span class="text-[10px] uppercase font-bold text-slate-500 block">Device</span>
+            <span class="text-xs font-bold text-slate-800 mt-0.5 block font-mono">ESP32</span>
+          </div>
+          <div>
+            <span class="text-[10px] uppercase font-bold text-slate-500 block">Sensors</span>
+            <span class="text-xs font-bold text-slate-800 mt-0.5 block font-mono">3 Connected</span>
+          </div>
+          <div>
+            <span class="text-[10px] uppercase font-bold text-slate-500 block">Battery</span>
+            <span class="text-xs font-bold text-emerald-600 mt-0.5 block font-mono flex items-center gap-1">
+              <i class="fa-solid fa-battery-full text-emerald-500 text-[10px]"></i>
+              <span>92%</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Node Primary Actions -->
+        <div class="flex items-center justify-between pt-1">
+          <span class="text-[11px] font-mono text-slate-500">LoRa RSSI: <strong class="text-slate-800">-65 dBm</strong></span>
+          <button onclick="toggleNodeDetails('nodeDetailsFIR3')" class="px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 shadow-sm flex items-center gap-1.5 transition cursor-pointer">
+            <span id="btnLblFIR3">View Details</span>
+            <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition" id="arrowFIR3"></i>
+          </button>
+        </div>
+
+        <!-- EXPANDABLE NODE DETAILS (LEVEL 2 & 3) -->
+        <div id="nodeDetailsFIR3" class="hidden pt-4 border-t border-slate-100 space-y-3.5 text-xs">
+          <!-- Sensors Breakdown -->
+          <div>
+            <span class="text-[11px] font-bold text-slate-900 uppercase tracking-wider block mb-2 font-mono">Connected Sensors (3-Layer Architecture):</span>
+            <div class="space-y-1.5">
+              <div class="flex justify-between p-2 rounded-lg bg-slate-50 border border-slate-200">
+                <span class="text-slate-800"><strong>Layer 1 (Primary):</strong> Infrared Flame Sensor</span>
+                <span class="text-slate-500 font-mono">KY-026 Flame IR (3.3V)</span>
+              </div>
+              <div class="flex justify-between p-2 rounded-lg bg-slate-50 border border-slate-200">
+                <span class="text-slate-800"><strong>Layer 2 (Corroborating):</strong> Smoke / Gas Sensor</span>
+                <span class="text-slate-500 font-mono">MQ-2 Combustible Gas (5V VIN)</span>
+              </div>
+              <div class="flex justify-between p-2 rounded-lg bg-slate-50 border border-slate-200">
+                <span class="text-slate-800"><strong>Layer 3 (Context):</strong> Barometer &amp; Ambient</span>
+                <span class="text-slate-500 font-mono">Bosch BME280 I2C (0x76)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Secondary Toggle: Advanced Specifications (Level 3) -->
+          <div class="pt-1">
+            <button onclick="toggleSubSpecs('subSpecsFIR3')" class="text-[11px] text-rose-600 hover:text-rose-700 font-semibold flex items-center gap-1 transition">
+              <i class="fa-solid fa-microchip"></i>
+              <span>Pinout &amp; Hardware Specifications</span>
+              <i class="fa-solid fa-chevron-down text-[9px]"></i>
+            </button>
+            <div id="subSpecsFIR3" class="hidden mt-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200 font-mono text-[11px] space-y-1.5 text-slate-600">
+              <div class="flex justify-between"><span>KY-026 Flame (AO / DO):</span><span class="text-slate-900">AO: GPIO 34 (ADC1_CH6) · DO: GPIO 27</span></div>
+              <div class="flex justify-between"><span>MQ-2 Smoke (AO / DO):</span><span class="text-slate-900">AO: GPIO 35 (ADC1_CH7) · DO: GPIO 26 (5V VIN)</span></div>
+              <div class="flex justify-between"><span>BME280 I2C Bus:</span><span class="text-slate-900">SDA: GPIO 21 · SCL: GPIO 22 (0x76, 3.3V)</span></div>
+              <div class="flex justify-between"><span>Battery Divider (10k/10k):</span><span class="text-slate-900">GPIO 36 (ADC1_CH0)</span></div>
+              <div class="flex justify-between"><span>LoRa SX1278 SPI:</span><span class="text-rose-600 font-semibold">SCK:18 · MISO:19 · MOSI:23 · CS:5 · RST:14 · DIO0:2</span></div>
+              <div class="flex justify-between"><span>Power System:</span><span class="text-emerald-600 font-semibold">Solar 5-6V 2W + TP4056 + 18650 Li-ion 3.7V</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NODE 4: POLLUTION (POL4 - DEDICATED 2-LAYER MODE) -->
+      <div class="p-5 sm:p-6 bg-white border border-slate-border rounded-2xl space-y-4 shadow-sm hover:border-slate-300 transition">
+        <div class="flex items-start justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-xl bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600 text-lg">
+              <i class="fa-solid fa-smog"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-base font-bold text-slate-900 tracking-tight">Pollution Node</span>
+                <span class="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200">POL4 · 2-LAYER MODE</span>
+              </div>
+              <div class="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5">
+                <i class="fa-solid fa-location-dot text-slate-400 text-[11px]"></i>
+                <span class="font-medium text-slate-700">Industrial Area · Cluster A</span>
+              </div>
+            </div>
+          </div>
+          <span class="px-2.5 py-1 rounded-full text-[11px] font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            <span>Online</span>
+          </span>
+        </div>
+
+        <!-- Node Metrics Callout -->
+        <div class="grid grid-cols-3 gap-2 p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs">
+          <div>
+            <span class="text-[10px] uppercase font-bold text-slate-500 block">Device</span>
+            <span class="text-xs font-bold text-slate-800 mt-0.5 block font-mono">ESP32</span>
+          </div>
+          <div>
+            <span class="text-[10px] uppercase font-bold text-slate-500 block">Sensors</span>
+            <span class="text-xs font-bold text-slate-800 mt-0.5 block font-mono">2 Connected</span>
+          </div>
+          <div>
+            <span class="text-[10px] uppercase font-bold text-slate-500 block">Battery</span>
+            <span class="text-xs font-bold text-emerald-600 mt-0.5 block font-mono flex items-center gap-1">
+              <i class="fa-solid fa-battery-full text-emerald-500 text-[10px]"></i>
+              <span>87%</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Node Primary Actions -->
+        <div class="flex items-center justify-between pt-1">
+          <span class="text-[11px] font-mono text-slate-500">LoRa RSSI: <strong class="text-slate-800">-70 dBm</strong></span>
+          <button onclick="toggleNodeDetails('nodeDetailsPOL4')" class="px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 shadow-sm flex items-center gap-1.5 transition cursor-pointer">
+            <span id="btnLblPOL4">View Details</span>
+            <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition" id="arrowPOL4"></i>
+          </button>
+        </div>
+
+        <!-- EXPANDABLE NODE DETAILS (LEVEL 2 & 3) -->
+        <div id="nodeDetailsPOL4" class="hidden pt-4 border-t border-slate-100 space-y-3.5 text-xs">
+          <!-- Sensors Breakdown -->
+          <div>
+            <span class="text-[11px] font-bold text-slate-900 uppercase tracking-wider block mb-2 font-mono">Connected Sensors (Dedicated 2-Layer Mode):</span>
+            <div class="space-y-1.5">
+              <div class="flex justify-between p-2 rounded-lg bg-slate-50 border border-slate-200">
+                <span class="text-slate-800"><strong>Layer 1 (Primary):</strong> Air Quality Index Sensor</span>
+                <span class="text-slate-500 font-mono">MQ-135 Gas Sensor (5V VIN)</span>
+              </div>
+              <div class="flex justify-between p-2 rounded-lg bg-slate-50 border border-slate-200">
+                <span class="text-slate-800"><strong>Layer 2 (Corroborating):</strong> Optical Dust Sensor</span>
+                <span class="text-slate-500 font-mono">Sharp GP2Y1010AU0F (5V)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Secondary Toggle: Advanced Specifications (Level 3) -->
+          <div class="pt-1">
+            <button onclick="toggleSubSpecs('subSpecsPOL4')" class="text-[11px] text-purple-600 hover:text-purple-700 font-semibold flex items-center gap-1 transition">
+              <i class="fa-solid fa-microchip"></i>
+              <span>Pinout &amp; Hardware Specifications</span>
+              <i class="fa-solid fa-chevron-down text-[9px]"></i>
+            </button>
+            <div id="subSpecsPOL4" class="hidden mt-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200 font-mono text-[11px] space-y-1.5 text-slate-600">
+              <div class="flex justify-between"><span>MQ-135 Air Quality (AO / DO):</span><span class="text-slate-900">AO: GPIO 34 (ADC1_CH6) · DO: GPIO 27 (5V VIN)</span></div>
+              <div class="flex justify-between"><span>GP2Y1010AU0F Dust (LED / Vo):</span><span class="text-slate-900">Pin3 LED: GPIO 12 · Pin5 Vo: GPIO 35 (ADC1_CH7) (5V)</span></div>
+              <div class="flex justify-between"><span>Battery Divider (10k/10k):</span><span class="text-slate-900">GPIO 36 (ADC1_CH0)</span></div>
+              <div class="flex justify-between"><span>LoRa SX1278 SPI:</span><span class="text-purple-600 font-semibold">SCK:18 · MISO:19 · MOSI:23 · CS:5 · RST:14 · DIO0:2</span></div>
+              <div class="flex justify-between"><span>Power System:</span><span class="text-emerald-600 font-semibold">Solar 5-6V 2W + TP4056 + 18650 Li-ion 3.7V</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 4. CENTRAL HUB & COMMUNICATION (ORGANIZED TWO-COLUMN GRID) -->
+  <!-- ========================================================================= -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- LEFT: CENTRAL HUB (6 Cols) -->
+    <div class="lg:col-span-6 p-6 bg-white border border-slate-border rounded-2xl space-y-4 shadow-sm">
+      <div class="flex items-start justify-between border-b border-slate-100 pb-4">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 text-lg">
+            <i class="fa-solid fa-microchip"></i>
+          </div>
+          <div>
+            <span class="text-[10px] font-mono uppercase font-bold text-blue-700 block tracking-wider">CENTRAL HUB</span>
+            <h3 class="text-base font-bold text-slate-900 mt-0.5">NVIDIA Jetson Orin Nano</h3>
+          </div>
+        </div>
+        <span class="px-2.5 py-1 rounded-full text-[11px] font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+          <span>ONLINE</span>
+        </span>
+      </div>
+
+      <!-- Quick Status Indicators -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+        <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+          <span class="text-[10px] text-slate-500 block">AI Processing</span>
+          <span class="text-slate-800 font-bold font-mono mt-0.5 block flex items-center gap-1">
+            <i class="fa-solid fa-circle-check text-emerald-500 text-[10px]"></i> Online
+          </span>
+        </div>
+        <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+          <span class="text-[10px] text-slate-500 block">IoT Gateway</span>
+          <span class="text-slate-800 font-bold font-mono mt-0.5 block flex items-center gap-1">
+            <i class="fa-solid fa-circle-check text-emerald-500 text-[10px]"></i> Online
+          </span>
+        </div>
+        <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+          <span class="text-[10px] text-slate-500 block">LoRa SPI</span>
+          <span class="text-slate-800 font-bold font-mono mt-0.5 block flex items-center gap-1">
+            <i class="fa-solid fa-circle-check text-emerald-500 text-[10px]"></i> Connected
+          </span>
+        </div>
+        <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+          <span class="text-[10px] text-slate-500 block">GSM Backup</span>
+          <span class="text-slate-800 font-bold font-mono mt-0.5 block flex items-center gap-1">
+            <i class="fa-solid fa-circle-check text-blue-500 text-[10px]"></i> Ready
+          </span>
+        </div>
+      </div>
+
+      <!-- Expandable Hub Technical Details -->
+      <div class="pt-2">
+        <button onclick="toggleHubDetails()" class="px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 text-xs font-semibold border border-slate-200 shadow-sm flex items-center gap-1.5 transition">
+          <span id="btnLblHub">View Technical Details</span>
+          <i class="fa-solid fa-chevron-down text-[10px] text-slate-400" id="arrowHub"></i>
+        </button>
+
+        <div id="hubTechDetails" class="hidden mt-3 p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5 text-xs font-mono text-slate-600">
+          <div class="flex justify-between py-1 border-b border-slate-200">
+            <span>CPU Host Architecture:</span>
+            <span class="text-slate-900 font-medium">6-core ARM v8.2 64-bit (Cortex-A78AE)</span>
+          </div>
+          <div class="flex justify-between py-1 border-b border-slate-200">
+            <span>GPU AI Accelerator:</span>
+            <span class="text-purple-700 font-medium">1024-core Ampere · 32 Tensor Cores</span>
+          </div>
+          <div class="flex justify-between py-1 border-b border-slate-200">
+            <span>Inference Runtime:</span>
+            <span class="text-slate-900 font-medium">PyTorch 2.14 · CUDA 12.2 · JetPack 6.0</span>
+          </div>
+          <div class="flex justify-between py-1">
+            <span>Central Hub ID:</span>
+            <span class="text-blue-700 font-bold">JETSON-ORIN-NANO-01</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: COMMUNICATION & EMERGENCY ACTUATORS (6 Cols) -->
+    <div class="lg:col-span-6 space-y-5">
+      
+      <!-- Communication Status Card -->
+      <div class="p-6 bg-white border border-slate-border rounded-2xl space-y-4 shadow-sm">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div class="flex items-center gap-2.5">
+            <i class="fa-solid fa-tower-cell text-blue-600 text-sm"></i>
+            <h3 class="text-sm font-bold uppercase tracking-wider text-slate-900 font-mono">COMMUNICATION</h3>
+          </div>
+          <span class="text-[11px] text-slate-500 font-mono">Dual-Link Redundancy</span>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2 text-xs">
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <span class="text-[10px] text-slate-500 uppercase block font-semibold">LoRa Radio</span>
+            <span class="text-xs font-bold text-emerald-700 mt-1 block">Connected</span>
+            <span class="text-[10px] text-slate-400 font-mono mt-0.5 block">868.1 MHz</span>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <span class="text-[10px] text-slate-500 uppercase block font-semibold">GSM Cellular</span>
+            <span class="text-xs font-bold text-slate-800 mt-1 block">Standby / Ready</span>
+            <span class="text-[10px] text-slate-400 font-mono mt-0.5 block">SIM800L</span>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <span class="text-[10px] text-slate-500 uppercase block font-semibold">Field Nodes</span>
+            <span class="text-xs font-bold text-emerald-700 mt-1 block">4 / 4 Connected</span>
+            <span class="text-[10px] text-slate-400 font-mono mt-0.5 block">Star-Mesh</span>
+          </div>
+        </div>
+
+        <!-- Expandable Communication Details -->
+        <div>
+          <button onclick="toggleCommDetails()" class="text-[11px] text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-1 transition">
+            <span id="btnLblComm">Advanced Communication Details</span>
+            <i class="fa-solid fa-chevron-down text-[9px]" id="arrowComm"></i>
+          </button>
+          <div id="commDetails" class="hidden mt-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200 font-mono text-[11px] space-y-1.5 text-slate-600">
+            <div class="flex justify-between"><span>Carrier Frequency:</span><span class="text-slate-900 font-medium">868.100 MHz (India/EU Band)</span></div>
+            <div class="flex justify-between"><span>Bandwidth / Spreading:</span><span class="text-slate-900 font-medium">BW 125 kHz · SF7 · CR 4/5</span></div>
+            <div class="flex justify-between"><span>Average Field RSSI:</span><span class="text-emerald-700 font-semibold">-68.7 dBm (SNR: +9.2 dB)</span></div>
+            <div class="flex justify-between"><span>GSM UART Interface:</span><span class="text-slate-900 font-medium">UART1 @ 9600 Baud · AT+CMGS</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Emergency Actuators Card -->
+      <div class="p-6 bg-white border border-slate-border rounded-2xl space-y-4 shadow-sm">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div class="flex items-center gap-2.5">
+            <i class="fa-solid fa-bullhorn text-amber-500 text-sm"></i>
+            <h3 class="text-sm font-bold uppercase tracking-wider text-slate-900 font-mono">EMERGENCY ACTUATORS</h3>
+          </div>
+          <span class="text-[10px] font-mono text-slate-500">Physical Hardware Relays</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+          <!-- Siren Actuator -->
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-slate-900">Siren</span>
+                <span id="hwBuzzerBadge" class="text-[10px] font-mono px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 font-semibold border border-slate-200">Standby</span>
+              </div>
+              <p class="text-[11px] text-slate-500 mt-0.5 font-mono">GPIO18 · Acoustic Relay</p>
+            </div>
+            <button id="hwBuzzerBtn" onclick="toggleHwActuatorWithConfirm('buzzer')" class="px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 shadow-sm transition cursor-pointer">
+              Activate
+            </button>
+          </div>
+
+          <!-- Strobe Actuator -->
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-slate-900">Warning Strobe</span>
+                <span id="hwStrobeBadge" class="text-[10px] font-mono px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 font-semibold border border-slate-200">Standby</span>
+              </div>
+              <p class="text-[11px] text-slate-500 mt-0.5 font-mono">GPIO23 · Optical Relay</p>
+            </div>
+            <button id="hwStrobeBtn" onclick="toggleHwActuatorWithConfirm('strobe')" class="px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 shadow-sm transition cursor-pointer">
+              Activate
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 5. DEMO & SIMULATION MODE (SEPARATED & COLLAPSED BY DEFAULT) -->
+  <!-- ========================================================================= -->
+  <div class="p-6 bg-white border border-purple-200 rounded-2xl space-y-4 shadow-sm">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center text-purple-600 text-base">
+          <i class="fa-solid fa-flask-vial"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider font-mono">DEMO &amp; SIMULATION MODE</h3>
+            <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200">SIH 2026 LAB</span>
+          </div>
+          <p class="text-xs text-slate-500 mt-0.5">Simulation only — does not represent real-world sensor conditions.</p>
+        </div>
+      </div>
+
+      <button onclick="toggleSimulationLab()" id="btnToggleSimLab" class="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 shadow-sm flex items-center gap-2 transition cursor-pointer self-start sm:self-auto">
+        <span id="btnLblSimLab">Open Simulation Lab</span>
+        <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition" id="arrowSimLab"></i>
+      </button>
+    </div>
+
+    <!-- Collapsible Simulation Controls -->
+    <div id="simLabControls" class="hidden space-y-3 pt-1">
+      <p class="text-xs text-slate-600">
+        Inject simulated multi-hazard spikes into edge rolling buffers to demonstrate dual-brain AI classification, threshold sirens, and automated NDRF dispatch:
+      </p>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+        <!-- Flash Flood -->
+        <button onclick="triggerHwSimulation('flash_flood')" class="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 hover:border-blue-300 text-left transition group cursor-pointer shadow-xs">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-blue-700 flex items-center gap-1.5">
+              <i class="fa-solid fa-water text-xs"></i>
+              <span>Flash Flood</span>
+            </span>
+            <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 font-semibold">FLD1</span>
+          </div>
+          <p class="text-[11px] text-slate-500 mt-1">Water surges to 13.25 m. AI early warning breach in 10 mins.</p>
+        </button>
+
+        <!-- Landslide -->
+        <button onclick="triggerHwSimulation('landslide_collapse')" class="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 hover:border-amber-300 text-left transition group cursor-pointer shadow-xs">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-amber-700 flex items-center gap-1.5">
+              <i class="fa-solid fa-mountain text-xs"></i>
+              <span>Landslide Shear</span>
+            </span>
+            <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200 font-semibold">SLD2</span>
+          </div>
+          <p class="text-[11px] text-slate-500 mt-1">Slope incline reaches 58.5°. Geotechnical displacement imminent.</p>
+        </button>
+
+        <!-- Wildfire -->
+        <button onclick="triggerHwSimulation('forest_fire')" class="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 hover:border-rose-300 text-left transition group cursor-pointer shadow-xs">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-rose-700 flex items-center gap-1.5">
+              <i class="fa-solid fa-fire-flame-curved text-xs"></i>
+              <span>Wildfire Flame</span>
+            </span>
+            <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200 font-semibold">FIR3</span>
+          </div>
+          <p class="text-[11px] text-slate-500 mt-1">Combustion gas spikes 18,450 ppb, 78.4°C. Flame sensor tripwire.</p>
+        </button>
+
+        <!-- Toxic Smog -->
+        <button onclick="triggerHwSimulation('toxic_smog')" class="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 hover:border-purple-300 text-left transition group cursor-pointer shadow-xs">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-purple-700 flex items-center gap-1.5">
+              <i class="fa-solid fa-smog text-xs"></i>
+              <span>Toxic Smog</span>
+            </span>
+            <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-200 font-semibold">POL4</span>
+          </div>
+          <p class="text-[11px] text-slate-500 mt-1">PM2.5 reaches 275 µg/m³. Severe inversion exceedance alert.</p>
+        </button>
+
+        <!-- Reset All Clear -->
+        <button onclick="triggerHwSimulation('all_clear')" class="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-emerald-200 hover:border-emerald-300 text-left transition group cursor-pointer shadow-xs">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-emerald-700 flex items-center gap-1.5">
+              <i class="fa-solid fa-circle-check text-xs"></i>
+              <span>Reset All Clear</span>
+            </span>
+            <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold">SAFE</span>
+          </div>
+          <p class="text-[11px] text-slate-500 mt-1">Restores nominal safe baselines across all 4 field stations.</p>
+        </button>
+      </div>
+
+      <div id="hwSimFeedback" class="hidden p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-center font-medium"></div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 6. LEVEL 3: ADVANCED DIAGNOSTICS & PROTOCOL SPECIFICATIONS -->
+  <!-- ========================================================================= -->
+  <div class="p-6 bg-white border border-slate-border rounded-2xl space-y-4 shadow-sm">
+    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+      <div class="flex items-center gap-2.5">
+        <i class="fa-solid fa-screwdriver-wrench text-slate-500 text-sm"></i>
+        <h3 class="text-sm font-bold uppercase tracking-wider text-slate-900 font-mono">ADVANCED DIAGNOSTICS</h3>
+      </div>
+      <button onclick="toggleAdvancedDiagnostics()" class="text-xs text-blue-600 hover:text-blue-700 font-semibold transition" id="btnToggleAdvDiag">
+        Show Packet Protocol &amp; Pin Mappings
+      </button>
+    </div>
+
+    <!-- Collapsible Advanced Content -->
+    <div id="advancedDiagnosticsPanel" class="hidden space-y-5 pt-2">
+      
+      <!-- LoRa Binary Packet Protocol -->
+      <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3 font-mono text-xs">
+        <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+          <h4 class="font-bold text-slate-900 font-sans text-xs flex items-center gap-2">
+            <i class="fa-solid fa-code text-blue-600"></i>
+            <span>LoRa Binary Packet Protocol (32-Byte SX1278 Payload Structure)</span>
+          </h4>
+          <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 font-semibold">CRC-16 VERIFIED</span>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-6 gap-2 text-center text-[11px] pt-1">
+          <div class="p-2.5 rounded-lg bg-white border border-slate-200 shadow-xs">
+            <span class="text-[9px] text-slate-400 block">0x00 - 0x03</span>
+            <span class="text-blue-700 font-bold">NODE_ID</span>
+            <span class="text-[9px] text-slate-500 block">4 Bytes (FLD1)</span>
+          </div>
+          <div class="p-2.5 rounded-lg bg-white border border-slate-200 shadow-xs">
+            <span class="text-[9px] text-slate-400 block">0x04 - 0x07</span>
+            <span class="text-slate-800 font-bold">TIMESTAMP</span>
+            <span class="text-[9px] text-slate-500 block">uint32_t Epoch</span>
+          </div>
+          <div class="p-2.5 rounded-lg bg-white border border-slate-200 shadow-xs">
+            <span class="text-[9px] text-slate-400 block">0x08 - 0x0F</span>
+            <span class="text-emerald-700 font-bold">METRIC_1 &amp; 2</span>
+            <span class="text-[9px] text-slate-500 block">2x float32 IEEE</span>
+          </div>
+          <div class="p-2.5 rounded-lg bg-white border border-slate-200 shadow-xs">
+            <span class="text-[9px] text-slate-400 block">0x10 - 0x17</span>
+            <span class="text-emerald-700 font-bold">METRIC_3 &amp; 4</span>
+            <span class="text-[9px] text-slate-500 block">2x float32 IEEE</span>
+          </div>
+          <div class="p-2.5 rounded-lg bg-white border border-slate-200 shadow-xs">
+            <span class="text-[9px] text-slate-400 block">0x18 - 0x1B</span>
+            <span class="text-amber-700 font-bold">BATTERY_MV</span>
+            <span class="text-[9px] text-slate-500 block">uint16_t Millivolts</span>
+          </div>
+          <div class="p-2.5 rounded-lg bg-white border border-slate-200 shadow-xs">
+            <span class="text-[9px] text-slate-400 block">0x1C - 0x1F</span>
+            <span class="text-rose-700 font-bold">CHECKSUM</span>
+            <span class="text-[9px] text-slate-500 block">CRC-16 IBM</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bus Architecture Summary -->
+      <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2 text-xs">
+        <h4 class="font-bold text-slate-900 font-mono text-xs flex items-center gap-2">
+          <i class="fa-solid fa-diagram-project text-purple-600"></i>
+          <span>Subsystem Interconnect &amp; Bus Topology</span>
+        </h4>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 font-mono text-[11px] text-slate-600 pt-1">
+          <div class="p-2.5 rounded-lg bg-white border border-slate-200 shadow-xs">
+            <strong class="text-slate-900 block mb-1">LoRa SPI0 Bus (Jetson &harr; SX1278)</strong>
+            <span>SCK: Pin 23 · MISO: Pin 21 · MOSI: Pin 19 · CS0: Pin 24 · RST: Pin 22 · DIO0: Pin 7</span>
+          </div>
+          <div class="p-2.5 rounded-lg bg-white border border-slate-200 shadow-xs">
+            <strong class="text-slate-900 block mb-1">Sensors I2C Bus (ESP32 Shared)</strong>
+            <span>SDA: GPIO21 · SCL: GPIO22 · Frequency: 400 kHz Fast-Mode (0x76 BME280 / 0x68 MPU6050)</span>
+          </div>
+          <div class="p-2.5 rounded-lg bg-white border border-slate-200 shadow-xs">
+            <strong class="text-slate-900 block mb-1">Cellular UART1 (Jetson &harr; SIM800L)</strong>
+            <span>TXD: Pin 8 (UART1_TX) · RXD: Pin 10 (UART1_RX) · 9600 Baud · AT+CMGS SMS Protocol</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 7. COMPLETE HARDWARE PINOUT & WIRING GUIDE (SIH 2026 REFERENCE) -->
+  <!-- ========================================================================= -->
+  <div class="p-6 sm:p-8 bg-white border border-slate-border rounded-2xl space-y-6 shadow-sm" id="hardwareGuideSection">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 text-xl">
+          <i class="fa-solid fa-plug"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h2 class="text-lg font-extrabold text-slate-900 tracking-tight">Complete Hardware Pinout &amp; Wiring Guide</h2>
+            <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 uppercase">SIH 2026 · Qualcomm</span>
+          </div>
+          <p class="text-xs text-slate-500 mt-0.5">
+            Beginner-friendly hardware connection tables, wire color codes, Jetson 40-pin header diagram, and solar charging circuit.
+          </p>
+        </div>
+      </div>
+
+      <!-- Quick Nav Filter Tabs -->
+      <div class="flex flex-wrap items-center gap-1.5 text-xs font-mono">
+        <button onclick="showHwGuideTab('rules')" id="tabBtn_rules" class="px-3 py-1.5 rounded-xl font-bold bg-blue-50 text-blue-700 border border-blue-200 transition cursor-pointer">
+          ⚡ Rules
+        </button>
+        <button onclick="showHwGuideTab('fld1')" id="tabBtn_fld1" class="px-3 py-1.5 rounded-xl font-semibold bg-white text-slate-600 hover:bg-slate-50 border border-slate-200 transition cursor-pointer">
+          FLD1
+        </button>
+        <button onclick="showHwGuideTab('sld2')" id="tabBtn_sld2" class="px-3 py-1.5 rounded-xl font-semibold bg-white text-slate-600 hover:bg-slate-50 border border-slate-200 transition cursor-pointer">
+          SLD2
+        </button>
+        <button onclick="showHwGuideTab('fir3')" id="tabBtn_fir3" class="px-3 py-1.5 rounded-xl font-semibold bg-white text-slate-600 hover:bg-slate-50 border border-slate-200 transition cursor-pointer">
+          FIR3
+        </button>
+        <button onclick="showHwGuideTab('pol4')" id="tabBtn_pol4" class="px-3 py-1.5 rounded-xl font-semibold bg-white text-slate-600 hover:bg-slate-50 border border-slate-200 transition cursor-pointer">
+          POL4
+        </button>
+        <button onclick="showHwGuideTab('jetson')" id="tabBtn_jetson" class="px-3 py-1.5 rounded-xl font-semibold bg-white text-slate-600 hover:bg-slate-50 border border-slate-200 transition cursor-pointer">
+          🧠 Jetson Hub
+        </button>
+        <button onclick="showHwGuideTab('solar')" id="tabBtn_solar" class="px-3 py-1.5 rounded-xl font-semibold bg-white text-slate-600 hover:bg-slate-50 border border-slate-200 transition cursor-pointer">
+          ☀️ Solar
+        </button>
+        <button onclick="showHwGuideTab('flow')" id="tabBtn_flow" class="px-3 py-1.5 rounded-xl font-semibold bg-white text-slate-600 hover:bg-slate-50 border border-slate-200 transition cursor-pointer">
+          🔄 Flow
+        </button>
+        <button onclick="showHwGuideTab('checklist')" id="tabBtn_checklist" class="px-3 py-1.5 rounded-xl font-semibold bg-white text-slate-600 hover:bg-slate-50 border border-slate-200 transition cursor-pointer">
+          🔍 Checklist
+        </button>
+      </div>
+    </div>
+
+    <!-- TAB 1: CRITICAL WIRING RULES FOR BEGINNERS -->
+    <div id="hwTab_rules" class="space-y-4">
+      <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
+        <span class="text-xs font-mono font-bold uppercase tracking-wider text-amber-600">RULEBOOK</span>
+        <h3 class="text-sm font-extrabold text-slate-900">4 Critical Wiring Rules for Beginners</h3>
+      </div>
+      <p class="text-xs text-slate-500">
+        Before plugging in any wires, read these 4 golden rules to avoid damaging components during assembly or live demonstration:
+      </p>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+        <!-- Rule 1 -->
+        <div class="p-4 rounded-xl bg-slate-50 border border-amber-200 space-y-2">
+          <div class="flex items-center gap-2 text-amber-700 font-bold">
+            <i class="fa-solid fa-triangle-exclamation text-sm"></i>
+            <span class="text-sm font-extrabold text-slate-900">1. Common Ground (GND) is Mandatory</span>
+          </div>
+          <p class="text-slate-600 leading-relaxed text-[11px]">
+            <strong>ALL components</strong> (ESP32, sensors, relays, LoRa modules, and power supplies) connected together <strong>MUST share a common GND wire</strong>. Without a continuous reference ground, analog ADC voltages fluctuate wildly and SPI/I2C communication will fail completely.
+          </p>
+        </div>
+
+        <!-- Rule 2 -->
+        <div class="p-4 rounded-xl bg-slate-50 border border-rose-200 space-y-2">
+          <div class="flex items-center gap-2 text-rose-700 font-bold">
+            <i class="fa-solid fa-bolt text-sm"></i>
+            <span class="text-sm font-extrabold text-slate-900">2. ESP32 3.3V Logic Warning</span>
+          </div>
+          <p class="text-slate-600 leading-relaxed text-[11px]">
+            ESP32 GPIO pins operate strictly at <strong>3.3V logic level</strong>. Connecting 5V directly to an ESP32 input pin will permanently destroy the microcontroller. For 5V sensors like MQ-2 or MQ-135, power the sensor heater with 5V, but ensure analog outputs stay below 3.3V (or use a voltage divider).
+          </p>
+        </div>
+
+        <!-- Rule 3 -->
+        <div class="p-4 rounded-xl bg-slate-50 border border-blue-200 space-y-2">
+          <div class="flex items-center gap-2 text-blue-700 font-bold">
+            <i class="fa-solid fa-wifi text-sm"></i>
+            <span class="text-sm font-extrabold text-slate-900">3. ADC1 vs ADC2 Pin Rule (Wireless Rule)</span>
+          </div>
+          <p class="text-slate-600 leading-relaxed text-[11px]">
+            Always use <strong>ADC1 pins</strong> (GPIO 32, 34, 35, 36, 39) for analog sensors when LoRa or WiFi is enabled. <strong>ADC2 pins (GPIO 0, 2, 4, 12-15, 25-27) cannot be used while wireless radio modules are active!</strong>
+          </p>
+        </div>
+
+        <!-- Rule 4 -->
+        <div class="p-4 rounded-xl bg-slate-50 border border-purple-200 space-y-2">
+          <div class="flex items-center gap-2 text-purple-700 font-bold">
+            <i class="fa-solid fa-battery-half text-sm"></i>
+            <span class="text-sm font-extrabold text-slate-900">4. SIM800L Power Peak Requirement</span>
+          </div>
+          <p class="text-slate-600 leading-relaxed text-[11px]">
+            The SIM800L GSM module requires <strong>3.7V &ndash; 4.2V with at least 2 Amps burst current</strong> during cellular transmission. <strong>Do NOT power SIM800L directly from Jetson 3.3V/5V pins!</strong> Use a dedicated 18650 Li-ion cell or high-current LM2596 buck converter with shared GND.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: NODE 1 FLOOD (FLD1) -->
+    <div id="hwTab_fld1" class="hidden space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+        <div>
+          <span class="text-xs font-mono font-bold uppercase tracking-wider text-blue-600">NODE 1 PINOUT</span>
+          <h3 class="text-sm font-extrabold text-slate-900">Flood Monitoring Node (FLD1) Connection Table</h3>
+        </div>
+        <span class="text-xs font-mono px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 font-bold">3 SENSOR LAYERS</span>
+      </div>
+      <p class="text-xs text-slate-500">
+        Monitors water accumulation, rainfall, and barometric pressure drops using 3 independent sensor layers.
+      </p>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs border border-slate-200 rounded-xl overflow-hidden">
+          <thead class="bg-slate-50 border-b border-slate-200 font-mono text-[11px] text-slate-700">
+            <tr>
+              <th class="p-3">Component Name</th>
+              <th class="p-3">Component Pin</th>
+              <th class="p-3">Connected to ESP32 Pin</th>
+              <th class="p-3">Wire Color Code</th>
+              <th class="p-3">Description / Notes</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200 text-[11px]">
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-bold text-slate-900" rowspan="8">SX1278 LoRa Transceiver</td>
+              <td class="p-3 font-mono">SCK</td>
+              <td class="p-3 font-mono font-bold text-blue-700">GPIO 18</td>
+              <td class="p-3"><span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>Green</span></td>
+              <td class="p-3 text-slate-600">SPI Clock</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-mono">MISO</td>
+              <td class="p-3 font-mono font-bold text-blue-700">GPIO 19</td>
+              <td class="p-3"><span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>Yellow</span></td>
+              <td class="p-3 text-slate-600">SPI Master-In-Slave-Out</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-mono">MOSI</td>
+              <td class="p-3 font-mono font-bold text-blue-700">GPIO 23</td>
+              <td class="p-3"><span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-orange-500"></span>Orange</span></td>
+              <td class="p-3 text-slate-600">SPI Master-Out-Slave-In</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-mono">NSS / CS</td>
+              <td class="p-3 font-mono font-bold text-blue-700">GPIO 5</td>
+              <td class="p-3"><span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>Blue</span></td>
+              <td class="p-3 text-slate-600">SPI Chip Select</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-mono">RST</td>
+              <td class="p-3 font-mono font-bold text-blue-700">GPIO 14</td>
+              <td class="p-3"><span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-slate-300 border border-slate-400"></span>White</span></td>
+              <td class="p-3 text-slate-600">Hardware Reset</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-mono">DIO0</td>
+              <td class="p-3 font-mono font-bold text-blue-700">GPIO 2</td>
+              <td class="p-3"><span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span>Purple</span></td>
+              <td class="p-3 text-slate-600">Interrupt Request (IRQ)</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-mono">VCC</td>
+              <td class="p-3 font-mono font-bold text-rose-600">3.3V</td>
+              <td class="p-3"><span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>Red</span></td>
+              <td class="p-3 text-rose-600 font-bold">3.3V Power ONLY</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-mono">GND</td>
+              <td class="p-3 font-mono font-bold text-slate-900">GND</td>
+              <td class="p-3"><span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-slate-900"></span>Black</span></td>
+              <td class="p-3 text-slate-600">Ground</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60 bg-blue-50/30">
+              <td class="p-3 font-bold text-slate-900" rowspan="4">HC-SR04 / JSN-SR04T<br><span class="text-[10px] text-blue-600 font-normal">(Layer 1 Primary)</span></td>
+              <td class="p-3 font-mono">TRIG</td>
+              <td class="p-3 font-mono font-bold text-blue-700">GPIO 12</td>
+              <td class="p-3"><span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>Yellow</span></td>
+              <td class="p-3 text-slate-600">Trigger Pulse</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60 bg-blue-50/30">
+              <td class="p-3 font-mono">ECHO</td>
+              <td class="p-3 font-mono font-bold text-blue-700">GPIO 13</td>
+              <td class="p-3"><span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>Green</span></td>
+              <td class="p-3 text-slate-600">Echo Pulse (3.3V tolerant)</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60 bg-blue-50/30">
+              <td class="p-3 font-mono">VCC</td>
+              <td class="p-3 font-mono font-bold text-rose-600">5V (VIN)</td>
+              <td class="p-3"><span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>Red</span></td>
+              <td class="p-3 text-slate-600">5V Power Supply</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60 bg-blue-50/30">
+              <td class="p-3 font-mono">GND</td>
+              <td class="p-3 font-mono font-bold text-slate-900">GND</td>
+              <td class="p-3"><span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-slate-900"></span>Black</span></td>
+              <td class="p-3 text-slate-600">Ground</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-bold text-slate-900" rowspan="4">YL-83 Rain Sensor<br><span class="text-[10px] text-blue-600 font-normal">(Layer 2 Corroborating)</span></td>
+              <td class="p-3 font-mono">AO (Analog)</td>
+              <td class="p-3 font-mono font-bold text-blue-700">GPIO 34 (ADC1_CH6)</td>
+              <td class="p-3"><span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>Blue</span></td>
+              <td class="p-3 text-slate-600">Rain Density Analog Reading</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-mono">DO (Digital)</td>
+              <td class="p-3 font-mono font-bold text-blue-700">GPIO 27</td>
+              <td class="p-3"><span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-slate-300 border border-slate-400"></span>White</span></td>
+              <td class="p-3 text-slate-600">Digital Rain Threshold</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-mono">VCC</td>
+              <td class="p-3 font-mono font-bold text-rose-600">3.3V</td>
+              <td class="p-3"><span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>Red</span></td>
+              <td class="p-3 text-slate-600">3.3V Power</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-mono">GND</td>
+              <td class="p-3 font-mono font-bold text-slate-900">GND</td>
+              <td class="p-3"><span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-slate-900"></span>Black</span></td>
+              <td class="p-3 text-slate-600">Ground</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60 bg-blue-50/30">
+              <td class="p-3 font-bold text-slate-900" rowspan="4">BME280 Sensor<br><span class="text-[10px] text-blue-600 font-normal">(Layer 3 Context)</span></td>
+              <td class="p-3 font-mono">SDA</td>
+              <td class="p-3 font-mono font-bold text-blue-700">GPIO 21</td>
+              <td class="p-3"><span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>Green</span></td>
+              <td class="p-3 text-slate-600">I2C Data Bus</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60 bg-blue-50/30">
+              <td class="p-3 font-mono">SCL</td>
+              <td class="p-3 font-mono font-bold text-blue-700">GPIO 22</td>
+              <td class="p-3"><span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>Yellow</span></td>
+              <td class="p-3 text-slate-600">I2C Clock Bus</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60 bg-blue-50/30">
+              <td class="p-3 font-mono">VCC</td>
+              <td class="p-3 font-mono font-bold text-rose-600">3.3V</td>
+              <td class="p-3"><span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>Red</span></td>
+              <td class="p-3 text-slate-600">3.3V Power</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60 bg-blue-50/30">
+              <td class="p-3 font-mono">GND</td>
+              <td class="p-3 font-mono font-bold text-slate-900">GND</td>
+              <td class="p-3"><span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-slate-900"></span>Black</span></td>
+              <td class="p-3 text-slate-600">Ground (I2C Address: <code class="font-mono text-slate-800 font-bold">0x76</code>)</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-bold text-slate-900">Battery Divider</td>
+              <td class="p-3 font-mono">ADC Pin</td>
+              <td class="p-3 font-mono font-bold text-purple-700">GPIO 36 (ADC1_CH0)</td>
+              <td class="p-3"><span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span>Purple</span></td>
+              <td class="p-3 text-slate-600">Between two 10k&Omega; resistors (Battery B+ to GND)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 3: NODE 2 LANDSLIDE (SLD2) -->
+    <div id="hwTab_sld2" class="hidden space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+        <div>
+          <span class="text-xs font-mono font-bold uppercase tracking-wider text-amber-600">NODE 2 PINOUT</span>
+          <h3 class="text-sm font-extrabold text-slate-900">Landslide Monitoring Node (SLD2) Connection Table</h3>
+        </div>
+        <span class="text-xs font-mono px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-bold">3 SENSOR LAYERS</span>
+      </div>
+      <p class="text-xs text-slate-500">
+        Monitors slope angle, ground tilt, soil moisture saturation, and atmospheric pressure along mountain corridors.
+      </p>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs border border-slate-200 rounded-xl overflow-hidden">
+          <thead class="bg-slate-50 border-b border-slate-200 font-mono text-[11px] text-slate-700">
+            <tr>
+              <th class="p-3">Component Name</th>
+              <th class="p-3">Component Pin</th>
+              <th class="p-3">Connected to ESP32 Pin</th>
+              <th class="p-3">Wire Color Code</th>
+              <th class="p-3">Description / Notes</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200 text-[11px]">
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-bold text-slate-900" rowspan="7">SX1278 LoRa Transceiver</td>
+              <td class="p-3 font-mono">SCK / MISO / MOSI</td>
+              <td class="p-3 font-mono font-bold text-amber-700">GPIO 18 / 19 / 23</td>
+              <td class="p-3">🟢 Green / 🟡 Yellow / 🟠 Orange</td>
+              <td class="p-3 text-slate-600">Standard SPI Bus</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-mono">NSS / CS</td>
+              <td class="p-3 font-mono font-bold text-amber-700">GPIO 5</td>
+              <td class="p-3">🔵 Blue</td>
+              <td class="p-3 text-slate-600">SPI Chip Select</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-mono">RST</td>
+              <td class="p-3 font-mono font-bold text-amber-700">GPIO 14</td>
+              <td class="p-3">⚪ White</td>
+              <td class="p-3 text-slate-600">Hardware Reset</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-mono">DIO0</td>
+              <td class="p-3 font-mono font-bold text-amber-700">GPIO 2</td>
+              <td class="p-3">🟣 Purple</td>
+              <td class="p-3 text-slate-600">Interrupt Request (IRQ)</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-mono">VCC</td>
+              <td class="p-3 font-mono font-bold text-rose-600">3.3V</td>
+              <td class="p-3">🔴 Red</td>
+              <td class="p-3 text-rose-600 font-bold">3.3V Power</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-mono">GND</td>
+              <td class="p-3 font-mono font-bold text-slate-900">GND</td>
+              <td class="p-3">🖤 Black</td>
+              <td class="p-3 text-slate-600">Ground</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60 bg-amber-50/30">
+              <td class="p-3 font-bold text-slate-900" rowspan="4">MPU6050 Gyro/Tilt<br><span class="text-[10px] text-amber-600 font-normal">(Layer 1 Primary)</span></td>
+              <td class="p-3 font-mono">SDA</td>
+              <td class="p-3 font-mono font-bold text-amber-700">GPIO 21</td>
+              <td class="p-3">🟢 Green</td>
+              <td class="p-3 text-slate-600">I2C Data (Shared bus, address <code class="font-bold">0x68</code>)</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60 bg-amber-50/30">
+              <td class="p-3 font-mono">SCL</td>
+              <td class="p-3 font-mono font-bold text-amber-700">GPIO 22</td>
+              <td class="p-3">🟡 Yellow</td>
+              <td class="p-3 text-slate-600">I2C Clock (Shared bus)</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60 bg-amber-50/30">
+              <td class="p-3 font-mono">VCC</td>
+              <td class="p-3 font-mono font-bold text-rose-600">3.3V</td>
+              <td class="p-3">🔴 Red</td>
+              <td class="p-3 text-slate-600">3.3V Power</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60 bg-amber-50/30">
+              <td class="p-3 font-mono">GND</td>
+              <td class="p-3 font-mono font-bold text-slate-900">GND</td>
+              <td class="p-3">🖤 Black</td>
+              <td class="p-3 text-slate-600">Ground</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-bold text-slate-900" rowspan="3">Soil Moisture v1.2<br><span class="text-[10px] text-amber-600 font-normal">(Layer 2 Corroborating)</span></td>
+              <td class="p-3 font-mono">AOUT</td>
+              <td class="p-3 font-mono font-bold text-amber-700">GPIO 32 (ADC1_CH4)</td>
+              <td class="p-3">🔵 Blue</td>
+              <td class="p-3 text-slate-600">Soil Water Saturation Analog Reading</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-mono">VCC</td>
+              <td class="p-3 font-mono font-bold text-rose-600">3.3V</td>
+              <td class="p-3">🔴 Red</td>
+              <td class="p-3 text-slate-600">3.3V Power</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-mono">GND</td>
+              <td class="p-3 font-mono font-bold text-slate-900">GND</td>
+              <td class="p-3">🖤 Black</td>
+              <td class="p-3 text-slate-600">Ground</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60 bg-amber-50/30">
+              <td class="p-3 font-bold text-slate-900" rowspan="4">BME280 Sensor<br><span class="text-[10px] text-amber-600 font-normal">(Layer 3 Context)</span></td>
+              <td class="p-3 font-mono">SDA / SCL</td>
+              <td class="p-3 font-mono font-bold text-amber-700">GPIO 21 / GPIO 22</td>
+              <td class="p-3">🟢 Green / 🟡 Yellow</td>
+              <td class="p-3 text-slate-600">Shared I2C Bus (address <code class="font-bold">0x76</code>)</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60 bg-amber-50/30">
+              <td class="p-3 font-mono">VCC / GND</td>
+              <td class="p-3 font-mono font-bold text-rose-600">3.3V / GND</td>
+              <td class="p-3">🔴 Red / 🖤 Black</td>
+              <td class="p-3 text-slate-600">Power &amp; Ground</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-bold text-slate-900">Battery Divider</td>
+              <td class="p-3 font-mono">ADC Pin</td>
+              <td class="p-3 font-mono font-bold text-purple-700">GPIO 36 (ADC1_CH0)</td>
+              <td class="p-3">🟣 Purple</td>
+              <td class="p-3 text-slate-600">Voltage divider (2x 10k&Omega; from Battery B+)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 4: NODE 3 FIRE (FIR3) -->
+    <div id="hwTab_fir3" class="hidden space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+        <div>
+          <span class="text-xs font-mono font-bold uppercase tracking-wider text-rose-600">NODE 3 PINOUT</span>
+          <h3 class="text-sm font-extrabold text-slate-900">Fire Monitoring Node (FIR3) Connection Table</h3>
+        </div>
+        <span class="text-xs font-mono px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 font-bold">3 SENSOR LAYERS</span>
+      </div>
+      <p class="text-xs text-slate-500">
+        Detects optical infrared flame emissions, smoke/combustion gas concentration, and ambient temperature spikes.
+      </p>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs border border-slate-200 rounded-xl overflow-hidden">
+          <thead class="bg-slate-50 border-b border-slate-200 font-mono text-[11px] text-slate-700">
+            <tr>
+              <th class="p-3">Component Name</th>
+              <th class="p-3">Component Pin</th>
+              <th class="p-3">Connected to ESP32 Pin</th>
+              <th class="p-3">Wire Color Code</th>
+              <th class="p-3">Description / Notes</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200 text-[11px]">
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-bold text-slate-900" rowspan="4">SX1278 LoRa Transceiver</td>
+              <td class="p-3 font-mono">SCK / MISO / MOSI</td>
+              <td class="p-3 font-mono font-bold text-rose-700">GPIO 18 / 19 / 23</td>
+              <td class="p-3">🟢 Green / 🟡 Yellow / 🟠 Orange</td>
+              <td class="p-3 text-slate-600">SPI Bus</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-mono">NSS / RST / DIO0</td>
+              <td class="p-3 font-mono font-bold text-rose-700">GPIO 5 / 14 / 2</td>
+              <td class="p-3">🔵 Blue / ⚪ White / 🟣 Purple</td>
+              <td class="p-3 text-slate-600">Chip Select, Reset &amp; IRQ</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-mono">VCC / GND</td>
+              <td class="p-3 font-mono font-bold text-rose-600">3.3V / GND</td>
+              <td class="p-3">🔴 Red / 🖤 Black</td>
+              <td class="p-3 text-rose-600 font-bold">3.3V Power ONLY</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60 bg-rose-50/30">
+              <td class="p-3 font-bold text-slate-900" rowspan="4">KY-026 Flame Sensor<br><span class="text-[10px] text-rose-600 font-normal">(Layer 1 Primary)</span></td>
+              <td class="p-3 font-mono">AO</td>
+              <td class="p-3 font-mono font-bold text-rose-700">GPIO 34 (ADC1_CH6)</td>
+              <td class="p-3">🔵 Blue</td>
+              <td class="p-3 text-slate-600">Flame IR Intensity Analog Reading</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60 bg-rose-50/30">
+              <td class="p-3 font-mono">DO</td>
+              <td class="p-3 font-mono font-bold text-rose-700">GPIO 27</td>
+              <td class="p-3">⚪ White</td>
+              <td class="p-3 text-slate-600">Digital Flame Trigger Interrupt</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60 bg-rose-50/30">
+              <td class="p-3 font-mono">VCC / GND</td>
+              <td class="p-3 font-mono font-bold text-rose-600">3.3V / GND</td>
+              <td class="p-3">🔴 Red / 🖤 Black</td>
+              <td class="p-3 text-slate-600">3.3V Power</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-bold text-slate-900" rowspan="4">MQ-2 Smoke/Gas Sensor<br><span class="text-[10px] text-rose-600 font-normal">(Layer 2 Corroborating)</span></td>
+              <td class="p-3 font-mono">AO</td>
+              <td class="p-3 font-mono font-bold text-rose-700">GPIO 35 (ADC1_CH7)</td>
+              <td class="p-3">🔵 Blue</td>
+              <td class="p-3 text-slate-600">Gas Concentration Analog Reading</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-mono">DO</td>
+              <td class="p-3 font-mono font-bold text-rose-700">GPIO 26</td>
+              <td class="p-3">⚪ White</td>
+              <td class="p-3 text-slate-600">Digital Gas Threshold Trigger</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-mono">VCC</td>
+              <td class="p-3 font-mono font-bold text-rose-600">5V (VIN)</td>
+              <td class="p-3">🔴 Red</td>
+              <td class="p-3 text-rose-600 font-bold">MUST BE 5V for internal heater!</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-mono">GND</td>
+              <td class="p-3 font-mono font-bold text-slate-900">GND</td>
+              <td class="p-3">🖤 Black</td>
+              <td class="p-3 text-slate-600">Ground</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60 bg-rose-50/30">
+              <td class="p-3 font-bold text-slate-900" rowspan="3">BME280 Sensor<br><span class="text-[10px] text-rose-600 font-normal">(Layer 3 Context)</span></td>
+              <td class="p-3 font-mono">SDA / SCL</td>
+              <td class="p-3 font-mono font-bold text-rose-700">GPIO 21 / GPIO 22</td>
+              <td class="p-3">🟢 Green / 🟡 Yellow</td>
+              <td class="p-3 text-slate-600">I2C Data &amp; Clock (address <code class="font-bold">0x76</code>)</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60 bg-rose-50/30">
+              <td class="p-3 font-mono">VCC / GND</td>
+              <td class="p-3 font-mono font-bold text-rose-600">3.3V / GND</td>
+              <td class="p-3">🔴 Red / 🖤 Black</td>
+              <td class="p-3 text-slate-600">3.3V Power &amp; Ground</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-bold text-slate-900">Battery Divider</td>
+              <td class="p-3 font-mono">ADC Pin</td>
+              <td class="p-3 font-mono font-bold text-purple-700">GPIO 36 (ADC1_CH0)</td>
+              <td class="p-3">🟣 Purple</td>
+              <td class="p-3 text-slate-600">Voltage divider (2x 10k&Omega; from Battery B+)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 5: NODE 4 AIR POLLUTION (POL4) -->
+    <div id="hwTab_pol4" class="hidden space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+        <div>
+          <span class="text-xs font-mono font-bold uppercase tracking-wider text-purple-600">NODE 4 PINOUT</span>
+          <h3 class="text-sm font-extrabold text-slate-900">Air Pollution Monitoring Node (POL4 &middot; Dedicated 2-Layer Mode)</h3>
+        </div>
+        <span class="text-xs font-mono px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-200 font-bold">2-LAYER DEDICATED</span>
+      </div>
+      <p class="text-xs text-slate-500">
+        The Pollution Node is a <strong>dedicated 2-layer node</strong> measuring Air Quality Index (AQI) and PM2.5 particulate dust.
+      </p>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs border border-slate-200 rounded-xl overflow-hidden">
+          <thead class="bg-slate-50 border-b border-slate-200 font-mono text-[11px] text-slate-700">
+            <tr>
+              <th class="p-3">Component Name</th>
+              <th class="p-3">Component Pin</th>
+              <th class="p-3">Connected to ESP32 Pin</th>
+              <th class="p-3">Wire Color Code</th>
+              <th class="p-3">Description / Notes</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200 text-[11px]">
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-bold text-slate-900" rowspan="3">SX1278 LoRa Transceiver</td>
+              <td class="p-3 font-mono">SCK / MISO / MOSI</td>
+              <td class="p-3 font-mono font-bold text-purple-700">GPIO 18 / 19 / 23</td>
+              <td class="p-3">🟢 Green / 🟡 Yellow / 🟠 Orange</td>
+              <td class="p-3 text-slate-600">SPI Bus</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-mono">NSS / RST / DIO0</td>
+              <td class="p-3 font-mono font-bold text-purple-700">GPIO 5 / 14 / 2</td>
+              <td class="p-3">🔵 Blue / ⚪ White / 🟣 Purple</td>
+              <td class="p-3 text-slate-600">Chip Select, Reset &amp; IRQ</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-mono">VCC / GND</td>
+              <td class="p-3 font-mono font-bold text-rose-600">3.3V / GND</td>
+              <td class="p-3">🔴 Red / 🖤 Black</td>
+              <td class="p-3 text-rose-600 font-bold">3.3V Power ONLY</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60 bg-purple-50/30">
+              <td class="p-3 font-bold text-slate-900" rowspan="4">MQ-135 Air Quality Sensor<br><span class="text-[10px] text-purple-600 font-normal">(Layer 1 Primary)</span></td>
+              <td class="p-3 font-mono">AO</td>
+              <td class="p-3 font-mono font-bold text-purple-700">GPIO 34 (ADC1_CH6)</td>
+              <td class="p-3">🔵 Blue</td>
+              <td class="p-3 text-slate-600">AQI / Hazardous Gas Analog Reading</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60 bg-purple-50/30">
+              <td class="p-3 font-mono">DO</td>
+              <td class="p-3 font-mono font-bold text-purple-700">GPIO 27</td>
+              <td class="p-3">⚪ White</td>
+              <td class="p-3 text-slate-600">Digital Threshold Trigger</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60 bg-purple-50/30">
+              <td class="p-3 font-mono">VCC</td>
+              <td class="p-3 font-mono font-bold text-rose-600">5V (VIN)</td>
+              <td class="p-3">🔴 Red</td>
+              <td class="p-3 text-rose-600 font-bold">5V Power for internal heater</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60 bg-purple-50/30">
+              <td class="p-3 font-mono">GND</td>
+              <td class="p-3 font-mono font-bold text-slate-900">GND</td>
+              <td class="p-3">🖤 Black</td>
+              <td class="p-3 text-slate-600">Ground</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-bold text-slate-900" rowspan="5">GP2Y1010AU0F Dust Sensor<br><span class="text-[10px] text-purple-600 font-normal">(Layer 2 Corroborating)</span></td>
+              <td class="p-3 font-mono">Pin 3 (LED Drive)</td>
+              <td class="p-3 font-mono font-bold text-purple-700">GPIO 12</td>
+              <td class="p-3">🟠 Orange</td>
+              <td class="p-3 text-slate-600">Pulled LOW to drive internal IR LED pulse</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-mono">Pin 5 (Vo Analog Out)</td>
+              <td class="p-3 font-mono font-bold text-purple-700">GPIO 35 (ADC1_CH7)</td>
+              <td class="p-3">🔵 Blue</td>
+              <td class="p-3 text-slate-600">PM2.5 Analog Voltage Output</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-mono">Pin 1 (V-LED)</td>
+              <td class="p-3 font-mono font-bold text-rose-600">5V (via 150&Omega; resistor)</td>
+              <td class="p-3">🔴 Red</td>
+              <td class="p-3 text-slate-600">LED power resistor circuit</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-mono">Pin 2 &amp; 4 (GND)</td>
+              <td class="p-3 font-mono font-bold text-slate-900">GND</td>
+              <td class="p-3">🖤 Black</td>
+              <td class="p-3 text-slate-600">Sensor Ground</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-mono">Pin 6 (VCC)</td>
+              <td class="p-3 font-mono font-bold text-rose-600">5V</td>
+              <td class="p-3">🔴 Red</td>
+              <td class="p-3 text-slate-600">5V Sensor Power</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60 bg-purple-50/30">
+              <td class="p-3 font-bold text-slate-900">Battery Divider</td>
+              <td class="p-3 font-mono">ADC Pin</td>
+              <td class="p-3 font-mono font-bold text-purple-700">GPIO 36 (ADC1_CH0)</td>
+              <td class="p-3">🟣 Purple</td>
+              <td class="p-3 text-slate-600">Voltage divider (2x 10k&Omega; from Battery B+)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 6: NVIDIA JETSON ORIN NANO CENTRAL HUB -->
+    <div id="hwTab_jetson" class="hidden space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+        <div>
+          <span class="text-xs font-mono font-bold uppercase tracking-wider text-blue-600">CENTRAL HUB &amp; ALERT SYSTEM</span>
+          <h3 class="text-sm font-extrabold text-slate-900">NVIDIA Jetson Orin Nano 40-Pin Header Map</h3>
+        </div>
+        <span class="text-xs font-mono px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 font-bold">EDGE AI HUB</span>
+      </div>
+
+      <!-- Header Top-View Monospace Box -->
+      <div class="p-4 rounded-xl bg-slate-900 text-slate-100 font-mono text-[11px] leading-relaxed shadow-sm overflow-x-auto">
+<pre class="text-emerald-400 font-bold mb-2">               JETSON ORIN NANO 40-PIN HEADER TOP-VIEW</pre>
+<pre>                    +3V3 (1)  (2)  +5V
+            I2C2_SDA (3)  (4)  +5V
+            I2C2_SCL (5)  (6)  GND  <-- Common Ground
+    [DIO0]   GPIO04  (7)  (8)  UART1_TX  <-- SIM800L RX
+                     GND (9)  (10) UART1_RX  <-- SIM800L TX
+    [Buzzer] GPIO18 (11) (12) GPIO18
+                     GND (13) (14) GND
+    [Strobe] GPIO23 (15) (16) GPIO23
+                    +3V3 (17) (18) GPIO24
+   [MOSI]  SPI0_MOSI (19) (20) GND
+   [MISO]  SPI0_MISO (21) (22) GPIO25   <-- LoRa Reset
+   [SCLK]  SPI0_SCK  (23) (24) SPI0_CS0 <-- LoRa CS</pre>
+      </div>
+
+      <!-- Jetson Connection Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs border border-slate-200 rounded-xl overflow-hidden">
+          <thead class="bg-slate-50 border-b border-slate-200 font-mono text-[11px] text-slate-700">
+            <tr>
+              <th class="p-3">Device Name</th>
+              <th class="p-3">Device Pin</th>
+              <th class="p-3">Connected to Jetson Header</th>
+              <th class="p-3">Header Pin Number</th>
+              <th class="p-3">Description / Notes</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200 text-[11px]">
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-bold text-slate-900" rowspan="7">SX1278 LoRa Receiver (SPI0)</td>
+              <td class="p-3 font-mono">MOSI</td>
+              <td class="p-3 font-mono">SPI0_MOSI</td>
+              <td class="p-3 font-mono font-bold text-blue-700">Pin 19</td>
+              <td class="p-3 text-slate-600">SPI Master-Out-Slave-In</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-mono">MISO</td>
+              <td class="p-3 font-mono">SPI0_MISO</td>
+              <td class="p-3 font-mono font-bold text-blue-700">Pin 21</td>
+              <td class="p-3 text-slate-600">SPI Master-In-Slave-Out</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-mono">SCK</td>
+              <td class="p-3 font-mono">SPI0_SCK</td>
+              <td class="p-3 font-mono font-bold text-blue-700">Pin 23</td>
+              <td class="p-3 text-slate-600">SPI Clock</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-mono">CS / NSS</td>
+              <td class="p-3 font-mono">SPI0_CS0</td>
+              <td class="p-3 font-mono font-bold text-blue-700">Pin 24</td>
+              <td class="p-3 text-slate-600">SPI Chip Select 0</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-mono">RST / DIO0</td>
+              <td class="p-3 font-mono">GPIO25 / GPIO04</td>
+              <td class="p-3 font-mono font-bold text-blue-700">Pin 22 / Pin 7</td>
+              <td class="p-3 text-slate-600">Hardware Reset &amp; IRQ</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-mono">VCC</td>
+              <td class="p-3 font-mono">3.3V</td>
+              <td class="p-3 font-mono font-bold text-rose-600">Pin 1 / 17</td>
+              <td class="p-3 text-rose-600 font-bold">3.3V Power ONLY</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-mono">GND</td>
+              <td class="p-3 font-mono">GND</td>
+              <td class="p-3 font-mono font-bold text-slate-900">Pin 6 / 9 / 14 / 20</td>
+              <td class="p-3 text-slate-600">Common Ground</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60 bg-blue-50/30">
+              <td class="p-3 font-bold text-slate-900" rowspan="4">SIM800L GSM Module (UART1)</td>
+              <td class="p-3 font-mono">TXD</td>
+              <td class="p-3 font-mono">UART1_RXD</td>
+              <td class="p-3 font-mono font-bold text-purple-700">Pin 10</td>
+              <td class="p-3 text-slate-600">Jetson receives SMS responses</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60 bg-blue-50/30">
+              <td class="p-3 font-mono">RXD</td>
+              <td class="p-3 font-mono">UART1_TXD</td>
+              <td class="p-3 font-mono font-bold text-purple-700">Pin 8</td>
+              <td class="p-3 text-slate-600">Jetson transmits AT commands</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60 bg-blue-50/30">
+              <td class="p-3 font-mono">VCC</td>
+              <td class="p-3 font-mono">External 4.0V Supply</td>
+              <td class="p-3 font-mono font-bold text-rose-600">&mdash;</td>
+              <td class="p-3 text-rose-600 font-bold">DO NOT connect to Jetson 5V! Use 2A peak power source</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60 bg-blue-50/30">
+              <td class="p-3 font-mono">GND</td>
+              <td class="p-3 font-mono">GND</td>
+              <td class="p-3 font-mono font-bold text-slate-900">Pin 6 / 14</td>
+              <td class="p-3 text-slate-600">Shared GND with Jetson</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-bold text-slate-900" rowspan="2">Active Piezo Alarm Buzzer</td>
+              <td class="p-3 font-mono">(+) Signal</td>
+              <td class="p-3 font-mono">GPIO18</td>
+              <td class="p-3 font-mono font-bold text-amber-700">Pin 12</td>
+              <td class="p-3 text-slate-600">Via 2N2222 NPN Transistor driver</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60">
+              <td class="p-3 font-mono">(-) GND</td>
+              <td class="p-3 font-mono">GND</td>
+              <td class="p-3 font-mono font-bold text-slate-900">Pin 14</td>
+              <td class="p-3 text-slate-600">Ground</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60 bg-blue-50/30">
+              <td class="p-3 font-bold text-slate-900" rowspan="3">Strobe Light Relay Module</td>
+              <td class="p-3 font-mono">IN (Trigger)</td>
+              <td class="p-3 font-mono">GPIO23</td>
+              <td class="p-3 font-mono font-bold text-rose-700">Pin 16</td>
+              <td class="p-3 text-slate-600">Controls 5V relay for high-intensity optical strobe</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60 bg-blue-50/30">
+              <td class="p-3 font-mono">VCC</td>
+              <td class="p-3 font-mono">5V</td>
+              <td class="p-3 font-mono font-bold text-rose-600">Pin 2 / 4</td>
+              <td class="p-3 text-slate-600">5V Relay coil power</td>
+            </tr>
+            <tr class="hover:bg-slate-50/60 bg-blue-50/30">
+              <td class="p-3 font-mono">GND</td>
+              <td class="p-3 font-mono">GND</td>
+              <td class="p-3 font-mono font-bold text-slate-900">Pin 6 / 14</td>
+              <td class="p-3 text-slate-600">Ground</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 7: SOLAR POWER & BATTERY CHARGING CIRCUIT -->
+    <div id="hwTab_solar" class="hidden space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+        <div>
+          <span class="text-xs font-mono font-bold uppercase tracking-wider text-emerald-600">POWER ARCHITECTURE</span>
+          <h3 class="text-sm font-extrabold text-slate-900">Solar Power &amp; Battery Charging Circuit</h3>
+        </div>
+        <span class="text-xs font-mono px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold">OFF-GRID AUTONOMOUS</span>
+      </div>
+      <p class="text-xs text-slate-500">
+        Each of the 4 ESP32 field nodes uses an autonomous solar-rechargeable lithium power system for continuous field deployment:
+      </p>
+
+      <!-- ASCII Power Diagram -->
+      <div class="p-4 rounded-xl bg-slate-900 text-slate-100 font-mono text-[11px] leading-relaxed shadow-sm overflow-x-auto">
+<pre class="text-emerald-400 font-bold mb-1">    ┌────────────────┐
+    │ SOLAR PANEL    │
+    │ (5V - 6V, 2W)  │
+    └───────┬────────┘
+            │
+            ▼
+    ┌────────────────┐       ┌─────────────────┐       ┌─────────────────┐
+    │ TP4056 CHARGER │──────►│ 18650 LI-ION    │──────►│ ESP32 NODE      │
+    │ MODULE (USB/IN)│       │ BATTERY (3.7V)  │       │ VIN / 3.3V REG  │
+    └────────────────┘       └─────────────────┘       └─────────────────┘
+            │                                                   │
+            └───────────────────────┬───────────────────────────┘
+                                    ▼
+                             COMMON GND BUS</pre>
+      </div>
+
+      <!-- Power Wiring Step-by-Step -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs pt-1">
+        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+          <h4 class="font-bold text-slate-900 flex items-center gap-2">
+            <i class="fa-solid fa-solar-panel text-amber-500"></i>
+            <span>Power Wiring Instructions</span>
+          </h4>
+          <ol class="space-y-1.5 list-decimal list-inside text-[11px] text-slate-600">
+            <li><strong>Solar Panel (+ / -)</strong> &rarr; Connected to <code class="font-mono text-slate-900 font-bold">IN+</code> and <code class="font-mono text-slate-900 font-bold">IN-</code> on TP4056 board.</li>
+            <li><strong>18650 Li-ion Battery (+ / -)</strong> &rarr; Connected to <code class="font-mono text-slate-900 font-bold">B+</code> and <code class="font-mono text-slate-900 font-bold">B-</code> on TP4056.</li>
+            <li><strong>TP4056 OUT+</strong> &rarr; Connected to <strong>ESP32 VIN pin</strong> (or 5V sensor power rail).</li>
+            <li><strong>TP4056 OUT-</strong> &rarr; Connected to <strong>ESP32 GND pin</strong>.</li>
+          </ol>
+        </div>
+
+        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+          <h4 class="font-bold text-slate-900 flex items-center gap-2">
+            <i class="fa-solid fa-gauge text-blue-500"></i>
+            <span>Battery Divider Voltage Monitor Circuit</span>
+          </h4>
+          <p class="text-[11px] text-slate-600 leading-relaxed">
+            Allows the ESP32 to monitor real battery capacity safely via 12-bit ADC without exceeding 3.3V:
+          </p>
+          <div class="p-2.5 rounded-lg bg-white border border-slate-200 font-mono text-[11px] text-slate-800">
+            Battery B+ &rarr; 10k&Omega; &rarr; <strong>ESP32 GPIO 36 (ADC1_CH0)</strong> &rarr; 10k&Omega; &rarr; GND
+          </div>
+          <p class="text-[10px] text-slate-400 font-mono">
+            V_measured = V_battery / 2 &le; 2.1V (well within the safe 3.3V ADC range).
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 8: END-TO-END WORKING FLOW (FROM SCHEMATIC) -->
+    <div id="hwTab_flow" class="hidden space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+        <div>
+          <span class="text-xs font-mono font-bold uppercase tracking-wider text-[#155DFC]">SYSTEM WORKFLOW</span>
+          <h3 class="text-sm font-extrabold text-slate-900">End-to-End Operational Working Flow</h3>
+        </div>
+        <span class="text-xs font-mono px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 font-bold">6-STAGE PIPELINE</span>
+      </div>
+      <p class="text-xs text-slate-500">
+        From field environmental sensors to Jetson Orin Nano Edge AI inference and autonomous civil defense dispatch:
+      </p>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 text-center">
+        <!-- Step 1 -->
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-emerald-200 space-y-2 flex flex-col justify-between">
+          <div class="space-y-1.5">
+            <div class="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 mx-auto text-sm">
+              <i class="fa-solid fa-gauge-high"></i>
+            </div>
+            <span class="text-[9px] font-mono text-emerald-700 font-bold block uppercase">STAGE 01</span>
+            <h4 class="text-xs font-bold text-slate-900">1. Sense</h4>
+          </div>
+          <p class="text-[11px] text-slate-500 leading-normal">
+            Sensors at field nodes collect environmental data every few seconds.
+          </p>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-blue-200 space-y-2 flex flex-col justify-between">
+          <div class="space-y-1.5">
+            <div class="w-8 h-8 rounded-lg bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 mx-auto text-sm">
+              <i class="fa-solid fa-microchip"></i>
+            </div>
+            <span class="text-[9px] font-mono text-blue-700 font-bold block uppercase">STAGE 02</span>
+            <h4 class="text-xs font-bold text-slate-900">2. Process (Edge AI)</h4>
+          </div>
+          <p class="text-[11px] text-slate-500 leading-normal">
+            ESP32 does initial filtering, TinyML anomaly check &amp; creates packet.
+          </p>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-amber-200 space-y-2 flex flex-col justify-between">
+          <div class="space-y-1.5">
+            <div class="w-8 h-8 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 mx-auto text-sm">
+              <i class="fa-solid fa-tower-broadcast"></i>
+            </div>
+            <span class="text-[9px] font-mono text-amber-700 font-bold block uppercase">STAGE 03</span>
+            <h4 class="text-xs font-bold text-slate-900">3. Transmit</h4>
+          </div>
+          <p class="text-[11px] text-slate-500 leading-normal">
+            Data sent via LoRa (433/868 MHz) using Star-Mesh hybrid topology with ACK.
+          </p>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-purple-200 space-y-2 flex flex-col justify-between">
+          <div class="space-y-1.5">
+            <div class="w-8 h-8 rounded-lg bg-purple-50 border border-purple-200 flex items-center justify-center text-purple-600 mx-auto text-sm">
+              <i class="fa-solid fa-inbox"></i>
+            </div>
+            <span class="text-[9px] font-mono text-purple-700 font-bold block uppercase">STAGE 04</span>
+            <h4 class="text-xs font-bold text-slate-900">4. Receive</h4>
+          </div>
+          <p class="text-[11px] text-slate-500 leading-normal">
+            LoRa receiver gets packet and forwards it to Jetson Orin Nano via SPI.
+          </p>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-indigo-200 space-y-2 flex flex-col justify-between">
+          <div class="space-y-1.5">
+            <div class="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-600 mx-auto text-sm">
+              <i class="fa-solid fa-brain"></i>
+            </div>
+            <span class="text-[9px] font-mono text-indigo-700 font-bold block uppercase">STAGE 05</span>
+            <h4 class="text-xs font-bold text-slate-900">5. Analyze &amp; Predict</h4>
+          </div>
+          <p class="text-[11px] text-slate-500 leading-normal">
+            Jetson decodes, 2/3-layer validates, fuses data &amp; PyTorch GRU predicts risk.
+          </p>
+        </div>
+
+        <!-- Step 6 -->
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-rose-200 space-y-2 flex flex-col justify-between">
+          <div class="space-y-1.5">
+            <div class="w-8 h-8 rounded-lg bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 mx-auto text-sm">
+              <i class="fa-solid fa-bell"></i>
+            </div>
+            <span class="text-[9px] font-mono text-rose-700 font-bold block uppercase">STAGE 06</span>
+            <h4 class="text-xs font-bold text-slate-900">6. Alert &amp; Display</h4>
+          </div>
+          <p class="text-[11px] text-slate-500 leading-normal">
+            Alert on dashboard, SMS via SIM800L, activates acoustic buzzer &amp; strobe.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 9: SIH DEMONSTRATION WIRING CHECKLIST -->
+    <div id="hwTab_checklist" class="hidden space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+        <div>
+          <span class="text-xs font-mono font-bold uppercase tracking-wider text-emerald-600">PRE-FLIGHT AUDIT</span>
+          <h3 class="text-sm font-extrabold text-slate-900">SIH Demonstration Wiring Checklist</h3>
+        </div>
+        <span class="text-xs font-mono text-slate-500">6 Critical Safeguards</span>
+      </div>
+      <p class="text-xs text-slate-500">
+        Before turning on power during your live demonstration to the SIH judges, verify all 6 checks:
+      </p>
+
+      <div class="space-y-2.5 text-xs">
+        <label class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100/80 transition cursor-pointer">
+          <input type="checkbox" checked class="mt-0.5 rounded text-blue-600 focus:ring-blue-500 h-4 w-4">
+          <div>
+            <strong class="text-slate-900 block">GND Connected Everywhere:</strong>
+            <span class="text-slate-600 text-[11px]">Every node board, sensor module, and Jetson receiver has a single continuous common ground path.</span>
+          </div>
+        </label>
+
+        <label class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100/80 transition cursor-pointer">
+          <input type="checkbox" checked class="mt-0.5 rounded text-blue-600 focus:ring-blue-500 h-4 w-4">
+          <div>
+            <strong class="text-slate-900 block text-rose-700">LoRa Antenna Attached:</strong>
+            <span class="text-slate-600 text-[11px]"><strong>NEVER power on an SX1278 LoRa module without an antenna connected!</strong> Doing so will instantly burn out the internal RF power amplifier.</span>
+          </div>
+        </label>
+
+        <label class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100/80 transition cursor-pointer">
+          <input type="checkbox" checked class="mt-0.5 rounded text-blue-600 focus:ring-blue-500 h-4 w-4">
+          <div>
+            <strong class="text-slate-900 block">MQ-2 / MQ-135 5V Powered:</strong>
+            <span class="text-slate-600 text-[11px]">Gas sensors must be connected to <strong>5V (VIN)</strong>, not 3.3V, so their internal metal-oxide heating elements warm up to operating temperature.</span>
+          </div>
+        </label>
+
+        <label class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100/80 transition cursor-pointer">
+          <input type="checkbox" checked class="mt-0.5 rounded text-blue-600 focus:ring-blue-500 h-4 w-4">
+          <div>
+            <strong class="text-slate-900 block">SIM800L External Battery:</strong>
+            <span class="text-slate-600 text-[11px]">Ensure SIM800L is powered by an external 3.7V&ndash;4.2V 2A battery source with common GND shared with the Jetson.</span>
+          </div>
+        </label>
+
+        <label class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100/80 transition cursor-pointer">
+          <input type="checkbox" checked class="mt-0.5 rounded text-blue-600 focus:ring-blue-500 h-4 w-4">
+          <div>
+            <strong class="text-slate-900 block">BME280 I2C Address:</strong>
+            <span class="text-slate-600 text-[11px]">Confirm BME280 address is <code class="font-mono text-slate-800 font-bold">0x76</code> on all 3 nodes (or updated in config if using <code class="font-mono text-slate-800">0x77</code>).</span>
+          </div>
+        </label>
+
+        <label class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100/80 transition cursor-pointer">
+          <input type="checkbox" checked class="mt-0.5 rounded text-blue-600 focus:ring-blue-500 h-4 w-4">
+          <div>
+            <strong class="text-slate-900 block">LoRa SPI Pins Verified:</strong>
+            <span class="text-slate-600 text-[11px]">Double-check <code class="font-mono text-slate-800">SCK=18, MISO=19, MOSI=23, CS=5, RST=14, DIO0=2</code> on all 4 ESP32 nodes.</span>
+          </div>
+        </label>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // =========================================================================
+  // HARDWARE GUIDE TABS SCRIPT
+  // =========================================================================
+  function showHwGuideTab(tabId) {
+    const tabs = ['rules', 'fld1', 'sld2', 'fir3', 'pol4', 'jetson', 'solar', 'flow', 'checklist'];
+    tabs.forEach(t => {
+      const el = document.getElementById(`hwTab_${t}`);
+      const btn = document.getElementById(`tabBtn_${t}`);
+      if (el) {
+        if (t === tabId) {
+          el.classList.remove('hidden');
+        } else {
+          el.classList.add('hidden');
+        }
+      }
+      if (btn) {
+        if (t === tabId) {
+          btn.className = 'px-3 py-1.5 rounded-xl font-bold bg-blue-50 text-blue-700 border border-blue-200 transition cursor-pointer';
+        } else {
+          btn.className = 'px-3 py-1.5 rounded-xl font-semibold bg-white text-slate-600 hover:bg-slate-50 border border-slate-200 transition cursor-pointer';
+        }
+      }
+    });
+  }
+  // TOGGLE CONTROLS (PROGRESSIVE DISCLOSURE)
+  // =========================================================================
+  let allNodesExpanded = false;
+
+  function toggleNodeDetails(id) {
+    const el = document.getElementById(id);
+    const nodeId = id.replace('nodeDetails', '');
+    const arrow = document.getElementById(`arrow${nodeId}`);
+    const btnLbl = document.getElementById(`btnLbl${nodeId}`);
+
+    if (el.classList.contains('hidden')) {
+      el.classList.remove('hidden');
+      if (arrow) arrow.className = 'fa-solid fa-chevron-up text-[10px] text-slate-400 transition';
+      if (btnLbl) btnLbl.textContent = 'Hide Details';
+    } else {
+      el.classList.add('hidden');
+      if (arrow) arrow.className = 'fa-solid fa-chevron-down text-[10px] text-slate-400 transition';
+      if (btnLbl) btnLbl.textContent = 'View Details';
+    }
+  }
+
+  function toggleAllNodeDetails() {
+    allNodesExpanded = !allNodesExpanded;
+    const nodeIds = ['FLD1', 'SLD2', 'FIR3', 'POL4'];
+    nodeIds.forEach(id => {
+      const el = document.getElementById(`nodeDetails${id}`);
+      const arrow = document.getElementById(`arrow${id}`);
+      const btnLbl = document.getElementById(`btnLbl${id}`);
+      if (allNodesExpanded) {
+        el.classList.remove('hidden');
+        if (arrow) arrow.className = 'fa-solid fa-chevron-up text-[10px] text-slate-400 transition';
+        if (btnLbl) btnLbl.textContent = 'Hide Details';
+      } else {
+        el.classList.add('hidden');
+        if (arrow) arrow.className = 'fa-solid fa-chevron-down text-[10px] text-slate-400 transition';
+        if (btnLbl) btnLbl.textContent = 'View Details';
+      }
+    });
+
+    document.getElementById('btnToggleAllNodes').textContent = allNodesExpanded ? 'Collapse All Details' : 'Expand All Details';
+  }
+
+  function toggleSubSpecs(id) {
+    const el = document.getElementById(id);
+    if (el) {
+      el.classList.toggle('hidden');
+    }
+  }
+
+  function toggleHubDetails() {
+    const el = document.getElementById('hubTechDetails');
+    const arrow = document.getElementById('arrowHub');
+    const lbl = document.getElementById('btnLblHub');
+    if (el.classList.contains('hidden')) {
+      el.classList.remove('hidden');
+      arrow.className = 'fa-solid fa-chevron-up text-[10px] text-slate-400';
+      lbl.textContent = 'Hide Technical Details';
+    } else {
+      el.classList.add('hidden');
+      arrow.className = 'fa-solid fa-chevron-down text-[10px] text-slate-400';
+      lbl.textContent = 'View Technical Details';
+    }
+  }
+
+  function toggleCommDetails() {
+    const el = document.getElementById('commDetails');
+    const arrow = document.getElementById('arrowComm');
+    const lbl = document.getElementById('btnLblComm');
+    if (el.classList.contains('hidden')) {
+      el.classList.remove('hidden');
+      arrow.className = 'fa-solid fa-chevron-up text-[9px]';
+      lbl.textContent = 'Hide Communication Details';
+    } else {
+      el.classList.add('hidden');
+      arrow.className = 'fa-solid fa-chevron-down text-[9px]';
+      lbl.textContent = 'Advanced Communication Details';
+    }
+  }
+
+  function toggleSimulationLab() {
+    const el = document.getElementById('simLabControls');
+    const arrow = document.getElementById('arrowSimLab');
+    const lbl = document.getElementById('btnLblSimLab');
+    if (el.classList.contains('hidden')) {
+      el.classList.remove('hidden');
+      arrow.className = 'fa-solid fa-chevron-up text-[10px] text-slate-400 transition';
+      lbl.textContent = 'Close Simulation Lab';
+    } else {
+      el.classList.add('hidden');
+      arrow.className = 'fa-solid fa-chevron-down text-[10px] text-slate-400 transition';
+      lbl.textContent = 'Open Simulation Lab';
+    }
+  }
+
+  function toggleAdvancedDiagnostics() {
+    const el = document.getElementById('advancedDiagnosticsPanel');
+    const btn = document.getElementById('btnToggleAdvDiag');
+    if (el.classList.contains('hidden')) {
+      el.classList.remove('hidden');
+      btn.textContent = 'Hide Advanced Diagnostics';
+    } else {
+      el.classList.add('hidden');
+      btn.textContent = 'Show Packet Protocol & Pin Mappings';
+    }
+  }
+
+  // =========================================================================
+  // SIMULATION & ACTUATOR API DISPATCH
+  // =========================================================================
+  async function triggerHwSimulation(scenario) {
+    const fb = document.getElementById('hwSimFeedback');
+    fb.className = 'p-3 rounded-xl bg-blue-50 border border-blue-200 text-xs text-blue-700 block';
+    fb.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> Injecting ${scenario} surge telemetry...`;
+
+    try {
+      const res = await fetch(`${API_BASE}/api/simulate/${scenario}`, { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        fb.className = 'p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-700 block';
+        fb.innerHTML = `<i class="fa-solid fa-check mr-1.5"></i> Simulated: ${scenario.replace('_', ' ').toUpperCase()} injected! Telemetry & AI state updated.`;
+        if (typeof pollTelemetryOnce === 'function') pollTelemetryOnce();
+      }
+    } catch (err) {
+      fb.className = 'p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 block';
+      fb.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1.5"></i> Error: ${err.message}`;
+    }
+  }
+
+  async function toggleHwActuatorWithConfirm(device) {
+    const isCurrentlyActive = (device === 'buzzer' && document.getElementById('hwBuzzerBadge').textContent.includes('ACTIVATED')) ||
+                              (device === 'strobe' && document.getElementById('hwStrobeBadge').textContent.includes('ACTIVATED'));
+
+    if (!isCurrentlyActive) {
+      const devName = device === 'buzzer' ? 'Emergency Acoustic Siren (GPIO18)' : 'Warning Strobe Light (GPIO23)';
+      const confirmed = confirm(`CAUTION: Confirm hardware actuation override for ${devName}?\nThis engages physical relays in the field.`);
+      if (!confirmed) return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/api/actuators/${device}/toggle`, { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        if (typeof pollTelemetryOnce === 'function') pollTelemetryOnce();
+      }
+    } catch (e) {
+      alert(`Failed to toggle ${device}: ` + e.message);
+    }
+  }
+
+  // Real-time telemetry listener from base.html
+  window.addEventListener('sentinel_data', (event) => {
+    const { hub } = event.detail;
+    if (!hub) return;
+
+    if (hub.last_sync) {
+      document.getElementById('hwLastSyncTime').textContent = hub.last_sync;
+    }
+
+    // Buzzer State
+    const bzBadge = document.getElementById('hwBuzzerBadge');
+    const bzBtn = document.getElementById('hwBuzzerBtn');
+    if (hub.buzzer_gpio18) {
+      bzBadge.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 font-bold animate-pulse border border-rose-200';
+      bzBadge.textContent = 'ACTIVATED';
+      bzBtn.className = 'px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition shadow-sm';
+      bzBtn.textContent = 'Deactivate';
+    } else {
+      bzBadge.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-semibold border border-slate-200';
+      bzBadge.textContent = 'Standby';
+      bzBtn.className = 'px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 transition shadow-sm';
+      bzBtn.textContent = 'Activate';
+    }
+
+    // Strobe State
+    const stBadge = document.getElementById('hwStrobeBadge');
+    const stBtn = document.getElementById('hwStrobeBtn');
+    if (hub.strobe_gpio23) {
+      stBadge.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 font-bold animate-pulse border border-rose-200';
+      stBadge.textContent = 'ACTIVATED';
+      stBtn.className = 'px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition shadow-sm';
+      stBtn.textContent = 'Deactivate';
+    } else {
+      stBadge.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-semibold border border-slate-200';
+      stBadge.textContent = 'Standby';
+      stBtn.className = 'px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 transition shadow-sm';
+      stBtn.textContent = 'Activate';
+    }
+
+    // Update summary actuator pill
+    const summaryAct = document.getElementById('hwSummaryActuatorState');
+    if (hub.buzzer_gpio18 || hub.strobe_gpio23) {
+      summaryAct.className = 'text-sm font-bold text-rose-600 flex items-center gap-1.5 pt-0.5 font-mono';
+      summaryAct.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span><span>ACTIVATED</span>';
+    } else {
+      summaryAct.className = 'text-sm font-bold text-slate-700 flex items-center gap-1.5 pt-0.5 font-mono';
+      summaryAct.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span><span>Ready</span>';
+    }
+  });
+</script>
+{% endblock %}

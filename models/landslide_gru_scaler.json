@@ -1,0 +1,27 @@
+{
+  "features": [
+    "Slope_Angle",
+    "Soil_Saturation",
+    "Rainfall_mm",
+    "Temperature_C",
+    "Humidity_percent"
+  ],
+  "target": "Slope_Angle",
+  "target_idx": 0,
+  "min": {
+    "Slope_Angle": 5.0,
+    "Soil_Saturation": 0.1,
+    "Rainfall_mm": 0.0,
+    "Temperature_C": 5.0,
+    "Humidity_percent": 20.0
+  },
+  "max": {
+    "Slope_Angle": 80.0,
+    "Soil_Saturation": 1.0,
+    "Rainfall_mm": 300.0,
+    "Temperature_C": 40.0,
+    "Humidity_percent": 100.0
+  },
+  "target_min": 5.0,
+  "target_max": 80.0
+}

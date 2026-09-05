@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Disaster Sentinel · Central Command AI Dashboard (Uttarakhand, India)</title>
+  
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            page: '#F9FAFB',
+            panel: '#FFFFFF',
+            brand: {
+              DEFAULT: '#1340B4',
+              action: '#155DFC',
+              light: '#EFF6FF',
+              dark: '#0D2B7A'
+            },
+            navy: {
+              900: '#0F172A',
+              800: '#1E293B',
+              700: '#334155'
+            },
+            slate: {
+              muted: '#64748B',
+              border: '#E5E7EB',
+              subtle: '#F1F5F9'
+            },
+            hazard: {
+              critical: '#FB2C36',
+              warning: '#FF6900',
+              safe: '#16A34A',
+              info: '#155DFC'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- React 18 & ReactDOM -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- FontAwesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body {
+      background-color: #F9FAFB;
+      color: #0F172A;
+      font-family: 'Inter', sans-serif;
+    }
+    .card-base {
+      background: #FFFFFF;
+      border: 1px solid #E5E7EB;
+      border-radius: 1rem;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
+      transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+    }
+    .card-base:hover {
+      border-color: #CBD5E1;
+      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05), 0 8px 10px -6px rgba(15, 23, 42, 0.03);
+    }
+    .nav-link-active {
+      background-color: #EFF6FF !important;
+      color: #155DFC !important;
+      font-weight: 600 !important;
+    }
+    .nav-link-active i {
+      color: #155DFC !important;
+    }
+    /* Clean custom scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #F1F5F9; }
+    ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-[#F9FAFB] text-slate-900 selection:bg-blue-100 selection:text-blue-700">
+  <div id="root"></div>
+
+  <!-- React Application Logic -->
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // --- SOUND SYNTHESIZER (Web Audio API for Siren Alerts) ---
+    function playSiren() {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+        osc.frequency.linearRampToValueAtTime(880, audioCtx.currentTime + 0.3);
+        osc.frequency.linearRampToValueAtTime(440, audioCtx.currentTime + 0.6);
+        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.7);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.7);
+      } catch (e) {
+        console.warn("Audio Context blocked or not supported", e);
+      }
+    }
+
+    const defaultHub = {
+      hub_id: "JETSON-ORIN-NANO-01",
+      hub_name: "NVIDIA Jetson Orin Nano (Central Hub)",
+      processor: "6-core ARM v8.2 64-bit | 1024-core Ampere GPU",
+      lora_protocol: "SX1278 LoRa SPI0 @ 868.1 MHz",
+      lora_status: "ONLINE",
+      gsm_status: "ONLINE (SIM800L RSSI: 28/31)",
+      buzzer_gpio18: false,
+      strobe_gpio23: false,
+      last_sync: "LIVE",
+      active_alerts_count: 0
+    };
+
+    const defaultNodes = {
+      FLD1: {
+        node_id: "FLD1", name: "Flood Monitoring Node", hazard: "Flood",
+        location: "Rishikesh · Ganga Basin Catchment, Uttarakhand",
+        district: "Dehradun / Tehri Garhwal",
+        gps: { lat: 30.0869, lng: 78.2676 },
+        status: "Safe", battery: 95, lora_rssi: -68,
+        sensors: { River_Water_Level_m: 2.10, Rainfall_mm: 12.24, Rainfall_Intensity_mm_hr: 1.54, Atmospheric_Pressure_hPa: 1005.40, Temperature_C: 31.5, Relative_Humidity_pct: 78.0 }
+      },
+      SLD2: {
+        node_id: "SLD2", name: "Landslide Monitoring Node", hazard: "Landslide",
+        location: "Chamoli · Garhwal Mountain Slope Sector 2B, Uttarakhand",
+        district: "Chamoli District",
+        gps: { lat: 30.3844, lng: 79.2811 },
+        status: "Safe", risk_prob: 0.0, battery: 89, lora_rssi: -72,
+        sensors: { Slope_Angle: 12.0, Soil_Saturation: 0.15, Rainfall_mm: 10.0, Temperature_C: 22.0, Humidity_percent: 45.0 }
+      },
+      FIR3: {
+        node_id: "FIR3", name: "Fire Monitoring Node", hazard: "Fire",
+        location: "Almora · Kumaon Pine Forest Perimeter, Uttarakhand",
+        district: "Almora District",
+        gps: { lat: 29.6200, lng: 79.6800 },
+        status: "Safe", battery: 92, lora_rssi: -65,
+        sensors: { "Temperature[C]": 24.9, "Humidity[%]": 50.8, "TVOC[ppb]": 818, "eCO2[ppm]": 717, "Pressure[hPa]": 939.1, "PM2.5": 2.5 }
+      },
+      POL4: {
+        node_id: "POL4", name: "Air Quality Monitoring Node", hazard: "Pollution",
+        location: "Dehradun · Selaqui Valley Industrial Corridor, Uttarakhand",
+        district: "Dehradun District",
+        gps: { lat: 30.3400, lng: 77.8700 },
+        status: "Safe", battery: 87, lora_rssi: -70,
+        sensors: { no2: 14.5, co: 2.1, pm10: 42.0, pm25: 11.5 }
+      }
+    };
+
+    function App() {
+      const [hub, setHub] = useState(defaultHub);
+      const [nodes, setNodes] = useState(defaultNodes);
+      const [history, setHistory] = useState([]);
+      const [forecasts, setForecasts] = useState({ FLD1: null, SLD2: null, FIR3: null, POL4: null });
+      const [selectedForecastNode, setSelectedForecastNode] = useState('FLD1');
+      const [activeTab, setActiveTab] = useState('overview'); // overview | forecast | map | charts
+      const [isAudioMuted, setIsAudioMuted] = useState(false);
+      const [isSimulating, setIsSimulating] = useState(false);
+      const [sosModalOpen, setSosModalOpen] = useState(false);
+      const [sosData, setSosData] = useState(null);
+      const [lastAlertCount, setLastAlertCount] = useState(0);
+
+      const chartCanvasRef = useRef(null);
+      const chartInstanceRef = useRef(null);
+
+      // Auto-detect API Base: Connects to port 5000 whether in Live Server (port 5500/3000) or browser
+      const API_BASE = (window.location.port === '5000') ? '' : 'http://127.0.0.1:5000';
+      const isFlaskHost = window.location.port === '5000';
+      const makeNavUrl = (path) => isFlaskHost ? path : `http://127.0.0.1:5000${path}`;
+
+      // Fetch Real-Time Data from Flask API
+      const fetchData = async () => {
+        try {
+          const res = await fetch(`${API_BASE}/api/nodes`);
+          const data = await res.json();
+          if (data.success) {
+            setHub(data.hub);
+            setNodes(data.nodes);
+
+            if (!isAudioMuted && data.hub.buzzer_gpio18 && data.hub.active_alerts_count > lastAlertCount) {
+              playSiren();
+            }
+            setLastAlertCount(data.hub.active_alerts_count);
+          }
+        } catch (err) {
+          // Running standalone without Flask: stays on baseline simulation data
+        }
+      };
+
+      const fetchHistory = async () => {
+        try {
+          const res = await fetch(`${API_BASE}/api/history`);
+          const data = await res.json();
+          if (data.success) setHistory(data.history);
+        } catch (err) {}
+      };
+
+      const fetchForecasts = async () => {
+        try {
+          const res = await fetch(`${API_BASE}/api/forecast`);
+          const data = await res.json();
+          if (data.success && data.forecasts) setForecasts(data.forecasts);
+        } catch (err) {}
+      };
+
+      useEffect(() => {
+        fetchData();
+        fetchHistory();
+        fetchForecasts();
+        const interval = setInterval(() => {
+          fetchData();
+          fetchHistory();
+          fetchForecasts();
+        }, 2500);
+        return () => clearInterval(interval);
+      }, [isAudioMuted, lastAlertCount]);
+
+      // Initialize / Update Real-Time Chart
+      useEffect(() => {
+        if (!chartCanvasRef.current) return;
+        const ctx = chartCanvasRef.current.getContext('2d');
+        if (!chartInstanceRef.current) {
+          chartInstanceRef.current = new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: history.map(h => h.time),
+              datasets: [
+                {
+                  label: 'Rishikesh Flood Level (m)',
+                  data: history.map(h => h.fld1_water),
+                  borderColor: '#0284C7',
+                  backgroundColor: 'rgba(2, 132, 199, 0.08)',
+                  borderWidth: 2,
+                  tension: 0.3,
+                  fill: true
+                },
+                {
+                  label: 'Chamoli Slope Incline (°)',
+                  data: history.map(h => h.sld2_angle),
+                  borderColor: '#D97706',
+                  backgroundColor: 'transparent',
+                  borderWidth: 2,
+                  tension: 0.3
+                },
+                {
+                  label: 'Almora TVOC / 100 (ppb)',
+                  data: history.map(h => h.fir3_tvoc / 100),
+                  borderColor: '#E11D48',
+                  backgroundColor: 'transparent',
+                  borderWidth: 2,
+                  tension: 0.3
+                },
+                {
+                  label: 'Dehradun PM2.5 (µg/m³)',
+                  data: history.map(h => h.pol4_pm25),
+                  borderColor: '#7C3AED',
+                  backgroundColor: 'transparent',
+                  borderWidth: 2,
+                  tension: 0.3
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { position: 'top', labels: { boxWidth: 12, font: { family: 'Inter', size: 11 }, color: '#475569' } },
+                tooltip: { backgroundColor: '#0F172A', titleColor: '#FFFFFF', bodyColor: '#F1F5F9', padding: 10, cornerRadius: 8 }
+              },
+              scales: {
+                x: { grid: { color: '#F1F5F9' }, ticks: { font: { family: 'JetBrains Mono', size: 10 }, color: '#94A3B8' } },
+                y: { grid: { color: '#F1F5F9' }, ticks: { font: { family: 'JetBrains Mono', size: 10 }, color: '#94A3B8' } }
+              }
+            }
+          });
+        } else {
+          chartInstanceRef.current.data.labels = history.map(h => h.time);
+          chartInstanceRef.current.data.datasets[0].data = history.map(h => h.fld1_water);
+          chartInstanceRef.current.data.datasets[1].data = history.map(h => h.sld2_angle);
+          chartInstanceRef.current.data.datasets[2].data = history.map(h => h.fir3_tvoc / 100);
+          chartInstanceRef.current.data.datasets[3].data = history.map(h => h.pol4_pm25);
+          chartInstanceRef.current.update('none');
+        }
+      }, [history]);
+
+      // Demo Injection Trigger
+      const handleSimulate = async (scenario) => {
+        setIsSimulating(true);
+        try {
+          await fetch(`${API_BASE}/api/simulate/${scenario}`, { method: 'POST' });
+          await fetchData();
+          await fetchForecasts();
+        } catch (err) {
+          console.warn("Simulation trigger:", err);
+        } finally {
+          setTimeout(() => setIsSimulating(false), 500);
+        }
+      };
+
+      // Actuator Toggle
+      const handleToggleActuator = async (device) => {
+        try {
+          await fetch(`${API_BASE}/api/actuators/${device}/toggle`, { method: 'POST' });
+          await fetchData();
+        } catch (err) {}
+      };
+
+      // Emergency SOS Trigger
+      const handleSOS = async () => {
+        try {
+          const res = await fetch(`${API_BASE}/api/sos`, { method: 'POST' });
+          const data = await res.json();
+          if (data.success) {
+            setSosData(data);
+            setSosModalOpen(true);
+          }
+        } catch (err) {}
+      };
+
+      const hasEmergency = Object.values(nodes).some(n => n.status === 'Hazardous');
+      const activeHazardCount = Object.values(nodes).filter(n => n.status === 'Hazardous').length;
+
+      return (
+        <div className="min-h-screen flex flex-col bg-[#F9FAFB]">
+          
+          {/* TOP EMERGENCY ALERT BANNER (Conditional) */}
+          {hasEmergency && (
+            <div className="bg-rose-600 text-white px-4 py-2.5 shadow-sm transition-all duration-300">
+              <div className="max-w-7xl mx-auto flex items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-2.5 truncate">
+                  <span className="w-2.5 h-2.5 rounded-full bg-white animate-ping flex-shrink-0"></span>
+                  <span className="font-extrabold tracking-wide uppercase flex items-center gap-1.5">
+                    <i className="fa-solid fa-triangle-exclamation"></i>
+                    <span>CRITICAL ALERT &mdash; ACTIVE DISASTER IN UTTARAKHAND</span>
+                  </span>
+                  <span className="text-rose-200 hidden sm:inline">&bull;</span>
+                  <span className="text-rose-100 truncate">{activeHazardCount} monitored region(s) exceeding critical danger threshold.</span>
+                </div>
+                <a href={makeNavUrl('/alerts')} className="px-3 py-1 bg-white hover:bg-rose-50 text-rose-700 font-bold rounded-lg text-xs whitespace-nowrap shadow-sm transition flex items-center gap-1.5 flex-shrink-0">
+                  <span>View Full Alerts</span>
+                  <i className="fa-solid fa-arrow-right text-[10px]"></i>
+                </a>
+              </div>
+            </div>
+          )}
+
+          {/* 1. TOP GLOBAL NAVIGATION (CLEAN SAAS HEADER) */}
+          <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex items-center justify-between h-16">
+                
+                {/* Brand Logo */}
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-700 to-blue-500 flex items-center justify-center text-white shadow-sm shadow-blue-500/20">
+                    <i className="fa-solid fa-shield-halved text-lg"></i>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-extrabold tracking-tight text-slate-900 text-base sm:text-lg">DISASTER SENTINEL</span>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                        SIH 2026
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 hidden sm:block font-medium">Uttarakhand Multi-Hazard AI + IoT Intelligence Hub</p>
+                  </div>
+                </div>
+
+                {/* 7 Page Links */}
+                <nav className="hidden lg:flex items-center gap-1 text-xs font-medium text-slate-600">
+                  <button onClick={() => setActiveTab('overview')} className={`px-3 py-2 rounded-xl flex items-center gap-1.5 transition ${activeTab === 'overview' ? 'bg-blue-50 text-blue-700 font-semibold' : 'hover:text-slate-900 hover:bg-slate-100'}`}>
+                    <i className="fa-solid fa-gauge-high text-xs"></i>
+                    <span>Overview</span>
+                  </button>
+                  <a href={makeNavUrl('/monitoring')} className="px-3 py-2 rounded-xl flex items-center gap-1.5 hover:text-slate-900 hover:bg-slate-100 transition">
+                    <i className="fa-solid fa-satellite-dish text-xs"></i>
+                    <span>Live Monitoring</span>
+                  </a>
+                  <a href={makeNavUrl('/map')} className="px-3 py-2 rounded-xl flex items-center gap-1.5 hover:text-slate-900 hover:bg-slate-100 transition">
+                    <i className="fa-solid fa-map-location-dot text-xs"></i>
+                    <span>Disaster Map</span>
+                  </a>
+                  <a href={makeNavUrl('/alerts')} className="px-3 py-2 rounded-xl flex items-center gap-1.5 hover:text-slate-900 hover:bg-slate-100 transition">
+                    <i className="fa-solid fa-triangle-exclamation text-xs text-amber-500"></i>
+                    <span>Alerts</span>
+                    {activeHazardCount > 0 && <span className="text-[9px] font-bold px-1.5 rounded-full bg-rose-600 text-white">{activeHazardCount}</span>}
+                  </a>
+                  <a href={makeNavUrl('/analytics')} className="px-3 py-2 rounded-xl flex items-center gap-1.5 hover:text-slate-900 hover:bg-slate-100 transition">
+                    <i className="fa-solid fa-chart-line text-xs"></i>
+                    <span>Analytics &amp; ML</span>
+                  </a>
+                  <a href={makeNavUrl('/hardware')} className="px-3 py-2 rounded-xl flex items-center gap-1.5 hover:text-slate-900 hover:bg-slate-100 transition">
+                    <i className="fa-solid fa-microchip text-xs"></i>
+                    <span>IoT Hardware</span>
+                  </a>
+                  <a href={makeNavUrl('/about')} className="px-3 py-2 rounded-xl flex items-center gap-1.5 hover:text-slate-900 hover:bg-slate-100 transition">
+                    <i className="fa-solid fa-circle-info text-xs"></i>
+                    <span>About</span>
+                  </a>
+                </nav>
+
+                {/* Right Action Controls */}
+                <div className="flex items-center gap-2.5">
+                  <button 
+                    onClick={() => setIsAudioMuted(!isAudioMuted)} 
+                    className={`w-9 h-9 rounded-xl border flex items-center justify-center text-xs transition ${isAudioMuted ? 'border-slate-200 text-slate-400 bg-slate-50' : 'border-blue-200 text-blue-600 bg-blue-50'}`}
+                    title={isAudioMuted ? "Siren Muted" : "Siren Active"}
+                  >
+                    <i className={`fa-solid ${isAudioMuted ? 'fa-volume-xmark' : 'fa-volume-high'}`}></i>
+                  </button>
+
+                  <button 
+                    onClick={handleSOS} 
+                    className="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-sm transition flex items-center gap-1.5"
+                  >
+                    <i className="fa-solid fa-tower-broadcast text-xs"></i>
+                    <span>SIM800L SOS</span>
+                  </button>
+                </div>
+
+              </div>
+            </div>
+          </header>
+
+          {/* 2. DEMO INJECTION PANEL (SIH DEMO TOOLBAR) */}
+          <section className="bg-white border-b border-slate-200 px-4 sm:px-8 py-2.5 shadow-sm">
+            <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center space-x-2 text-xs text-slate-600">
+                <span className="w-2 h-2 rounded-full bg-blue-600"></span>
+                <span className="font-bold text-slate-900">DEMO INJECTION PANEL:</span>
+                <span className="hidden sm:inline text-slate-500">Inject real-world disaster telemetry to test alarms:</span>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <button 
+                  onClick={() => handleSimulate('flash_flood')} 
+                  disabled={isSimulating}
+                  className="text-xs px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 font-semibold transition flex items-center gap-1.5 shadow-sm"
+                >
+                  <i className="fa-solid fa-water text-xs"></i>
+                  <span>Flash Flood</span>
+                </button>
+                <button 
+                  onClick={() => handleSimulate('landslide_collapse')} 
+                  disabled={isSimulating}
+                  className="text-xs px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 font-semibold transition flex items-center gap-1.5 shadow-sm"
+                >
+                  <i className="fa-solid fa-mountain text-xs"></i>
+                  <span>Landslide Tilt</span>
+                </button>
+                <button 
+                  onClick={() => handleSimulate('forest_fire')} 
+                  disabled={isSimulating}
+                  className="text-xs px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-semibold transition flex items-center gap-1.5 shadow-sm"
+                >
+                  <i className="fa-solid fa-fire-flame-curved text-xs"></i>
+                  <span>Wildfire</span>
+                </button>
+                <button 
+                  onClick={() => handleSimulate('toxic_smog')} 
+                  disabled={isSimulating}
+                  className="text-xs px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-700 font-semibold transition flex items-center gap-1.5 shadow-sm"
+                >
+                  <i className="fa-solid fa-smog text-xs"></i>
+                  <span>Toxic Smog</span>
+                </button>
+                <button 
+                  onClick={() => handleSimulate('all_clear')} 
+                  disabled={isSimulating}
+                  className="text-xs px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition flex items-center gap-1.5 shadow-sm"
+                >
+                  <i className="fa-solid fa-circle-check text-xs"></i>
+                  <span>Reset All Clear</span>
+                </button>
+              </div>
+            </div>
+          </section>
+
+          {/* 3. MAIN DASHBOARD CONTENT */}
+          <main className="flex-1 max-w-7xl mx-auto w-full p-4 sm:p-6 lg:p-8 space-y-7">
+            
+            {/* 5-SECOND SITUATIONAL AWARENESS BANNER */}
+            <section className={`card-base p-6 sm:p-8 transition-all ${hasEmergency ? 'border-rose-300 bg-rose-50/40' : 'bg-white'}`}>
+              <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+                <div className="flex items-start gap-5 flex-1">
+                  <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl flex-shrink-0 shadow-sm border ${hasEmergency ? 'bg-rose-100 border-rose-300 text-rose-600' : 'bg-emerald-50 border-emerald-200 text-emerald-600'}`}>
+                    <i className={`fa-solid ${hasEmergency ? 'fa-triangle-exclamation animate-bounce' : 'fa-circle-check'}`}></i>
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">System Status</span>
+                      <span className="text-slate-300">&bull;</span>
+                      <span className={`text-[11px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${hasEmergency ? 'bg-rose-100 text-rose-800 border-rose-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}`}>
+                        {hasEmergency ? `EMERGENCY · ${activeHazardCount} Active Threats` : 'NORMAL · LEVEL 0'}
+                      </span>
+                    </div>
+                    <h1 className={`text-2xl sm:text-3xl font-extrabold tracking-tight ${hasEmergency ? 'text-rose-700' : 'text-slate-900'}`}>
+                      {hasEmergency ? 'CRITICAL DISASTER ALERT DETECTED' : 'ALL UTTARAKHAND REGIONS SAFE'}
+                    </h1>
+                    <p className={`text-xs sm:text-sm font-medium ${hasEmergency ? 'text-rose-600' : 'text-emerald-700'}`}>
+                      {hasEmergency 
+                        ? 'Threshold breach identified. Autonomous acoustic siren & GSM SMS dispatched.' 
+                        : 'No active disaster threats detected across monitored Uttarakhand sectors.'}
+                    </p>
+                    <p className="text-xs text-slate-500 max-w-2xl leading-relaxed pt-0.5">
+                      Surveillance operational across: Rishikesh (Ganga Basin), Chamoli (Garhwal Slopes), Almora (Pine Forest), and Dehradun (Selaqui Valley).
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row lg:flex-col items-stretch gap-2.5 w-full lg:w-auto flex-shrink-0">
+                  <a href={makeNavUrl('/map')} className="px-4 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-800 font-semibold text-xs border border-slate-200 flex items-center justify-center gap-2 shadow-sm transition">
+                    <i className="fa-solid fa-map-location-dot text-blue-600"></i>
+                    <span>Open Uttarakhand GIS Map</span>
+                  </a>
+                  <a href={makeNavUrl('/monitoring')} className="px-4 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-800 font-semibold text-xs border border-slate-200 flex items-center justify-center gap-2 shadow-sm transition">
+                    <i className="fa-solid fa-chart-line text-blue-600"></i>
+                    <span>View Live Monitoring</span>
+                  </a>
+                </div>
+              </div>
+            </section>
+
+            {/* TAB NAVIGATION: 4-NODE TELEMETRY | FORECASTER | GIS MAP | TIME-SERIES */}
+            <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3">
+              <button
+                onClick={() => setActiveTab('overview')}
+                className={`px-4 py-2 text-xs font-semibold rounded-xl transition flex items-center gap-2 ${activeTab === 'overview' ? 'bg-blue-50 text-blue-700 border border-blue-200 shadow-sm' : 'text-slate-600 hover:text-slate-900 bg-white border border-slate-200'}`}
+              >
+                <i className="fa-solid fa-table-cells-large text-xs"></i>
+                <span>4-NODE TELEMETRY GRID</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('forecast')}
+                className={`px-4 py-2 text-xs font-semibold rounded-xl transition flex items-center gap-2 ${activeTab === 'forecast' ? 'bg-blue-50 text-blue-700 border border-blue-200 shadow-sm' : 'text-slate-600 hover:text-slate-900 bg-white border border-slate-200'}`}
+              >
+                <i className="fa-solid fa-brain text-blue-600"></i>
+                <span>JETSON GRU PREDICTOR</span>
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 font-bold">+50m</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('map')}
+                className={`px-4 py-2 text-xs font-semibold rounded-xl transition flex items-center gap-2 ${activeTab === 'map' ? 'bg-blue-50 text-blue-700 border border-blue-200 shadow-sm' : 'text-slate-600 hover:text-slate-900 bg-white border border-slate-200'}`}
+              >
+                <i className="fa-solid fa-map-location-dot text-xs"></i>
+                <span>UTTARAKHAND GIS MAP</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('charts')}
+                className={`px-4 py-2 text-xs font-semibold rounded-xl transition flex items-center gap-2 ${activeTab === 'charts' ? 'bg-blue-50 text-blue-700 border border-blue-200 shadow-sm' : 'text-slate-600 hover:text-slate-900 bg-white border border-slate-200'}`}
+              >
+                <i className="fa-solid fa-chart-line text-xs"></i>
+                <span>TREND CHARTS</span>
+              </button>
+            </div>
+
+            {/* TAB 1: 4-NODE TELEMETRY GRID */}
+            {activeTab === 'overview' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                
+                {/* 1. FLD1: RISHIKESH FLOOD */}
+                <div className={`card-base p-5 flex flex-col justify-between space-y-4 ${nodes.FLD1.status === 'Hazardous' ? 'border-rose-300 bg-rose-50/30' : 'bg-white'}`}>
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg">
+                          <i className="fa-solid fa-water"></i>
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-slate-900 text-sm">Flood Monitoring</h3>
+                          <span className="text-[11px] text-slate-500 block">Rishikesh · Ganga Basin</span>
+                        </div>
+                      </div>
+                      <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold uppercase border ${nodes.FLD1.status === 'Hazardous' ? 'bg-rose-100 text-rose-700 border-rose-200 animate-pulse' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
+                        {nodes.FLD1.status}
+                      </span>
+                    </div>
+
+                    <div className="mt-4 p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                      <span className="text-[11px] text-slate-500 font-medium block">River Water Level</span>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-2xl font-extrabold text-slate-900 font-mono">{nodes.FLD1.sensors.River_Water_Level_m.toFixed(2)}</span>
+                        <span className="text-xs text-slate-500 font-mono">meters</span>
+                      </div>
+                      <span className="text-[11px] text-slate-500 block">{nodes.FLD1.status === 'Hazardous' ? 'CRITICAL SURGE (> 10.0m)' : 'Normal Flow (< 6.0m)'}</span>
+                    </div>
+                  </div>
+
+                  <div className="text-[11px] text-slate-500 pt-2 border-t border-slate-100 flex justify-between">
+                    <span>Rainfall: {nodes.FLD1.sensors.Rainfall_mm.toFixed(1)} mm</span>
+                    <span className="text-blue-600 font-medium">{nodes.FLD1.gps.lat}°N, {nodes.FLD1.gps.lng}°E</span>
+                  </div>
+                </div>
+
+                {/* 2. SLD2: CHAMOLI LANDSLIDE */}
+                <div className={`card-base p-5 flex flex-col justify-between space-y-4 ${nodes.SLD2.status === 'Hazardous' ? 'border-amber-300 bg-amber-50/30' : 'bg-white'}`}>
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg">
+                          <i className="fa-solid fa-mountain"></i>
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-slate-900 text-sm">Landslide Slope</h3>
+                          <span className="text-[11px] text-slate-500 block">Chamoli · Garhwal Slopes</span>
+                        </div>
+                      </div>
+                      <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold uppercase border ${nodes.SLD2.status === 'Hazardous' ? 'bg-rose-100 text-rose-700 border-rose-200 animate-pulse' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
+                        {nodes.SLD2.status}
+                      </span>
+                    </div>
+
+                    <div className="mt-4 p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                      <span className="text-[11px] text-slate-500 font-medium block">Slope Incline Tilt</span>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-2xl font-extrabold text-slate-900 font-mono">{nodes.SLD2.sensors.Slope_Angle.toFixed(1)}</span>
+                        <span className="text-xs text-slate-500 font-mono">degrees (°)</span>
+                      </div>
+                      <span className="text-[11px] text-slate-500 block">{nodes.SLD2.status === 'Hazardous' ? 'DANGER: SHEAR SLIP (> 45°)' : 'Stable Slope (< 30°)'}</span>
+                    </div>
+                  </div>
+
+                  <div className="text-[11px] text-slate-500 pt-2 border-t border-slate-100 flex justify-between">
+                    <span>Soil Saturation: {(nodes.SLD2.sensors.Soil_Saturation * 100).toFixed(0)}%</span>
+                    <span className="text-amber-600 font-medium">{nodes.SLD2.gps.lat}°N, {nodes.SLD2.gps.lng}°E</span>
+                  </div>
+                </div>
+
+                {/* 3. FIR3: ALMORA WILDFIRE */}
+                <div className={`card-base p-5 flex flex-col justify-between space-y-4 ${nodes.FIR3.status === 'Hazardous' ? 'border-rose-300 bg-rose-50/30' : 'bg-white'}`}>
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-lg">
+                          <i className="fa-solid fa-fire-flame-curved"></i>
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-slate-900 text-sm">Wildfire Sensor</h3>
+                          <span className="text-[11px] text-slate-500 block">Almora · Kumaon Forest</span>
+                        </div>
+                      </div>
+                      <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold uppercase border ${nodes.FIR3.status === 'Hazardous' ? 'bg-rose-100 text-rose-700 border-rose-200 animate-pulse' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
+                        {nodes.FIR3.status}
+                      </span>
+                    </div>
+
+                    <div className="mt-4 p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                      <span className="text-[11px] text-slate-500 font-medium block">Combustion Gas (TVOC)</span>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-2xl font-extrabold text-slate-900 font-mono">{nodes.FIR3.sensors["TVOC[ppb]"]}</span>
+                        <span className="text-xs text-slate-500 font-mono">ppb</span>
+                      </div>
+                      <span className="text-[11px] text-slate-500 block">{nodes.FIR3.status === 'Hazardous' ? 'COMBUSTION SPIKE (> 5,000)' : 'Normal Air (< 1,500)'}</span>
+                    </div>
+                  </div>
+
+                  <div className="text-[11px] text-slate-500 pt-2 border-t border-slate-100 flex justify-between">
+                    <span>Temp: {nodes.FIR3.sensors["Temperature[C]"].toFixed(1)}°C</span>
+                    <span className="text-rose-600 font-medium">{nodes.FIR3.gps.lat}°N, {nodes.FIR3.gps.lng}°E</span>
+                  </div>
+                </div>
+
+                {/* 4. POL4: DEHRADUN AIR QUALITY */}
+                <div className={`card-base p-5 flex flex-col justify-between space-y-4 ${nodes.POL4.status === 'Hazardous' ? 'border-purple-300 bg-purple-50/30' : 'bg-white'}`}>
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-lg">
+                          <i className="fa-solid fa-smog"></i>
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-slate-900 text-sm">Air Quality</h3>
+                          <span className="text-[11px] text-slate-500 block">Dehradun · Selaqui Valley</span>
+                        </div>
+                      </div>
+                      <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold uppercase border ${nodes.POL4.status === 'Hazardous' ? 'bg-rose-100 text-rose-700 border-rose-200 animate-pulse' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}`}>
+                        {nodes.POL4.status}
+                      </span>
+                    </div>
+
+                    <div className="mt-4 p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                      <span className="text-[11px] text-slate-500 font-medium block">Fine Particulate (PM2.5)</span>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-2xl font-extrabold text-slate-900 font-mono">{nodes.POL4.sensors.pm25.toFixed(1)}</span>
+                        <span className="text-xs text-slate-500 font-mono">µg/m³</span>
+                      </div>
+                      <span className="text-[11px] text-slate-500 block">{nodes.POL4.status === 'Hazardous' ? 'SMOG INVERSION (> 150)' : 'Good Quality (< 60)'}</span>
+                    </div>
+                  </div>
+
+                  <div className="text-[11px] text-slate-500 pt-2 border-t border-slate-100 flex justify-between">
+                    <span>CO: {nodes.POL4.sensors.co.toFixed(1)} ppm</span>
+                    <span className="text-purple-600 font-medium">{nodes.POL4.gps.lat}°N, {nodes.POL4.gps.lng}°E</span>
+                  </div>
+                </div>
+
+              </div>
+            )}
+
+            {/* TAB 2: TACTICAL UTTARAKHAND GIS MAP */}
+            {activeTab === 'map' && (
+              <div className="card-base p-6 space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+                  <div>
+                    <h2 className="text-base font-bold text-slate-900">Uttarakhand Regional Surveillance Basin</h2>
+                    <p className="text-xs text-slate-500">Geographic positioning of 4 edge nodes and containment perimeters.</p>
+                  </div>
+                  <a href={makeNavUrl('/map')} className="text-xs font-semibold text-blue-600 hover:underline flex items-center gap-1">
+                    <span>Open Interactive Leaflet GIS Map &rarr;</span>
+                  </a>
+                </div>
+
+                <div className="relative w-full h-96 bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden flex items-center justify-center shadow-inner">
+                  {/* Grid overlay */}
+                  <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#0284C7_1px,transparent_1px)] [background-size:24px_24px]"></div>
+
+                  {/* River Flow Line */}
+                  <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M 0 240 Q 250 180 500 220 T 1000 160" fill="none" stroke="#0284C7" strokeWidth="12" strokeOpacity="0.3" />
+                    <path d="M 0 240 Q 250 180 500 220 T 1000 160" fill="none" stroke="#0284C7" strokeWidth="2" strokeDasharray="6 4" />
+                    
+                    {/* Mountain Ridge for Chamoli */}
+                    <path d="M 550 40 L 700 110 L 850 40" fill="none" stroke="#D97706" strokeWidth="2" strokeOpacity="0.4" />
+                    
+                    {/* Forest perimeter for Almora */}
+                    <circle cx="680" cy="220" r="80" fill="rgba(225, 29, 72, 0.05)" stroke="#E11D48" strokeWidth="1.5" strokeDasharray="4 4" />
+
+                    {/* Industrial perimeter for Dehradun */}
+                    <rect x="80" y="240" width="200" height="100" rx="12" fill="rgba(124, 58, 237, 0.05)" stroke="#7C3AED" strokeWidth="1.5" strokeDasharray="4 4" />
+                  </svg>
+
+                  {/* Central Hub: Jetson Orin Nano */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center z-20">
+                    <div className="h-12 w-12 rounded-2xl bg-white border-2 border-blue-600 flex items-center justify-center text-blue-600 shadow-lg relative">
+                      <i className="fa-solid fa-microchip text-lg"></i>
+                      <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-emerald-500 border-2 border-white"></span>
+                    </div>
+                    <div className="mt-1.5 text-[10px] font-bold text-slate-800 bg-white px-2 py-0.5 rounded border border-slate-200 shadow-sm">
+                      JETSON ORIN HUB
+                    </div>
+                  </div>
+
+                  {/* FLD1: Rishikesh */}
+                  <div className="absolute top-[60%] left-[28%] -translate-x-1/2 -translate-y-1/2 text-center z-10 cursor-pointer">
+                    <div className={`w-10 h-10 rounded-2xl bg-white border-2 flex items-center justify-center shadow-md transition group-hover:scale-110 ${nodes.FLD1.status === 'Hazardous' ? 'border-rose-600 text-rose-600 animate-pulse' : 'border-emerald-500 text-emerald-600'}`}>
+                      <i className="fa-solid fa-water text-xs"></i>
+                    </div>
+                    <span className="text-[10px] font-bold text-slate-800 bg-white px-2 py-0.5 rounded border border-slate-200 shadow-sm block mt-1">
+                      Rishikesh (Flood)
+                    </span>
+                  </div>
+
+                  {/* SLD2: Chamoli */}
+                  <div className="absolute top-[24%] left-[72%] -translate-x-1/2 -translate-y-1/2 text-center z-10 cursor-pointer">
+                    <div className={`w-10 h-10 rounded-2xl bg-white border-2 flex items-center justify-center shadow-md transition group-hover:scale-110 ${nodes.SLD2.status === 'Hazardous' ? 'border-rose-600 text-rose-600 animate-pulse' : 'border-emerald-500 text-emerald-600'}`}>
+                      <i className="fa-solid fa-mountain text-xs"></i>
+                    </div>
+                    <span className="text-[10px] font-bold text-slate-800 bg-white px-2 py-0.5 rounded border border-slate-200 shadow-sm block mt-1">
+                      Chamoli (Landslide)
+                    </span>
+                  </div>
+
+                  {/* FIR3: Almora */}
+                  <div className="absolute top-[65%] left-[70%] -translate-x-1/2 -translate-y-1/2 text-center z-10 cursor-pointer">
+                    <div className={`w-10 h-10 rounded-2xl bg-white border-2 flex items-center justify-center shadow-md transition group-hover:scale-110 ${nodes.FIR3.status === 'Hazardous' ? 'border-rose-600 text-rose-600 animate-pulse' : 'border-emerald-500 text-emerald-600'}`}>
+                      <i className="fa-solid fa-fire-flame-curved text-xs"></i>
+                    </div>
+                    <span className="text-[10px] font-bold text-slate-800 bg-white px-2 py-0.5 rounded border border-slate-200 shadow-sm block mt-1">
+                      Almora (Wildfire)
+                    </span>
+                  </div>
+
+                  {/* POL4: Dehradun */}
+                  <div className="absolute top-[78%] left-[18%] -translate-x-1/2 -translate-y-1/2 text-center z-10 cursor-pointer">
+                    <div className={`w-10 h-10 rounded-2xl bg-white border-2 flex items-center justify-center shadow-md transition group-hover:scale-110 ${nodes.POL4.status === 'Hazardous' ? 'border-rose-600 text-rose-600 animate-pulse' : 'border-emerald-500 text-emerald-600'}`}>
+                      <i className="fa-solid fa-smog text-xs"></i>
+                    </div>
+                    <span className="text-[10px] font-bold text-slate-800 bg-white px-2 py-0.5 rounded border border-slate-200 shadow-sm block mt-1">
+                      Dehradun (Air Quality)
+                    </span>
+                  </div>
+
+                  {/* Legend Overlay */}
+                  <div className="absolute bottom-3 left-3 bg-white/95 px-3 py-1.5 rounded-xl border border-slate-200 text-[11px] text-slate-600 flex items-center gap-3 shadow-sm">
+                    <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Safe Baseline</span>
+                    <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span> Active Threat</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 3: TREND CHARTS */}
+            <div className={`card-base p-6 space-y-4 ${activeTab === 'charts' ? 'block' : 'hidden'}`}>
+              <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+                <div>
+                  <h2 className="text-base font-bold text-slate-900">Real-Time Telemetry Trend Analysis</h2>
+                  <p className="text-xs text-slate-500">Live multi-hazard streaming parameters synced from ESP32 field nodes.</p>
+                </div>
+                <div className="text-xs font-semibold text-emerald-600 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                  <span>SYNCING LIVE</span>
+                </div>
+              </div>
+
+              <div className="h-80 w-full relative">
+                <canvas ref={chartCanvasRef}></canvas>
+              </div>
+            </div>
+
+            {/* TAB 4: JETSON GRU PREDICTIONS */}
+            {activeTab === 'forecast' && (
+              <div className="space-y-5">
+                <div className="card-base p-6 border-blue-200 bg-blue-50/40">
+                  <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 bg-blue-100 px-2 py-0.5 rounded">
+                        DUAL-BRAIN EDGE AI PREDICTOR
+                      </span>
+                      <h2 className="text-lg font-bold text-slate-900 mt-1">PyTorch GRU Predictive Early Warning (+50 Mins)</h2>
+                      <p className="text-xs text-slate-600 max-w-2xl mt-1 leading-relaxed">
+                        Random Forest provides &lt;1ms instant tripwires, while 2-layer PyTorch GRU recurrent neural networks project multi-step physical trajectories (+10m to +50m) to calculate early evacuation lead times before hazard breach.
+                      </p>
+                    </div>
+
+                    <div className="flex items-center bg-white p-1 rounded-xl border border-slate-200 gap-1 text-xs">
+                      {['FLD1', 'SLD2', 'FIR3', 'POL4'].map(nid => (
+                        <button
+                          key={nid}
+                          onClick={() => setSelectedForecastNode(nid)}
+                          className={`px-3 py-1.5 rounded-lg font-semibold transition ${selectedForecastNode === nid ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                        >
+                          {nid}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {forecasts[selectedForecastNode] && (
+                  <div className="card-base p-6 space-y-4">
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                      <div>
+                        <h3 className="font-bold text-slate-900 text-sm">5-Step Projected Trajectory for {selectedForecastNode}</h3>
+                        <span className="text-xs text-slate-500">{forecasts[selectedForecastNode].ai_engine}</span>
+                      </div>
+                      <span className={`text-xs font-bold px-3 py-1 rounded-full uppercase border ${forecasts[selectedForecastNode].threat_level === 'CRITICAL' ? 'bg-rose-100 text-rose-700 border-rose-200 animate-pulse' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
+                        {forecasts[selectedForecastNode].lead_time_label}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-5 gap-3 text-center">
+                      {forecasts[selectedForecastNode].future_steps.map((st, i) => (
+                        <div key={i} className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                          <span className="text-[11px] font-bold text-blue-600 block">{st.step}</span>
+                          <span className="text-lg font-extrabold text-slate-900 font-mono mt-1 block">{st.predicted_value}</span>
+                          <span className="text-[10px] text-slate-400">+{st.time_min} mins</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+          </main>
+
+          {/* SOS MODAL */}
+          {sosModalOpen && (
+            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200 animate-fadeIn">
+                <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
+                  <div className="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center text-lg">
+                    <i className="fa-solid fa-tower-broadcast"></i>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-900">SIM800L Emergency SOS Dispatched</h3>
+                    <p className="text-xs text-slate-500">Autonomous priority dispatch executed</p>
+                  </div>
+                </div>
+
+                {sosData && (
+                  <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1.5 font-mono text-slate-700">
+                    <div><strong>Recipient:</strong> {sosData.recipient}</div>
+                    <div><strong>AT Command:</strong> {sosData.hardware_at_command}</div>
+                    <div><strong>Payload:</strong> {sosData.sms_payload}</div>
+                    <div><strong>Status:</strong> <span className="text-emerald-600 font-bold">{sosData.gsm_status}</span></div>
+                  </div>
+                )}
+
+                <button 
+                  onClick={() => setSosModalOpen(false)}
+                  className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs transition"
+                >
+                  Close Confirmation
+                </button>
+              </div>
+            </div>
+          )}
+
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

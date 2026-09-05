@@ -26,3 +26,7 @@ Thumbs.db
 
 # Model binaries (optional, keep small ones or ignore heavy binaries)
 ai/jetson_model/models/*.pkl
+
+# Large datasets and CSV data files (downloadable via scripts in ai/downloaders/)
+data/**/*.csv
+

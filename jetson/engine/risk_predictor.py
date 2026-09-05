@@ -112,6 +112,9 @@ class RiskPredictor:
         # --- Determine risk color ---
         risk_level = self._compute_risk_level(probability, confirmation, sustained_minutes)
 
+        # --- Estimate ETA ---
+        eta = self._estimate_eta(history or [], hazard_name, trend)
+
         # --- GRU Future Predictions ---
         predictions = self.predict_future(node_id, history or [])
 

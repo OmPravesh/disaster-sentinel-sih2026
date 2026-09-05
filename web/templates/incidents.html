@@ -1,0 +1,298 @@
+{% extends "base.html" %}
+
+{% block title %}Incident Operations · Disaster Sentinel{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <!-- ========================================================================= -->
+  <!-- 1. PAGE HEADER & REPORT ACTION -->
+  <!-- ========================================================================= -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-dark-800 pb-5">
+    <div>
+      <h1 class="text-2xl font-extrabold text-white tracking-tight flex items-center gap-2.5">
+        <span>NDRF Incident Operations & Emergency Response</span>
+        <span class="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40">CIVIL DEFENSE</span>
+      </h1>
+      <p class="text-xs sm:text-sm text-slate-400 mt-1">
+        Command dispatch console, SIM800L satellite GSM broadcast, hardware actuator overrides, and incident debrief logs.
+      </p>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="flex items-center gap-2">
+      <button onclick="window.print()" class="px-3.5 py-2 rounded-xl bg-dark-800 hover:bg-dark-750 text-slate-300 border border-dark-700 text-xs font-medium flex items-center gap-2 transition">
+        <i class="fa-solid fa-print text-xs text-slate-400"></i>
+        <span>Print Incident Debrief</span>
+      </button>
+      <button onclick="openSosModal()" class="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold flex items-center gap-2 shadow-lg shadow-rose-600/30 transition">
+        <i class="fa-solid fa-satellite-dish text-xs animate-pulse"></i>
+        <span>Broadcast Emergency SOS</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 2. THREE OPERATIONAL POSTURE CARDS -->
+  <!-- ========================================================================= -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    
+    <!-- Card 1: Active Incidents -->
+    <div class="glass-card p-4 sm:p-5 rounded-2xl space-y-1">
+      <div class="flex items-center justify-between text-slate-400 text-xs">
+        <span>Active Disaster Incidents</span>
+        <i class="fa-solid fa-triangle-exclamation text-amber-400"></i>
+      </div>
+      <div id="activeIncidentsCount" class="text-2xl font-extrabold text-emerald-400 font-mono">0 ACTIVE</div>
+      <div class="text-[11px] text-slate-400">Across 4 monitored sectors</div>
+    </div>
+
+    <!-- Card 2: GSM Satellite Link -->
+    <div class="glass-card p-4 sm:p-5 rounded-2xl space-y-1">
+      <div class="flex items-center justify-between text-slate-400 text-xs">
+        <span>SIM800L Satellite Uplink</span>
+        <i class="fa-solid fa-tower-cell text-cyan-400"></i>
+      </div>
+      <div class="text-2xl font-extrabold text-white font-mono">ONLINE</div>
+      <div class="text-[11px] text-slate-400">UART AT+CMGS Protocol Ready</div>
+    </div>
+
+    <!-- Card 3: Actuator Readiness -->
+    <div class="glass-card p-4 sm:p-5 rounded-2xl space-y-1">
+      <div class="flex items-center justify-between text-slate-400 text-xs">
+        <span>Hardware Warning Sirens</span>
+        <i class="fa-solid fa-bullhorn text-rose-400"></i>
+      </div>
+      <div id="actuatorsGlobalState" class="text-2xl font-extrabold text-slate-300 font-mono">STANDBY</div>
+      <div class="text-[11px] text-slate-400">GPIO18 Piezo &middot; GPIO23 Strobe</div>
+    </div>
+
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 3. HARDWARE ACTUATOR OVERRIDES & EMERGENCY DISPATCH CONSOLE -->
+  <!-- ========================================================================= -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+    <!-- Left Col: Hardware Actuator Manual Override Console -->
+    <div class="glass-card rounded-2xl p-5 sm:p-6 space-y-4 border-l-4 border-l-amber-500">
+      <div class="flex items-center justify-between border-b border-dark-750 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400">
+            <i class="fa-solid fa-sliders"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-white text-sm">Hardware Actuator Manual Overrides</h3>
+            <p class="text-xs text-slate-400">Direct Jetson GPIO pin control for physical evacuation sirens</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <!-- Buzzer Control -->
+        <div class="p-4 rounded-xl bg-dark-850/80 border border-dark-750 flex items-center justify-between">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-white text-sm">GPIO18 &middot; Piezo Buzzer Siren</span>
+              <span id="buzzerStatusBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-dark-750 text-slate-400 font-semibold">STANDBY</span>
+            </div>
+            <p class="text-slate-400 text-[11px] mt-0.5">High-decibel acoustic siren for perimeter evacuation alert.</p>
+          </div>
+          <button id="toggleBuzzerBtn" onclick="toggleHardwareActuator('buzzer')" class="px-4 py-2 rounded-xl bg-dark-750 hover:bg-dark-700 text-slate-200 border border-dark-600 font-semibold transition">
+            Toggle
+          </button>
+        </div>
+
+        <!-- Strobe Relay Control -->
+        <div class="p-4 rounded-xl bg-dark-850/80 border border-dark-750 flex items-center justify-between">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-white text-sm">GPIO23 &middot; High-Intensity Strobe Relay</span>
+              <span id="strobeStatusBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-dark-750 text-slate-400 font-semibold">STANDBY</span>
+            </div>
+            <p class="text-slate-400 text-[11px] mt-0.5">Visual beacon strobe for nighttime/foggy weather visibility.</p>
+          </div>
+          <button id="toggleStrobeBtn" onclick="toggleHardwareActuator('strobe')" class="px-4 py-2 rounded-xl bg-dark-750 hover:bg-dark-700 text-slate-200 border border-dark-600 font-semibold transition">
+            Toggle
+          </button>
+        </div>
+      </div>
+
+      <p class="text-[11px] text-slate-500 italic">
+        * Actuators are automatically engaged by Brain 1 Random Forest tripwires during hazardous threshold breaches.
+      </p>
+    </div>
+
+    <!-- Right Col: Automated Dispatch Quick Payload -->
+    <div class="glass-card rounded-2xl p-5 sm:p-6 space-y-4 border-l-4 border-l-rose-500 flex flex-col justify-between">
+      <div>
+        <div class="flex items-center justify-between border-b border-dark-750 pb-3">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-rose-400">
+              <i class="fa-solid fa-satellite-dish"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-white text-sm">NDRF Tactical Uplink Terminal</h3>
+              <p class="text-xs text-slate-400">Emergency broadcast direct to National Disaster Response Force HQ</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-3 pt-3 text-xs font-mono">
+          <div class="flex justify-between py-1.5 border-b border-dark-800 text-slate-400">
+            <span>Command Cell Target:</span>
+            <span class="text-slate-200 font-semibold">+91-11-24363260 (NDRF Control)</span>
+          </div>
+          <div class="flex justify-between py-1.5 border-b border-dark-800 text-slate-400">
+            <span>Uplink Protocol:</span>
+            <span class="text-cyan-400">SIM800L GSM AT+CMGS UART1</span>
+          </div>
+          <div class="flex justify-between py-1.5 border-b border-dark-800 text-slate-400">
+            <span>Origin Gateway:</span>
+            <span class="text-slate-200">JETSON-ORIN-NANO-01</span>
+          </div>
+          <div class="flex justify-between py-1.5 border-b border-dark-800 text-slate-400">
+            <span>GPS Coordinate Packet:</span>
+            <span class="text-emerald-400">25.3176°N, 82.9739°E (Station Multi-Cast)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-dark-750">
+        <button onclick="openSosModal()" class="w-full py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-rose-600/30 transition">
+          <i class="fa-solid fa-paper-plane"></i>
+          <span>Open Emergency Broadcast Console</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 4. OFFICIAL INCIDENT HISTORY LOG TABLE -->
+  <!-- ========================================================================= -->
+  <div class="glass-card rounded-2xl p-5 sm:p-6 space-y-4">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-dark-750 pb-3">
+      <div class="flex items-center gap-2">
+        <i class="fa-solid fa-list-check text-cyan-400 text-sm"></i>
+        <h3 class="text-sm font-bold text-white">Chronological Incident History Debrief</h3>
+      </div>
+      <span class="text-xs font-mono text-slate-400">Auto-logged on threshold exceedance & simulations</span>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs font-mono">
+        <thead>
+          <tr class="border-b border-dark-750 text-slate-400">
+            <th class="py-2.5 px-3">Incident ID</th>
+            <th class="py-2.5 px-3">Timestamp</th>
+            <th class="py-2.5 px-3">Station</th>
+            <th class="py-2.5 px-3">Hazard</th>
+            <th class="py-2.5 px-3">Incident Title</th>
+            <th class="py-2.5 px-3">Severity</th>
+            <th class="py-2.5 px-3">Status</th>
+          </tr>
+        </thead>
+        <tbody id="incidentsTableBody" class="divide-y divide-dark-800 text-slate-300">
+          <!-- Dynamically populated -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  async function toggleHardwareActuator(device) {
+    try {
+      const res = await fetch(`${API_BASE}/api/actuators/${device}/toggle`, { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        pollTelemetryOnce();
+      }
+    } catch (e) {
+      alert(`Failed to toggle ${device}: ` + e.message);
+    }
+  }
+
+  window.addEventListener('sentinel_data', (event) => {
+    const { hub, incidents } = event.detail;
+
+    // 1. Update Posture Cards
+    const countEl = document.getElementById('activeIncidentsCount');
+    const actuatorsEl = document.getElementById('actuatorsGlobalState');
+
+    if (hub.active_alerts_count > 0) {
+      countEl.textContent = `${hub.active_alerts_count} CRITICAL`;
+      countEl.className = 'text-2xl font-extrabold text-rose-400 font-mono animate-pulse';
+      actuatorsEl.textContent = 'ACTIVE (SIRENS ON)';
+      actuatorsEl.className = 'text-2xl font-extrabold text-rose-400 font-mono animate-pulse';
+    } else {
+      countEl.textContent = '0 ACTIVE';
+      countEl.className = 'text-2xl font-extrabold text-emerald-400 font-mono';
+      actuatorsEl.textContent = 'STANDBY';
+      actuatorsEl.className = 'text-2xl font-extrabold text-slate-300 font-mono';
+    }
+
+    // 2. Update Actuator Buttons & Badges
+    const bzBadge = document.getElementById('buzzerStatusBadge');
+    const bzBtn = document.getElementById('toggleBuzzerBtn');
+    if (hub.buzzer_gpio18) {
+      bzBadge.className = 'text-[10px] font-mono px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-bold animate-pulse';
+      bzBadge.textContent = 'ENGAGED (ACTIVE)';
+      bzBtn.className = 'px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-semibold transition';
+      bzBtn.textContent = 'Turn Off';
+    } else {
+      bzBadge.className = 'text-[10px] font-mono px-2 py-0.5 rounded bg-dark-750 text-slate-400 font-semibold';
+      bzBadge.textContent = 'STANDBY';
+      bzBtn.className = 'px-4 py-2 rounded-xl bg-dark-750 hover:bg-dark-700 text-slate-200 border border-dark-600 font-semibold transition';
+      bzBtn.textContent = 'Engage';
+    }
+
+    const stBadge = document.getElementById('strobeStatusBadge');
+    const stBtn = document.getElementById('toggleStrobeBtn');
+    if (hub.strobe_gpio23) {
+      stBadge.className = 'text-[10px] font-mono px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-bold animate-pulse';
+      stBadge.textContent = 'ENGAGED (ACTIVE)';
+      stBtn.className = 'px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-semibold transition';
+      stBtn.textContent = 'Turn Off';
+    } else {
+      stBadge.className = 'text-[10px] font-mono px-2 py-0.5 rounded bg-dark-750 text-slate-400 font-semibold';
+      stBadge.textContent = 'STANDBY';
+      stBtn.className = 'px-4 py-2 rounded-xl bg-dark-750 hover:bg-dark-700 text-slate-200 border border-dark-600 font-semibold transition';
+      stBtn.textContent = 'Engage';
+    }
+
+    // 3. Render Incident Table
+    const tbody = document.getElementById('incidentsTableBody');
+    if (incidents && incidents.length > 0) {
+      tbody.innerHTML = incidents.map(inc => {
+        const isCrit = inc.severity === 'CRITICAL';
+        const isResolved = inc.status === 'Resolved';
+        return `
+          <tr class="hover:bg-dark-850/50 transition">
+            <td class="py-2.5 px-3 font-semibold text-cyan-400">${inc.id}</td>
+            <td class="py-2.5 px-3 text-slate-400">${inc.timestamp}</td>
+            <td class="py-2.5 px-3 text-white font-bold">${inc.node_id}</td>
+            <td class="py-2.5 px-3">${inc.hazard}</td>
+            <td class="py-2.5 px-3 text-slate-200">${inc.title}</td>
+            <td class="py-2.5 px-3">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isCrit ? 'bg-rose-500/20 text-rose-300' : 'bg-slate-700 text-slate-300'}">
+                ${inc.severity}
+              </span>
+            </td>
+            <td class="py-2.5 px-3">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isResolved ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300 animate-pulse'}">
+                ${inc.status}
+              </span>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+  });
+</script>
+{% endblock %}
+

@@ -1,0 +1,30 @@
+{
+  "features": [
+    "River_Water_Level_m",
+    "Rainfall_mm",
+    "Rainfall_Intensity_mm_hr",
+    "Atmospheric_Pressure_hPa",
+    "Temperature_C",
+    "Relative_Humidity_pct"
+  ],
+  "target": "River_Water_Level_m",
+  "target_idx": 0,
+  "min": {
+    "River_Water_Level_m": 0.5,
+    "Rainfall_mm": 0.0,
+    "Rainfall_Intensity_mm_hr": 0.0,
+    "Atmospheric_Pressure_hPa": 970.0,
+    "Temperature_C": 10.0,
+    "Relative_Humidity_pct": 30.0
+  },
+  "max": {
+    "River_Water_Level_m": 18.5,
+    "Rainfall_mm": 400.0,
+    "Rainfall_Intensity_mm_hr": 120.0,
+    "Atmospheric_Pressure_hPa": 1035.0,
+    "Temperature_C": 42.0,
+    "Relative_Humidity_pct": 100.0
+  },
+  "target_min": 0.5,
+  "target_max": 18.5
+}

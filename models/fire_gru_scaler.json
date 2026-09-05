@@ -1,0 +1,30 @@
+{
+  "features": [
+    "Temperature[C]",
+    "Humidity[%]",
+    "TVOC[ppb]",
+    "eCO2[ppm]",
+    "Pressure[hPa]",
+    "PM2.5"
+  ],
+  "target": "TVOC[ppb]",
+  "target_idx": 2,
+  "min": {
+    "Temperature[C]": 0.0,
+    "Humidity[%]": 10.0,
+    "TVOC[ppb]": 0.0,
+    "eCO2[ppm]": 400.0,
+    "Pressure[hPa]": 930.0,
+    "PM2.5": 0.0
+  },
+  "max": {
+    "Temperature[C]": 85.0,
+    "Humidity[%]": 80.0,
+    "TVOC[ppb]": 25000.0,
+    "eCO2[ppm]": 15000.0,
+    "Pressure[hPa]": 945.0,
+    "PM2.5": 800.0
+  },
+  "target_min": 0.0,
+  "target_max": 25000.0
+}

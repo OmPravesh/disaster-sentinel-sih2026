@@ -1,0 +1,861 @@
+{% extends "base.html" %}
+
+{% block title %}Live Monitoring · Disaster Sentinel{% endblock %}
+
+{% block content %}
+<div class="space-y-7 pb-12">
+
+  <!-- ========================================================================= -->
+  <!-- 1. TOP HEADER & COMPACT SUMMARY -->
+  <!-- ========================================================================= -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-border pb-5">
+    <div>
+      <h1 class="text-2xl font-extrabold text-navy-900 tracking-tight flex items-center gap-2.5">
+        <span>Live Monitoring</span>
+      </h1>
+      <p class="text-xs sm:text-sm text-slate-muted mt-1">
+        Real-time disaster surveillance and telemetry across monitored locations.
+      </p>
+    </div>
+
+    <!-- Compact System Summary Pill -->
+    <div class="flex flex-wrap items-center gap-3 text-xs">
+      <div class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white border border-slate-border text-navy-800 shadow-sm">
+        <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+        <span class="font-semibold">4 Hazards Monitored</span>
+      </div>
+      <div id="monAlertSummaryPill" class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white border border-slate-border text-navy-800 shadow-sm">
+        <span id="monAlertDot" class="w-2 h-2 rounded-full bg-emerald-500"></span>
+        <span id="monAlertText" class="font-semibold">All Safe Baseline</span>
+      </div>
+      <div class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white border border-slate-border text-slate-muted shadow-sm">
+        <i class="fa-regular fa-clock text-[11px]"></i>
+        <span id="monLastUpdated">Live</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 2. ELEGANT HAZARD FILTER TABS -->
+  <!-- ========================================================================= -->
+  <div class="flex items-center gap-2 overflow-x-auto pb-1 text-xs no-scrollbar">
+    <button onclick="filterHazard('all')" id="tabAll" class="px-4 py-2 rounded-xl bg-brand-action text-white font-semibold shadow-sm transition whitespace-nowrap">
+      All Hazards
+    </button>
+    <button onclick="filterHazard('flood')" id="tabFlood" class="px-4 py-2 rounded-xl bg-white hover:bg-gray-50 text-slate-muted hover:text-navy-900 font-medium border border-slate-border transition flex items-center gap-2 whitespace-nowrap shadow-sm">
+      <i class="fa-solid fa-water text-blue-600 text-xs"></i>
+      <span>Flood</span>
+    </button>
+    <button onclick="filterHazard('landslide')" id="tabLandslide" class="px-4 py-2 rounded-xl bg-white hover:bg-gray-50 text-slate-muted hover:text-navy-900 font-medium border border-slate-border transition flex items-center gap-2 whitespace-nowrap shadow-sm">
+      <i class="fa-solid fa-mountain text-amber-600 text-xs"></i>
+      <span>Landslide</span>
+    </button>
+    <button onclick="filterHazard('fire')" id="tabFire" class="px-4 py-2 rounded-xl bg-white hover:bg-gray-50 text-slate-muted hover:text-navy-900 font-medium border border-slate-border transition flex items-center gap-2 whitespace-nowrap shadow-sm">
+      <i class="fa-solid fa-fire-flame-curved text-rose-600 text-xs"></i>
+      <span>Wildfire</span>
+    </button>
+    <button onclick="filterHazard('pollution')" id="tabPollution" class="px-4 py-2 rounded-xl bg-white hover:bg-gray-50 text-slate-muted hover:text-navy-900 font-medium border border-slate-border transition flex items-center gap-2 whitespace-nowrap shadow-sm">
+      <i class="fa-solid fa-smog text-purple-600 text-xs"></i>
+      <span>Air Quality</span>
+    </button>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 3. MAIN MONITORING CARDS (PROGRESSIVE DISCLOSURE ARCHITECTURE) -->
+  <!-- ========================================================================= -->
+  <div class="space-y-6">
+
+    <!-- ======================================================================= -->
+    <!-- CARD 1: FLOOD -->
+    <!-- ======================================================================= -->
+    <div id="cardSectionFlood" class="card-base p-6 sm:p-7 bg-white border border-slate-border rounded-2xl shadow-sm transition-all duration-300">
+      
+      <!-- Primary Summary Row (Always Visible) -->
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+        
+        <!-- Left: Icon, Name & Location -->
+        <div class="flex items-start gap-4 flex-1">
+          <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl flex-shrink-0 shadow-sm">
+            <i class="fa-solid fa-water"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2.5">
+              <h2 class="text-base font-bold text-navy-900 tracking-tight">Flood Monitoring</h2>
+              <span id="badgeFlood" class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase">
+                Safe
+              </span>
+            </div>
+            <p class="text-xs text-slate-muted mt-0.5">
+              Rishikesh · Ganga Basin &middot; River Station #4, Uttarakhand (30.0869&deg; N, 78.2676&deg; E)
+            </p>
+            <div class="flex items-center gap-2 mt-2 text-xs">
+              <span class="text-slate-muted">Risk Assessment:</span>
+              <span id="floodRiskText" class="font-semibold text-emerald-700">Low Risk (Nominal Flow)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Center: Primary Important Metric -->
+        <div class="flex items-center gap-6 lg:border-l lg:border-r border-slate-border lg:px-8 py-1">
+          <div>
+            <span class="text-[11px] text-slate-muted font-medium block">River Water Level</span>
+            <div class="flex items-baseline gap-1.5 mt-0.5">
+              <span id="metricFlood" class="text-3xl font-extrabold text-navy-900 font-mono">2.10</span>
+              <span class="text-xs text-slate-muted font-mono">meters</span>
+            </div>
+            <span id="floodThresholdNotice" class="text-[11px] text-slate-muted block mt-0.5">Normal (&lt; 6.0 m)</span>
+          </div>
+
+          <!-- Quick Secondary Metric -->
+          <div class="hidden sm:block border-l border-slate-border pl-6">
+            <span class="text-[11px] text-slate-muted font-medium block">Current Rain Rate</span>
+            <div class="flex items-baseline gap-1 mt-0.5">
+              <span id="metricFloodRain" class="text-xl font-bold text-navy-800 font-mono">1.54</span>
+              <span class="text-xs text-slate-muted font-mono">mm/h</span>
+            </div>
+            <span class="text-[11px] text-slate-muted block mt-0.5">Light Precipitation</span>
+          </div>
+        </div>
+
+        <!-- Right: Progressive Disclosure Toggle -->
+        <div class="flex items-center gap-2.5 self-start lg:self-center">
+          <button onclick="toggleDetails('Flood')" id="btnToggleFlood" class="px-4 py-2.5 rounded-xl bg-white hover:bg-gray-50 text-navy-900 text-xs font-semibold border border-slate-border flex items-center gap-2 transition shadow-sm">
+            <span id="btnTextFlood">View Details</span>
+            <i id="btnIconFlood" class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform"></i>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Expandable Detail Section (Hidden by Default) -->
+      <div id="detailsFlood" class="hidden mt-6 pt-6 border-t border-slate-border space-y-5 animate-fadeIn">
+        
+        <!-- Safety Margin Meter -->
+        <div class="p-4 rounded-xl bg-slate-subtle border border-slate-border space-y-2">
+          <div class="flex justify-between items-center text-xs">
+            <span class="font-semibold text-navy-900">Hydrological Safety Margin</span>
+            <span class="text-slate-muted font-mono"><span id="floodMarginPct">21%</span> of Critical Level</span>
+          </div>
+          <div class="w-full h-2.5 rounded-full bg-gray-200 overflow-hidden">
+            <div id="floodMarginBar" class="h-full bg-gradient-to-r from-blue-500 to-emerald-500 transition-all duration-500 rounded-full" style="width: 21%;"></div>
+          </div>
+          <div class="flex justify-between text-[11px] text-slate-muted font-mono">
+            <span>0.0 m (Dry Bed)</span>
+            <span>6.0 m (Warning Inundation)</span>
+            <span class="text-rose-600 font-semibold">10.0 m (Critical Danger)</span>
+          </div>
+        </div>
+
+        <!-- 4 Secondary Metrics Grid -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+          <div class="p-3.5 rounded-xl bg-white border border-slate-border shadow-sm">
+            <span class="text-[11px] text-slate-muted block font-medium">Accumulated Rain</span>
+            <span id="detFloodRainAccum" class="text-base font-bold text-navy-900 font-mono mt-0.5 block">12.2 mm</span>
+            <span class="text-[10px] text-slate-muted">Last 24h catchment total</span>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-white border border-slate-border shadow-sm">
+            <span class="text-[11px] text-slate-muted block font-medium">Atmospheric Pressure</span>
+            <span id="detFloodPressure" class="text-base font-bold text-navy-900 font-mono mt-0.5 block">1005.4 hPa</span>
+            <span class="text-[10px] text-slate-muted">Barometric trend steady</span>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-white border border-slate-border shadow-sm">
+            <span class="text-[11px] text-slate-muted block font-medium">AI Probability Head</span>
+            <span id="detFloodAiRisk" class="text-base font-bold text-emerald-700 font-mono mt-0.5 block">0.0%</span>
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span>Online</span>
+            </span>
+            <span class="text-[10px] text-slate-muted">Continuous telemetry sync</span>
+          </div>
+        </div>
+
+        <!-- Human AI Narrative & Analytics Link -->
+        <div class="p-4 rounded-xl bg-blue-50/60 border border-blue-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div class="flex items-start gap-3">
+            <i class="fa-solid fa-brain text-brand-action text-sm mt-0.5"></i>
+            <div>
+              <span class="font-bold text-navy-900">AI Horizon Evaluation</span>
+              <p id="floodAiNarrative" class="text-slate-700 mt-0.5">
+                Current river discharge is stable. Zero catchment overflow risk projected over the next 50 minutes.
+              </p>
+            </div>
+          </div>
+          <a href="/analytics" class="text-brand-action hover:underline font-semibold whitespace-nowrap self-end sm:self-center">
+            View Forecast Curves &rarr;
+          </a>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ======================================================================= -->
+    <!-- CARD 2: LANDSLIDE -->
+    <!-- ======================================================================= -->
+    <div id="cardSectionLandslide" class="card-base p-6 sm:p-7 bg-white border border-slate-border rounded-2xl shadow-sm transition-all duration-300">
+      
+      <!-- Primary Summary Row (Always Visible) -->
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+        
+        <!-- Left: Icon, Name & Location -->
+        <div class="flex items-start gap-4 flex-1">
+          <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl flex-shrink-0 shadow-sm">
+            <i class="fa-solid fa-mountain"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2.5">
+              <h2 class="text-base font-bold text-navy-900 tracking-tight">Landslide Monitoring</h2>
+              <span id="badgeLandslide" class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase">
+                Safe
+              </span>
+            </div>
+            <p class="text-xs text-slate-muted mt-0.5">
+              Chamoli · Garhwal Slopes &middot; Sector 2B, Uttarakhand (30.3844&deg; N, 79.2811&deg; E)
+            </p>
+            <div class="flex items-center gap-2 mt-2 text-xs">
+              <span class="text-slate-muted">Risk Assessment:</span>
+              <span id="landslideRiskText" class="font-semibold text-emerald-700">Low Risk (Stable Slope)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Center: Primary Important Metric -->
+        <div class="flex items-center gap-6 lg:border-l lg:border-r border-slate-border lg:px-8 py-1">
+          <div>
+            <span class="text-[11px] text-slate-muted font-medium block">Slope Incline Angle</span>
+            <div class="flex items-baseline gap-1.5 mt-0.5">
+              <span id="metricLandslide" class="text-3xl font-extrabold text-navy-900 font-mono">12.0</span>
+              <span class="text-xs text-slate-muted font-mono">&deg;</span>
+            </div>
+            <span id="landslideThresholdNotice" class="text-[11px] text-slate-muted block mt-0.5">Stable (&lt; 30.0&deg;)</span>
+          </div>
+
+          <!-- Quick Secondary Metric -->
+          <div class="hidden sm:block border-l border-slate-border pl-6">
+            <span class="text-[11px] text-slate-muted font-medium block">Soil Moisture</span>
+            <div class="flex items-baseline gap-1 mt-0.5">
+              <span id="metricLandslideSoil" class="text-xl font-bold text-navy-800 font-mono">28.5</span>
+              <span class="text-xs text-slate-muted font-mono">%</span>
+            </div>
+            <span class="text-[11px] text-slate-muted block mt-0.5">Low Saturation</span>
+          </div>
+        </div>
+
+        <!-- Right: Progressive Disclosure Toggle -->
+        <div class="flex items-center gap-2.5 self-start lg:self-center">
+          <button onclick="toggleDetails('Landslide')" id="btnToggleLandslide" class="px-4 py-2.5 rounded-xl bg-white hover:bg-gray-50 text-navy-900 text-xs font-semibold border border-slate-border flex items-center gap-2 transition shadow-sm">
+            <span id="btnTextLandslide">View Details</span>
+            <i id="btnIconLandslide" class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform"></i>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Expandable Detail Section (Hidden by Default) -->
+      <div id="detailsLandslide" class="hidden mt-6 pt-6 border-t border-slate-border space-y-5 animate-fadeIn">
+        
+        <!-- Safety Margin Meter -->
+        <div class="p-4 rounded-xl bg-slate-subtle border border-slate-border space-y-2">
+          <div class="flex justify-between items-center text-xs">
+            <span class="font-semibold text-navy-900">Slope Shear Critical Margin</span>
+            <span class="text-slate-muted font-mono"><span id="landslideMarginPct">27%</span> of Shear Failure Angle</span>
+          </div>
+          <div class="w-full h-2.5 rounded-full bg-gray-200 overflow-hidden">
+            <div id="landslideMarginBar" class="h-full bg-gradient-to-r from-amber-500 to-emerald-500 transition-all duration-500 rounded-full" style="width: 27%;"></div>
+          </div>
+          <div class="flex justify-between text-[11px] text-slate-muted font-mono">
+            <span>0&deg; (Horizontal)</span>
+            <span>30.0&deg; (Cautionary Creep)</span>
+            <span class="text-rose-600 font-semibold">45.0&deg; (Catastrophic Shear)</span>
+          </div>
+        </div>
+
+        <!-- 4 Secondary Metrics Grid -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+          <div class="p-3.5 rounded-xl bg-white border border-slate-border shadow-sm">
+            <span class="text-[11px] text-slate-muted block font-medium">Pore Water Pressure</span>
+            <span id="detLandslidePore" class="text-base font-bold text-navy-900 font-mono mt-0.5 block">14.2 kPa</span>
+            <span class="text-[10px] text-slate-muted">Hydrostatic slope pressure</span>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-white border border-slate-border shadow-sm">
+            <span class="text-[11px] text-slate-muted block font-medium">Ground Vibration</span>
+            <span id="detLandslideVib" class="text-base font-bold text-navy-900 font-mono mt-0.5 block">0.02 mm/s</span>
+            <span class="text-[10px] text-slate-muted">Seismic micro-displacement</span>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-white border border-slate-border shadow-sm">
+            <span class="text-[11px] text-slate-muted block font-medium">AI Probability Head</span>
+            <span id="detLandslideAiRisk" class="text-base font-bold text-emerald-700 font-mono mt-0.5 block">0.0%</span>
+            <span class="text-[10px] text-slate-muted">Slope stability confidence</span>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-white border border-slate-border shadow-sm">
+            <span class="text-[11px] text-slate-muted block font-medium">Station Status</span>
+            <span class="text-base font-bold text-emerald-700 font-mono mt-0.5 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span>Online</span>
+            </span>
+            <span class="text-[10px] text-slate-muted">Continuous telemetry sync</span>
+          </div>
+        </div>
+
+        <!-- Human AI Narrative & Analytics Link -->
+        <div class="p-4 rounded-xl bg-amber-50/60 border border-amber-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div class="flex items-start gap-3">
+            <i class="fa-solid fa-brain text-amber-600 text-sm mt-0.5"></i>
+            <div>
+              <span class="font-bold text-navy-900">AI Horizon Evaluation</span>
+              <p id="landslideAiNarrative" class="text-slate-700 mt-0.5">
+                Slope equilibrium is well within safety thresholds. Low soil saturation indicates negligible failure probability.
+              </p>
+            </div>
+          </div>
+          <a href="/analytics" class="text-amber-700 hover:underline font-semibold whitespace-nowrap self-end sm:self-center">
+            View Forecast Curves &rarr;
+          </a>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ======================================================================= -->
+    <!-- CARD 3: WILDFIRE -->
+    <!-- ======================================================================= -->
+    <div id="cardSectionFire" class="card-base p-6 sm:p-7 bg-white border border-slate-border rounded-2xl shadow-sm transition-all duration-300">
+      
+      <!-- Primary Summary Row (Always Visible) -->
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+        
+        <!-- Left: Icon, Name & Location -->
+        <div class="flex items-start gap-4 flex-1">
+          <div class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center text-xl flex-shrink-0 shadow-sm">
+            <i class="fa-solid fa-fire-flame-curved"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2.5">
+              <h2 class="text-base font-bold text-navy-900 tracking-tight">Wildfire Monitoring</h2>
+              <span id="badgeFire" class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase">
+                Safe
+              </span>
+            </div>
+            <p class="text-xs text-slate-muted mt-0.5">
+              Almora · Kumaon Pine Forest &middot; Binsar Reserve, Uttarakhand (29.6200&deg; N, 79.6800&deg; E)
+            </p>
+            <div class="flex items-center gap-2 mt-2 text-xs">
+              <span class="text-slate-muted">Risk Assessment:</span>
+              <span id="fireRiskText" class="font-semibold text-emerald-700">Low Risk (No Pyrolysis)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Center: Primary Important Metric -->
+        <div class="flex items-center gap-6 lg:border-l lg:border-r border-slate-border lg:px-8 py-1">
+          <div>
+            <span class="text-[11px] text-slate-muted font-medium block">Combustion Gas (TVOC)</span>
+            <div class="flex items-baseline gap-1.5 mt-0.5">
+              <span id="metricFire" class="text-3xl font-extrabold text-navy-900 font-mono">818</span>
+              <span class="text-xs text-slate-muted font-mono">ppb</span>
+            </div>
+            <span id="fireThresholdNotice" class="text-[11px] text-slate-muted block mt-0.5">Normal (&lt; 1,500 ppb)</span>
+          </div>
+
+          <!-- Quick Secondary Metric -->
+          <div class="hidden sm:block border-l border-slate-border pl-6">
+            <span class="text-[11px] text-slate-muted font-medium block">Ambient Temp</span>
+            <div class="flex items-baseline gap-1 mt-0.5">
+              <span id="metricFireTemp" class="text-xl font-bold text-navy-800 font-mono">28.4</span>
+              <span class="text-xs text-slate-muted font-mono">&deg;C</span>
+            </div>
+            <span class="text-[11px] text-slate-muted block mt-0.5">Nominal Thermal</span>
+          </div>
+        </div>
+
+        <!-- Right: Progressive Disclosure Toggle -->
+        <div class="flex items-center gap-2.5 self-start lg:self-center">
+          <button onclick="toggleDetails('Fire')" id="btnToggleFire" class="px-4 py-2.5 rounded-xl bg-white hover:bg-gray-50 text-navy-900 text-xs font-semibold border border-slate-border flex items-center gap-2 transition shadow-sm">
+            <span id="btnTextFire">View Details</span>
+            <i id="btnIconFire" class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform"></i>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Expandable Detail Section (Hidden by Default) -->
+      <div id="detailsFire" class="hidden mt-6 pt-6 border-t border-slate-border space-y-5 animate-fadeIn">
+        
+        <!-- Safety Margin Meter -->
+        <div class="p-4 rounded-xl bg-slate-subtle border border-slate-border space-y-2">
+          <div class="flex justify-between items-center text-xs">
+            <span class="font-semibold text-navy-900">Combustion Gas Safety Margin</span>
+            <span class="text-slate-muted font-mono"><span id="fireMarginPct">16%</span> of Thermal Ignition Threshold</span>
+          </div>
+          <div class="w-full h-2.5 rounded-full bg-gray-200 overflow-hidden">
+            <div id="fireMarginBar" class="h-full bg-gradient-to-r from-rose-500 to-emerald-500 transition-all duration-500 rounded-full" style="width: 16%;"></div>
+          </div>
+          <div class="flex justify-between text-[11px] text-slate-muted font-mono">
+            <span>0 ppb (Clean)</span>
+            <span>1,500 ppb (Combustion Warning)</span>
+            <span class="text-rose-600 font-semibold">5,000 ppb (Critical Fire)</span>
+          </div>
+        </div>
+
+        <!-- 4 Secondary Metrics Grid -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+          <div class="p-3.5 rounded-xl bg-white border border-slate-border shadow-sm">
+            <span class="text-[11px] text-slate-muted block font-medium">Carbon Dioxide (eCO2)</span>
+            <span id="detFireEco2" class="text-base font-bold text-navy-900 font-mono mt-0.5 block">412 ppm</span>
+            <span class="text-[10px] text-slate-muted">Atmospheric emission level</span>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-white border border-slate-border shadow-sm">
+            <span class="text-[11px] text-slate-muted block font-medium">Optical Flame State</span>
+            <span id="detFireFlame" class="text-base font-bold text-emerald-700 font-mono mt-0.5 block">Clear</span>
+            <span class="text-[10px] text-slate-muted">Infrared flame sensor status</span>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-white border border-slate-border shadow-sm">
+            <span class="text-[11px] text-slate-muted block font-medium">AI Probability Head</span>
+            <span id="detFireAiRisk" class="text-base font-bold text-emerald-700 font-mono mt-0.5 block">0.0%</span>
+            <span class="text-[10px] text-slate-muted">Pyrolysis prediction score</span>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-white border border-slate-border shadow-sm">
+            <span class="text-[11px] text-slate-muted block font-medium">Station Status</span>
+            <span class="text-base font-bold text-emerald-700 font-mono mt-0.5 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span>Online</span>
+            </span>
+            <span class="text-[10px] text-slate-muted">Continuous telemetry sync</span>
+          </div>
+        </div>
+
+        <!-- Human AI Narrative & Analytics Link -->
+        <div class="p-4 rounded-xl bg-rose-50/60 border border-rose-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div class="flex items-start gap-3">
+            <i class="fa-solid fa-brain text-rose-600 text-sm mt-0.5"></i>
+            <div>
+              <span class="font-bold text-navy-900">AI Horizon Evaluation</span>
+              <p id="fireAiNarrative" class="text-slate-700 mt-0.5">
+                Zero combustion signatures detected. Gas emission curves confirm clear atmospheric perimeter.
+              </p>
+            </div>
+          </div>
+          <a href="/analytics" class="text-rose-700 hover:underline font-semibold whitespace-nowrap self-end sm:self-center">
+            View Forecast Curves &rarr;
+          </a>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ======================================================================= -->
+    <!-- CARD 4: POLLUTION -->
+    <!-- ======================================================================= -->
+    <div id="cardSectionPollution" class="card-base p-6 sm:p-7 bg-white border border-slate-border rounded-2xl shadow-sm transition-all duration-300">
+      
+      <!-- Primary Summary Row (Always Visible) -->
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+        
+        <!-- Left: Icon, Name & Location -->
+        <div class="flex items-start gap-4 flex-1">
+          <div class="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl flex-shrink-0 shadow-sm">
+            <i class="fa-solid fa-smog"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2.5">
+              <h2 class="text-base font-bold text-navy-900 tracking-tight">Air Quality Monitoring</h2>
+              <span id="badgePollution" class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase">
+                Safe
+              </span>
+            </div>
+            <p class="text-xs text-slate-muted mt-0.5">
+              Dehradun · Selaqui Valley &middot; Industrial Corridor, Uttarakhand (30.3400&deg; N, 77.8700&deg; E)
+            </p>
+            <div class="flex items-center gap-2 mt-2 text-xs">
+              <span class="text-slate-muted">Risk Assessment:</span>
+              <span id="pollutionRiskText" class="font-semibold text-emerald-700">Good Quality (Normal Smog Index)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Center: Primary Important Metric -->
+        <div class="flex items-center gap-6 lg:border-l lg:border-r border-slate-border lg:px-8 py-1">
+          <div>
+            <span class="text-[11px] text-slate-muted font-medium block">Fine Particulate (PM2.5)</span>
+            <div class="flex items-baseline gap-1.5 mt-0.5">
+              <span id="metricPollution" class="text-3xl font-extrabold text-navy-900 font-mono">11.5</span>
+              <span class="text-xs text-slate-muted font-mono">&micro;g/m&sup3;</span>
+            </div>
+            <span id="pollutionThresholdNotice" class="text-[11px] text-slate-muted block mt-0.5">Good (&lt; 60 &micro;g/m&sup3;)</span>
+          </div>
+
+          <!-- Quick Secondary Metric -->
+          <div class="hidden sm:block border-l border-slate-border pl-6">
+            <span class="text-[11px] text-slate-muted font-medium block">Coarse PM10</span>
+            <div class="flex items-baseline gap-1 mt-0.5">
+              <span id="metricPollutionPm10" class="text-xl font-bold text-navy-800 font-mono">24.2</span>
+              <span class="text-xs text-slate-muted font-mono">&micro;g/m&sup3;</span>
+            </div>
+            <span class="text-[11px] text-slate-muted block mt-0.5">Satisfactory</span>
+          </div>
+        </div>
+
+        <!-- Right: Progressive Disclosure Toggle -->
+        <div class="flex items-center gap-2.5 self-start lg:self-center">
+          <button onclick="toggleDetails('Pollution')" id="btnTogglePollution" class="px-4 py-2.5 rounded-xl bg-white hover:bg-gray-50 text-navy-900 text-xs font-semibold border border-slate-border flex items-center gap-2 transition shadow-sm">
+            <span id="btnTextPollution">View Details</span>
+            <i id="btnIconPollution" class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform"></i>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Expandable Detail Section (Hidden by Default) -->
+      <div id="detailsPollution" class="hidden mt-6 pt-6 border-t border-slate-border space-y-5 animate-fadeIn">
+        
+        <!-- Safety Margin Meter -->
+        <div class="p-4 rounded-xl bg-slate-subtle border border-slate-border space-y-2">
+          <div class="flex justify-between items-center text-xs">
+            <span class="font-semibold text-navy-900">Particulate Safety Threshold</span>
+            <span class="text-slate-muted font-mono"><span id="pollutionMarginPct">8%</span> of Hazardous Inversion Limit</span>
+          </div>
+          <div class="w-full h-2.5 rounded-full bg-gray-200 overflow-hidden">
+            <div id="pollutionMarginBar" class="h-full bg-gradient-to-r from-purple-500 to-emerald-500 transition-all duration-500 rounded-full" style="width: 8%;"></div>
+          </div>
+          <div class="flex justify-between text-[11px] text-slate-muted font-mono">
+            <span>0 &micro;g/m&sup3; (Clean)</span>
+            <span>60 &micro;g/m&sup3; (Cautionary Moderate)</span>
+            <span class="text-rose-600 font-semibold">150 &micro;g/m&sup3; (Severe Inversion)</span>
+          </div>
+        </div>
+
+        <!-- 4 Secondary Metrics Grid -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+          <div class="p-3.5 rounded-xl bg-white border border-slate-border shadow-sm">
+            <span class="text-[11px] text-slate-muted block font-medium">Nitrogen Dioxide (NO2)</span>
+            <span id="detPollutionNo2" class="text-base font-bold text-navy-900 font-mono mt-0.5 block">18.4 ppb</span>
+            <span class="text-[10px] text-slate-muted">Combustion byproduct level</span>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-white border border-slate-border shadow-sm">
+            <span class="text-[11px] text-slate-muted block font-medium">Carbon Monoxide (CO)</span>
+            <span id="detPollutionCo" class="text-base font-bold text-navy-900 font-mono mt-0.5 block">0.8 ppm</span>
+            <span class="text-[10px] text-slate-muted">Ambient carbon concentration</span>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-white border border-slate-border shadow-sm">
+            <span class="text-[11px] text-slate-muted block font-medium">AI Probability Head</span>
+            <span id="detPollutionAiRisk" class="text-base font-bold text-emerald-700 font-mono mt-0.5 block">0.0%</span>
+            <span class="text-[10px] text-slate-muted">Smog inversion projection</span>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-white border border-slate-border shadow-sm">
+            <span class="text-[11px] text-slate-muted block font-medium">Station Status</span>
+            <span class="text-base font-bold text-emerald-700 font-mono mt-0.5 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span>Online</span>
+            </span>
+            <span class="text-[10px] text-slate-muted">Continuous telemetry sync</span>
+          </div>
+        </div>
+
+        <!-- Human AI Narrative & Analytics Link -->
+        <div class="p-4 rounded-xl bg-purple-50/60 border border-purple-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div class="flex items-start gap-3">
+            <i class="fa-solid fa-brain text-purple-600 text-sm mt-0.5"></i>
+            <div>
+              <span class="font-bold text-navy-900">AI Horizon Evaluation</span>
+              <p id="pollutionAiNarrative" class="text-slate-700 mt-0.5">
+                Ventilation coefficients remain optimal. No hazardous thermal inversion trapped over the industrial basin.
+              </p>
+            </div>
+          </div>
+          <a href="/analytics" class="text-purple-700 hover:underline font-semibold whitespace-nowrap self-end sm:self-center">
+            View Forecast Curves &rarr;
+          </a>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Progressive disclosure toggle function
+  function toggleDetails(hazard) {
+    const details = document.getElementById(`details${hazard}`);
+    const btnText = document.getElementById(`btnText${hazard}`);
+    const btnIcon = document.getElementById(`btnIcon${hazard}`);
+
+    if (details.classList.contains('hidden')) {
+      details.classList.remove('hidden');
+      btnText.textContent = 'Hide Details';
+      btnIcon.classList.add('rotate-180');
+    } else {
+      details.classList.add('hidden');
+      btnText.textContent = 'View Details';
+      btnIcon.classList.remove('rotate-180');
+    }
+  }
+
+  // Filter hazard tabs function
+  function filterHazard(type) {
+    const sections = {
+      'flood': document.getElementById('cardSectionFlood'),
+      'landslide': document.getElementById('cardSectionLandslide'),
+      'fire': document.getElementById('cardSectionFire'),
+      'pollution': document.getElementById('cardSectionPollution')
+    };
+
+    const tabs = {
+      'all': document.getElementById('tabAll'),
+      'flood': document.getElementById('tabFlood'),
+      'landslide': document.getElementById('tabLandslide'),
+      'fire': document.getElementById('tabFire'),
+      'pollution': document.getElementById('tabPollution')
+    };
+
+    // Reset all tab styling to clean light inactive
+    Object.values(tabs).forEach(tab => {
+      tab.className = 'px-4 py-2 rounded-xl bg-white hover:bg-gray-50 text-slate-muted hover:text-navy-900 font-medium border border-slate-border transition flex items-center gap-2 whitespace-nowrap shadow-sm';
+    });
+
+    if (type === 'all') {
+      tabs['all'].className = 'px-4 py-2 rounded-xl bg-brand-action text-white font-semibold shadow-sm transition whitespace-nowrap';
+      Object.values(sections).forEach(sec => sec.classList.remove('hidden'));
+    } else {
+      tabs[type].className = 'px-4 py-2 rounded-xl bg-brand-action text-white font-semibold shadow-sm transition flex items-center gap-2 whitespace-nowrap';
+      Object.keys(sections).forEach(key => {
+        if (key === type) {
+          sections[key].classList.remove('hidden');
+        } else {
+          sections[key].classList.add('hidden');
+        }
+      });
+    }
+  }
+
+  // Handle URL hash on load (e.g. /monitoring#flood)
+  window.addEventListener('DOMContentLoaded', () => {
+    const hash = window.location.hash.replace('#', '').toLowerCase();
+    if (['flood', 'landslide', 'fire', 'pollution'].includes(hash)) {
+      filterHazard(hash);
+      const cap = hash.charAt(0).toUpperCase() + hash.slice(1);
+      toggleDetails(cap);
+    }
+  });
+
+  // Dynamic Telemetry Engine Listener
+  window.addEventListener('sentinel_data', (event) => {
+    const { hub, nodes, forecasts } = event.detail;
+
+    // Header Summary Pill
+    const alertDot = document.getElementById('monAlertDot');
+    const alertText = document.getElementById('monAlertText');
+    const lastSync = document.getElementById('monLastUpdated');
+
+    if (hub.active_alerts_count > 0) {
+      alertDot.className = 'w-2 h-2 rounded-full bg-rose-600 animate-ping';
+      alertText.textContent = `${hub.active_alerts_count} Active Breach`;
+      alertText.className = 'font-bold text-rose-700';
+    } else {
+      alertDot.className = 'w-2 h-2 rounded-full bg-emerald-500';
+      alertText.textContent = 'All Safe Baseline';
+      alertText.className = 'font-semibold text-navy-800';
+    }
+    lastSync.textContent = 'Live';
+
+    // 1. FLOOD
+    if (nodes.FLD1) {
+      const s = nodes.FLD1.sensors;
+      const isCrit = nodes.FLD1.status === 'Hazardous';
+      const b = document.getElementById('badgeFlood');
+      const card = document.getElementById('cardSectionFlood');
+      const riskText = document.getElementById('floodRiskText');
+      const notice = document.getElementById('floodThresholdNotice');
+      const narrative = document.getElementById('floodAiNarrative');
+
+      document.getElementById('metricFlood').textContent = s.River_Water_Level_m;
+      document.getElementById('metricFloodRain').textContent = s.Rainfall_mm;
+      document.getElementById('detFloodRainIntensity').textContent = `${s.Rainfall_Intensity_mm_h} mm/h`;
+      document.getElementById('detFloodPressure').textContent = `${s.Atmospheric_Pressure_hPa} hPa`;
+
+      const marginPct = Math.min(100, Math.round((s.River_Water_Level_m / 10.0) * 100));
+      document.getElementById('floodMarginPct').textContent = `${marginPct}%`;
+      document.getElementById('floodMarginBar').style.width = `${marginPct}%`;
+
+      if (isCrit) {
+        b.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200 uppercase';
+        b.textContent = 'Critical Breach';
+        card.classList.add('border-2', 'border-rose-500', 'bg-rose-50/20');
+        riskText.textContent = 'High Risk — Immediate Catchment Evacuation Advised';
+        riskText.className = 'font-semibold text-rose-700';
+        notice.textContent = 'Critical Danger Threshold Exceeded (> 10.0 m)';
+        notice.className = 'text-[11px] text-rose-600 font-semibold block mt-0.5';
+        narrative.textContent = 'Rapid water level surge detected. Predictive GRU models project downstream catchment overflow within 10 to 20 minutes.';
+      } else {
+        b.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase';
+        b.textContent = 'Safe';
+        card.classList.remove('border-2', 'border-rose-500', 'bg-rose-50/20');
+        riskText.textContent = 'Low Risk (Nominal Flow)';
+        riskText.className = 'font-semibold text-emerald-700';
+        notice.textContent = 'Normal Flow (< 6.0 m)';
+        notice.className = 'text-[11px] text-slate-muted block mt-0.5';
+        narrative.textContent = 'Current river discharge is stable. Zero catchment overflow risk projected over the next 50 minutes.';
+      }
+    }
+    if (forecasts.FLD1) {
+      document.getElementById('detFloodAiRisk').textContent = `${forecasts.FLD1.risk_probability_pct}%`;
+    }
+
+    // 2. LANDSLIDE
+    if (nodes.SLD2) {
+      const s = nodes.SLD2.sensors;
+      const isCrit = nodes.SLD2.status === 'Hazardous';
+      const b = document.getElementById('badgeLandslide');
+      const card = document.getElementById('cardSectionLandslide');
+      const riskText = document.getElementById('landslideRiskText');
+      const notice = document.getElementById('landslideThresholdNotice');
+      const narrative = document.getElementById('landslideAiNarrative');
+
+      document.getElementById('metricLandslide').textContent = s.Slope_Angle;
+      document.getElementById('metricLandslideSoil').textContent = s.Soil_Saturation;
+      document.getElementById('detLandslidePore').textContent = `${s.Pore_Water_Pressure_kPa} kPa`;
+      document.getElementById('detLandslideVib').textContent = `${s.Ground_Vibration_mms} mm/s`;
+
+      const marginPct = Math.min(100, Math.round((s.Slope_Angle / 45.0) * 100));
+      document.getElementById('landslideMarginPct').textContent = `${marginPct}%`;
+      document.getElementById('landslideMarginBar').style.width = `${marginPct}%`;
+
+      if (isCrit) {
+        b.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200 uppercase';
+        b.textContent = 'Critical Shear';
+        card.classList.add('border-2', 'border-rose-500', 'bg-rose-50/20');
+        riskText.textContent = 'High Risk — Imminent Slope Shear Displacement';
+        riskText.className = 'font-semibold text-rose-700';
+        notice.textContent = 'Catastrophic Shear Angle Exceeded (> 45.0°)';
+        notice.className = 'text-[11px] text-rose-600 font-semibold block mt-0.5';
+        narrative.textContent = 'Severe angular tilt and high pore moisture indicate progressive shear failure along the geological fault line.';
+      } else {
+        b.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase';
+        b.textContent = 'Safe';
+        card.classList.remove('border-2', 'border-rose-500', 'bg-rose-50/20');
+        riskText.textContent = 'Low Risk (Stable Slope)';
+        riskText.className = 'font-semibold text-emerald-700';
+        notice.textContent = 'Stable Slope (< 30.0°)';
+        notice.className = 'text-[11px] text-slate-muted block mt-0.5';
+        narrative.textContent = 'Slope equilibrium is well within safety thresholds. Low soil saturation indicates negligible failure probability.';
+      }
+    }
+    if (forecasts.SLD2) {
+      document.getElementById('detLandslideAiRisk').textContent = `${forecasts.SLD2.risk_probability_pct}%`;
+    }
+
+    // 3. FIRE
+    if (nodes.FIR3) {
+      const s = nodes.FIR3.sensors;
+      const isCrit = nodes.FIR3.status === 'Hazardous';
+      const b = document.getElementById('badgeFire');
+      const card = document.getElementById('cardSectionFire');
+      const riskText = document.getElementById('fireRiskText');
+      const notice = document.getElementById('fireThresholdNotice');
+      const narrative = document.getElementById('fireAiNarrative');
+      const flame = document.getElementById('detFireFlame');
+
+      document.getElementById('metricFire').textContent = s['TVOC[ppb]'];
+      document.getElementById('metricFireTemp').textContent = s['Temperature[C]'];
+      document.getElementById('detFireEco2').textContent = `${s['eCO2[ppm]']} ppm`;
+
+      const marginPct = Math.min(100, Math.round((s['TVOC[ppb]'] / 5000.0) * 100));
+      document.getElementById('fireMarginPct').textContent = `${marginPct}%`;
+      document.getElementById('fireMarginBar').style.width = `${marginPct}%`;
+
+      if (isCrit) {
+        b.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200 uppercase';
+        b.textContent = 'Active Fire';
+        card.classList.add('border-2', 'border-rose-500', 'bg-rose-50/20');
+        riskText.textContent = 'High Risk — Active Pyrolysis & Thermal Surge';
+        riskText.className = 'font-semibold text-rose-700';
+        notice.textContent = 'Combustion Gas Spike Exceeded (> 5,000 ppb)';
+        notice.className = 'text-[11px] text-rose-600 font-semibold block mt-0.5';
+        flame.textContent = 'Active Flame Detected';
+        flame.className = 'text-base font-bold text-rose-600 font-mono mt-0.5 block animate-pulse';
+        narrative.textContent = 'Combustion gas surge and thermal spikes confirm active flame propagation across the pine forest canopy.';
+      } else {
+        b.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase';
+        b.textContent = 'Safe';
+        card.classList.remove('border-2', 'border-rose-500', 'bg-rose-50/20');
+        riskText.textContent = 'Low Risk (No Pyrolysis)';
+        riskText.className = 'font-semibold text-emerald-700';
+        notice.textContent = 'Normal Baseline (< 1,500 ppb)';
+        notice.className = 'text-[11px] text-slate-muted block mt-0.5';
+        flame.textContent = 'Clear';
+        flame.className = 'text-base font-bold text-emerald-700 font-mono mt-0.5 block';
+        narrative.textContent = 'Zero combustion signatures detected. Gas emission curves confirm clear atmospheric perimeter.';
+      }
+    }
+    if (forecasts.FIR3) {
+      document.getElementById('detFireAiRisk').textContent = `${forecasts.FIR3.risk_probability_pct}%`;
+    }
+
+    // 4. POLLUTION
+    if (nodes.POL4) {
+      const s = nodes.POL4.sensors;
+      const isCrit = nodes.POL4.status === 'Hazardous';
+      const b = document.getElementById('badgePollution');
+      const card = document.getElementById('cardSectionPollution');
+      const riskText = document.getElementById('pollutionRiskText');
+      const notice = document.getElementById('pollutionThresholdNotice');
+      const narrative = document.getElementById('pollutionAiNarrative');
+
+      document.getElementById('metricPollution').textContent = s.pm25;
+      document.getElementById('metricPollutionPm10').textContent = s.pm10;
+      document.getElementById('detPollutionNo2').textContent = `${s.no2} ppb`;
+      document.getElementById('detPollutionCo').textContent = `${s.co} ppm`;
+
+      const marginPct = Math.min(100, Math.round((s.pm25 / 150.0) * 100));
+      document.getElementById('pollutionMarginPct').textContent = `${marginPct}%`;
+      document.getElementById('pollutionMarginBar').style.width = `${marginPct}%`;
+
+      if (isCrit) {
+        b.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200 uppercase';
+        b.textContent = 'Hazardous Air';
+        card.classList.add('border-2', 'border-rose-500', 'bg-rose-50/20');
+        riskText.textContent = 'Poor Air Quality — Severe Atmospheric Inversion';
+        riskText.className = 'font-semibold text-rose-700';
+        notice.textContent = 'Severe Inversion Limit Exceeded (> 150 µg/m³)';
+        notice.className = 'text-[11px] text-rose-600 font-semibold block mt-0.5';
+        narrative.textContent = 'Atmospheric inversion layer has trapped toxic industrial particulates. Public health advisory recommended.';
+      } else {
+        b.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase';
+        b.textContent = 'Safe';
+        card.classList.remove('border-2', 'border-rose-500', 'bg-rose-50/20');
+        riskText.textContent = 'Good Quality (Normal Smog Index)';
+        riskText.className = 'font-semibold text-emerald-700';
+        notice.textContent = 'Good Quality (< 60 µg/m³)';
+        notice.className = 'text-[11px] text-slate-muted block mt-0.5';
+        narrative.textContent = 'Ventilation coefficients remain optimal. No hazardous thermal inversion trapped over the industrial basin.';
+      }
+    }
+    if (forecasts.POL4) {
+      document.getElementById('detPollutionAiRisk').textContent = `${forecasts.POL4.risk_probability_pct}%`;
+    }
+
+  });
+</script>
+
+<style>
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fadeIn {
+    animation: fadeIn 0.25s ease-out forwards;
+  }
+</style>
+{% endblock %}

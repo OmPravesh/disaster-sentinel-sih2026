@@ -12,7 +12,9 @@ import os
 import asyncio
 import logging
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, PROJECT_ROOT)
+sys.path.insert(0, os.path.join(PROJECT_ROOT, "jetson"))
 
 from simulation.fake_node import _build_raw_packet, HAZARD_LANDSLIDE
 from receiver.packet_decoder import decode_packet, format_packet_log

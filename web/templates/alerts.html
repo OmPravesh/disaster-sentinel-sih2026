@@ -1,0 +1,795 @@
+{% extends "base.html" %}
+
+{% block title %}Alerts & Emergency · Disaster Sentinel{% endblock %}
+
+{% block content %}
+<div class="space-y-6 pb-12">
+
+  <!-- ========================================================================= -->
+  <!-- 1. PAGE HEADER: SIMPLE, CLEAN & DELIBERATE EMERGENCY ACTION -->
+  <!-- ========================================================================= -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
+        <span>Alerts &amp; Emergency</span>
+      </h1>
+      <p class="text-xs sm:text-sm text-slate-500 mt-1">
+        Monitor active threats and coordinate emergency response protocols.
+      </p>
+    </div>
+
+    <!-- Prominent, Deliberate Emergency SOS Action -->
+    <div class="flex items-center gap-3">
+      <button onclick="openSosModal()" class="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs flex items-center gap-2 shadow-sm transition cursor-pointer">
+        <i class="fa-solid fa-satellite-dish text-xs animate-pulse"></i>
+        <span>SEND EMERGENCY SOS</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 2. ACTIVE EMERGENCY SUMMARY (COMPACT & INFORMATIVE) -->
+  <!-- ========================================================================= -->
+  <div id="alertSummaryBanner" class="p-6 bg-white border border-slate-border rounded-2xl shadow-sm transition-all duration-300">
+    <!-- Populated dynamically via JS -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-5">
+      <div class="flex items-start md:items-center gap-4">
+        <div id="summaryIconContainer" class="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 flex-shrink-0 text-xl">
+          <i class="fa-solid fa-shield-check"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span id="summaryKicker" class="text-[11px] font-bold uppercase tracking-wider text-emerald-600 font-mono">ALL CLEAR</span>
+            <span id="summaryPulseBadge" class="hidden text-[10px] px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 font-bold animate-pulse font-mono">ACTION REQUIRED</span>
+          </div>
+          <h2 id="summaryHeading" class="text-xl font-bold text-slate-900 tracking-tight mt-0.5">No Active Emergencies Detected</h2>
+          <p id="summarySub" class="text-xs text-slate-500 mt-1">All monitored regional zones are reporting nominal conditions within safe thresholds.</p>
+        </div>
+      </div>
+
+      <!-- Quick Triage Counts & Last Updated -->
+      <div class="flex flex-wrap items-center gap-2.5 text-xs">
+        <div class="px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-center min-w-[75px]">
+          <span class="text-[10px] text-slate-500 uppercase block font-semibold">Critical</span>
+          <span id="countSummaryCrit" class="text-base font-bold text-rose-600 font-mono">0</span>
+        </div>
+        <div class="px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-center min-w-[75px]">
+          <span class="text-[10px] text-slate-500 uppercase block font-semibold">Warning</span>
+          <span id="countSummaryWarn" class="text-base font-bold text-amber-600 font-mono">0</span>
+        </div>
+        <div class="px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-center min-w-[75px]">
+          <span class="text-[10px] text-slate-500 uppercase block font-semibold">Normal</span>
+          <span id="countSummaryNorm" class="text-base font-bold text-emerald-600 font-mono">4</span>
+        </div>
+        <div class="pl-3 border-l border-slate-200 hidden sm:block text-right text-xs text-slate-500">
+          <span class="text-[10px] uppercase block font-medium text-slate-400">Last updated</span>
+          <span id="summaryTimeLabel" class="font-bold text-slate-800">Just now</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 3. SIMPLE FILTERS BAR -->
+  <!-- ========================================================================= -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white p-3 rounded-2xl border border-slate-border shadow-sm">
+    <!-- Priority Filters: All, Critical, Warning, Resolved -->
+    <div class="flex flex-wrap items-center gap-1.5 text-xs font-medium">
+      <button onclick="setStatusFilter('all')" id="btnFilterAll" class="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-900 font-semibold shadow-sm transition">
+        All (<span id="countFilterAll">0</span>)
+      </button>
+      <button onclick="setStatusFilter('critical')" id="btnFilterCrit" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-rose-700 transition">
+        Critical (<span id="countFilterCrit">0</span>)
+      </button>
+      <button onclick="setStatusFilter('warning')" id="btnFilterWarn" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-amber-700 transition">
+        Warning (<span id="countFilterWarn">0</span>)
+      </button>
+      <button onclick="setStatusFilter('resolved')" id="btnFilterResolved" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-emerald-700 transition">
+        Resolved (<span id="countFilterResolved">0</span>)
+      </button>
+    </div>
+
+    <!-- Hazard Type Filter -->
+    <div class="flex items-center gap-1 overflow-x-auto text-xs font-medium pb-1 md:pb-0">
+      <button onclick="setHazardFilter('all')" id="btnHazAll" class="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 font-semibold transition whitespace-nowrap">
+        All Hazards
+      </button>
+      <button onclick="setHazardFilter('Flood')" id="btnHazFlood" class="px-2.5 py-1 rounded-lg text-slate-600 hover:text-blue-700 hover:bg-slate-50 transition whitespace-nowrap flex items-center gap-1.5">
+        <i class="fa-solid fa-water text-blue-500 text-[11px]"></i>
+        <span>Flood</span>
+      </button>
+      <button onclick="setHazardFilter('Landslide')" id="btnHazLandslide" class="px-2.5 py-1 rounded-lg text-slate-600 hover:text-amber-700 hover:bg-slate-50 transition whitespace-nowrap flex items-center gap-1.5">
+        <i class="fa-solid fa-mountain text-amber-500 text-[11px]"></i>
+        <span>Landslide</span>
+      </button>
+      <button onclick="setHazardFilter('Wildfire')" id="btnHazFire" class="px-2.5 py-1 rounded-lg text-slate-600 hover:text-rose-700 hover:bg-slate-50 transition whitespace-nowrap flex items-center gap-1.5">
+        <i class="fa-solid fa-fire-flame-curved text-rose-500 text-[11px]"></i>
+        <span>Fire</span>
+      </button>
+      <button onclick="setHazardFilter('Air Pollution')" id="btnHazSmog" class="px-2.5 py-1 rounded-lg text-slate-600 hover:text-purple-700 hover:bg-slate-50 transition whitespace-nowrap flex items-center gap-1.5">
+        <i class="fa-solid fa-smog text-purple-500 text-[11px]"></i>
+        <span>Pollution</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 4. ACTIVE ALERTS SECTION -->
+  <!-- ========================================================================= -->
+  <div id="activeAlertsSection" class="space-y-4">
+    <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+      <div class="flex items-center gap-2.5">
+        <span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping"></span>
+        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-900 font-mono">ACTIVE ALERTS</h2>
+      </div>
+      <span id="badgeActiveCount" class="text-xs px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 font-semibold font-mono">0 Active</span>
+    </div>
+
+    <!-- Active Cards List -->
+    <div id="activeAlertsList" class="space-y-4">
+      <!-- Dynamically filled with clean alert cards -->
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 5. RESOLVED ALERTS SECTION (VISUALLY QUIETER) -->
+  <!-- ========================================================================= -->
+  <div id="resolvedAlertsSection" class="space-y-4 pt-4">
+    <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+      <div class="flex items-center gap-2 text-slate-500">
+        <i class="fa-solid fa-circle-check text-emerald-600 text-xs"></i>
+        <h2 class="text-xs font-bold uppercase tracking-wider font-mono text-slate-600">RESOLVED</h2>
+      </div>
+      <span id="badgeResolvedCount" class="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 font-mono">0 Resolved</span>
+    </div>
+
+    <!-- Resolved Cards List -->
+    <div id="resolvedAlertsList" class="space-y-3">
+      <!-- Dynamically populated -->
+    </div>
+  </div>
+
+  <!-- Empty Filter Notice -->
+  <div id="emptyResultsNotice" class="hidden p-12 text-center bg-white border border-slate-border rounded-2xl space-y-3 shadow-sm">
+    <div class="w-12 h-12 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 mx-auto text-lg">
+      <i class="fa-solid fa-inbox"></i>
+    </div>
+    <h3 class="text-sm font-bold text-slate-900">No Alerts Match Selected Filter</h3>
+    <p class="text-xs text-slate-500 max-w-sm mx-auto">There are currently no incidents matching your active filter criteria.</p>
+    <button onclick="setStatusFilter('all'); setHazardFilter('all');" class="px-3.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs text-slate-700 font-semibold transition border border-slate-200">
+      Reset Filters
+    </button>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 6. STANDARD OPERATING PROCEDURES (SOP) REFERENCE GUIDE -->
+  <!-- ========================================================================= -->
+  <div class="p-5 sm:p-6 bg-white border border-slate-border rounded-2xl space-y-4 shadow-sm">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+      <div>
+        <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+          <i class="fa-solid fa-clipboard-check text-blue-600"></i>
+          <span>Civil Defense Standard Operating Procedures (SOP)</span>
+        </h3>
+        <p class="text-xs text-slate-500 mt-0.5">Pre-authorized autonomous response protocols triggered when critical thresholds are breached.</p>
+      </div>
+      <span class="text-[11px] text-slate-500 font-mono bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200">NDRF / SDMA Protocol Matrix</span>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+      
+      <!-- SOP Flood -->
+      <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2 border-t-2 border-t-blue-500">
+        <div class="flex items-center justify-between font-bold text-blue-700">
+          <span class="flex items-center gap-1.5">
+            <i class="fa-solid fa-water text-xs"></i>
+            <span>River Flood</span>
+          </span>
+          <span class="font-mono text-[10px] text-slate-500">&gt; 10.0 m</span>
+        </div>
+        <p class="text-slate-600 text-[11px] leading-relaxed">
+          <strong class="text-slate-900">Recommended Action:</strong> Sound village alert sirens. Initiate immediate evacuation of downstream floodplains within 5 km. Alert NDRF Battalion 11.
+        </p>
+      </div>
+
+      <!-- SOP Landslide -->
+      <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2 border-t-2 border-t-amber-500">
+        <div class="flex items-center justify-between font-bold text-amber-700">
+          <span class="flex items-center gap-1.5">
+            <i class="fa-solid fa-mountain text-xs"></i>
+            <span>Slope Failure</span>
+          </span>
+          <span class="font-mono text-[10px] text-slate-500">&gt; 45.0°</span>
+        </div>
+        <p class="text-slate-600 text-[11px] leading-relaxed">
+          <strong class="text-slate-900">Recommended Action:</strong> Close vulnerable mountain highway sectors (NH-58). Dispatch drone terrain reconnaissance. Mobilize road-clearing excavators.
+        </p>
+      </div>
+
+      <!-- SOP Wildfire -->
+      <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2 border-t-2 border-t-rose-500">
+        <div class="flex items-center justify-between font-bold text-rose-700">
+          <span class="flex items-center gap-1.5">
+            <i class="fa-solid fa-fire-flame-curved text-xs"></i>
+            <span>Wildfire</span>
+          </span>
+          <span class="font-mono text-[10px] text-slate-500">&gt; 5,000 ppb</span>
+        </div>
+        <p class="text-slate-600 text-[11px] leading-relaxed">
+          <strong class="text-slate-900">Recommended Action:</strong> Deploy forest ranger suppression crews. Activate firebreak counter-burn trenches. Restrict public access to forest perimeter.
+        </p>
+      </div>
+
+      <!-- SOP Pollution -->
+      <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2 border-t-2 border-t-purple-500">
+        <div class="flex items-center justify-between font-bold text-purple-700">
+          <span class="flex items-center gap-1.5">
+            <i class="fa-solid fa-smog text-xs"></i>
+            <span>Toxic Smog</span>
+          </span>
+          <span class="font-mono text-[10px] text-slate-500">&gt; 150 µg/m³</span>
+        </div>
+        <p class="text-slate-600 text-[11px] leading-relaxed">
+          <strong class="text-slate-900">Recommended Action:</strong> Issue public health advisory. Temporarily suspend industrial diesel generators in Cluster A. Deploy municipal mist cannons.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // =========================================================================
+  // STATE MANAGEMENT & DICTIONARIES
+  // =========================================================================
+  let rawIncidents = [];
+  let cachedNodes = {};
+  let currentStatusFilter = 'all'; // 'all', 'critical', 'warning', 'resolved'
+  let currentHazardFilter = 'all'; // 'all', 'Flood', 'Landslide', 'Wildfire', 'Air Pollution'
+  const expandedIncidentKeys = new Set();
+
+  const humanLocations = {
+    FLD1: "Ganga Catchment",
+    SLD2: "Himalayan Foothills",
+    FIR3: "Pine Forest Perimeter",
+    POL4: "Industrial Basin",
+    ALL: "All Monitored Regions",
+    SYS: "Central AI Hub"
+  };
+
+  const hazardIcons = {
+    Flood: { icon: "fa-solid fa-water", color: "text-cyan-400", bg: "bg-cyan-500/10 border-cyan-500/30" },
+    Landslide: { icon: "fa-solid fa-mountain", color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/30" },
+    Wildfire: { icon: "fa-solid fa-fire-flame-curved", color: "text-rose-400", bg: "bg-rose-500/10 border-rose-500/30" },
+    Fire: { icon: "fa-solid fa-fire-flame-curved", color: "text-rose-400", bg: "bg-rose-500/10 border-rose-500/30" },
+    "Air Pollution": { icon: "fa-solid fa-smog", color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/30" },
+    Pollution: { icon: "fa-solid fa-smog", color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/30" },
+    System: { icon: "fa-solid fa-shield-check", color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/30" }
+  };
+
+  const humanTitles = {
+    Flood: "FLOOD ALERT",
+    Landslide: "LANDSLIDE RISK",
+    Wildfire: "WILDFIRE ALARM",
+    Fire: "WILDFIRE ALARM",
+    "Air Pollution": "POLLUTION WARNING",
+    Pollution: "POLLUTION WARNING",
+    System: "SYSTEM BASELINE"
+  };
+
+  const cleanDescriptions = {
+    Flood: "Water level has exceeded the critical threshold.",
+    Landslide: "High probability of slope instability and rock displacement.",
+    Wildfire: "Active thermal combustion detected with dense smoke emission.",
+    Fire: "Active thermal combustion detected with dense smoke emission.",
+    "Air Pollution": "Particulate dust concentration has exceeded the hazardous threshold.",
+    Pollution: "Particulate dust concentration has exceeded the hazardous threshold.",
+    System: "All monitored regional zones are reporting nominal conditions."
+  };
+
+  const actionRecommendations = {
+    Flood: "Evacuate low-lying areas within the affected zone. Alert NDRF Battalion 11.",
+    Landslide: "Close vulnerable mountain highway sectors (NH-58). Halt heavy transit. Deploy geotechnical stabilization team.",
+    Wildfire: "Deploy forest ranger suppression crews. Activate firebreak trenches. Restrict public access to forest perimeter.",
+    Fire: "Deploy forest ranger suppression crews. Activate firebreak trenches. Restrict public access to forest perimeter.",
+    "Air Pollution": "Issue Grade-4 severe smog health advisory. Halt open industrial emissions and heavy commercial diesel transit.",
+    Pollution: "Issue Grade-4 severe smog health advisory. Halt open industrial emissions and heavy commercial diesel transit.",
+    System: "All monitored areas have returned to normal conditions. Nominal standby monitoring maintained."
+  };
+
+  // Convert timestamp to clean relative time e.g. "2 minutes ago"
+  function getRelativeTime(timeStr) {
+    if (!timeStr) return "Just now";
+    try {
+      const parsedDate = new Date(timeStr.replace(/-/g, '/'));
+      if (isNaN(parsedDate.getTime())) {
+        return timeStr;
+      }
+      const seconds = Math.floor((new Date() - parsedDate) / 1000);
+      if (seconds < 45) return "Just now";
+      const minutes = Math.floor(seconds / 60);
+      if (minutes < 60) return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`;
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
+      const days = Math.floor(hours / 24);
+      return `${days} ${days === 1 ? 'day' : 'days'} ago`;
+    } catch(e) {
+      return timeStr;
+    }
+  }
+
+  // Format timestamp to HH:MM
+  function formatClockTime(timeStr) {
+    if (!timeStr) return "--:--";
+    try {
+      const parts = timeStr.trim().split(" ");
+      const timePart = parts.length > 1 ? parts[1] : parts[0];
+      return timePart.substring(0, 5);
+    } catch(e) {
+      return timeStr;
+    }
+  }
+
+  // Humanize technical raw incident details
+  function humanizeDetails(details) {
+    if (!details) return "Nominal operational status across all monitored sensors.";
+    let s = details;
+    s = s.replace(/GRU forecaster projects breach in 10 mins\./gi, "AI prediction indicates risk may increase within the next 10 minutes.");
+    s = s.replace(/Environmental normalization received across LoRa mesh\./gi, "All monitored areas have returned to normal conditions.");
+    s = s.replace(/Water level jumped to ([\d\.]+)m \(Critical > ([\d\.]+)m\)/gi, "Water level reached $1 m, exceeding the $2 m critical safety limit.");
+    s = s.replace(/Combustion gas TVOC spiked to ([\d\,]+) ppb\. Ambient temperature ([\d\.]+)°C\. Flame sensor tripwire positive\./gi, "Combustion gas concentration surged to $1 ppb with temperature at $2°C. Active thermal combustion detected.");
+    s = s.replace(/Particulate dust PM2\.5 jumped to ([\d\.]+) µg\/m³ \(Severe Hazardous > 150 µg\/m³\)\. Atmospheric inversion layer trapped pollutants\./gi, "Particulate PM2.5 reached $1 µg/m³, exceeding the 150 µg/m³ severe hazard limit. Smog inversion detected.");
+    s = s.replace(/NVIDIA Jetson Orin Nano AI Hub initialized\. LoRa SX1278 SPI link online @ 868\.1 MHz\./gi, "Autonomous Disaster Monitoring System initialized. All regional communication links active.");
+    return s;
+  }
+
+  // Get current vital metric for an alert
+  function getVitalMetric(hazard, nodeId) {
+    if (!cachedNodes || !cachedNodes[nodeId]) {
+      if (hazard === 'Flood') return { label: "Water Level", val: "13.25 m" };
+      if (hazard === 'Landslide') return { label: "Risk", val: "96%" };
+      if (hazard === 'Wildfire' || hazard === 'Fire') return { label: "Combustion Gas", val: "18,450 ppb" };
+      if (hazard === 'Air Pollution' || hazard === 'Pollution') return { label: "PM2.5 Dust", val: "275 µg/m³" };
+      return { label: "Status", val: "Nominal" };
+    }
+
+    const n = cachedNodes[nodeId];
+    if (nodeId === 'FLD1' || hazard === 'Flood') {
+      return { label: "Water Level", val: `${n.sensors.River_Water_Level_m} m` };
+    } else if (nodeId === 'SLD2' || hazard === 'Landslide') {
+      const risk = n.risk_prob ? `${n.risk_prob}%` : `${n.sensors.Slope_Angle}°`;
+      return { label: n.risk_prob ? "Risk" : "Slope Angle", val: risk };
+    } else if (nodeId === 'FIR3' || hazard === 'Wildfire' || hazard === 'Fire') {
+      return { label: "Combustion Gas", val: `${Number(n.sensors['TVOC[ppb]']).toLocaleString()} ppb` };
+    } else if (nodeId === 'POL4' || hazard === 'Air Pollution' || hazard === 'Pollution') {
+      return { label: "PM2.5 Dust", val: `${n.sensors.pm25} µg/m³` };
+    }
+    return { label: "Status", val: "Safe" };
+  }
+
+  // =========================================================================
+  // DEDUPLICATION: GROUP REPETITIVE ALERTS INTO ONE INCIDENT
+  // =========================================================================
+  function groupIncidents(incidentsList) {
+    if (!incidentsList || incidentsList.length === 0) return [];
+
+    const groupedMap = new Map();
+
+    incidentsList.forEach((inc) => {
+      let normHazard = inc.hazard || 'System';
+      if (normHazard === 'Fire') normHazard = 'Wildfire';
+      if (normHazard === 'Pollution') normHazard = 'Air Pollution';
+
+      const statusKey = inc.status === 'Active' ? 'Active' : 'Resolved';
+      const groupKey = `${normHazard}_${statusKey}`;
+
+      if (!groupedMap.has(groupKey)) {
+        groupedMap.set(groupKey, {
+          groupKey: groupKey,
+          hazard: normHazard,
+          node_id: inc.node_id || 'SYS',
+          status: statusKey,
+          severity: inc.severity || 'INFO',
+          firstDetected: inc.timestamp,
+          lastUpdated: inc.timestamp,
+          latestDetails: inc.details,
+          eventCount: 1,
+          historyEvents: [inc]
+        });
+      } else {
+        const item = groupedMap.get(groupKey);
+        item.eventCount += 1;
+        item.historyEvents.push(inc);
+
+        // Keep earliest detected and most recent update
+        item.lastUpdated = item.historyEvents[0].timestamp;
+        item.firstDetected = item.historyEvents[item.historyEvents.length - 1].timestamp;
+
+        // Upgrade severity if any event was CRITICAL
+        if (inc.severity === 'CRITICAL') {
+          item.severity = 'CRITICAL';
+        } else if (inc.severity === 'WARNING' && item.severity !== 'CRITICAL') {
+          item.severity = 'WARNING';
+        }
+      }
+    });
+
+    return Array.from(groupedMap.values());
+  }
+
+  // =========================================================================
+  // FILTERING
+  // =========================================================================
+  function setStatusFilter(status) {
+    currentStatusFilter = status;
+    const btnMap = {
+      all: 'btnFilterAll',
+      critical: 'btnFilterCrit',
+      warning: 'btnFilterWarn',
+      resolved: 'btnFilterResolved'
+    };
+
+    Object.keys(btnMap).forEach(k => {
+      const el = document.getElementById(btnMap[k]);
+      if (el) {
+        if (k === status) {
+          el.className = 'px-3 py-1.5 rounded-lg bg-slate-100 text-slate-900 font-semibold shadow-sm transition';
+        } else {
+          el.className = 'px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition';
+        }
+      }
+    });
+
+    renderAlertQueue();
+  }
+
+  function setHazardFilter(hazard) {
+    currentHazardFilter = hazard;
+    const hazBtns = {
+      all: 'btnHazAll',
+      Flood: 'btnHazFlood',
+      Landslide: 'btnHazLandslide',
+      Wildfire: 'btnHazFire',
+      'Air Pollution': 'btnHazSmog'
+    };
+
+    Object.keys(hazBtns).forEach(k => {
+      const el = document.getElementById(hazBtns[k]);
+      if (el) {
+        if (k === hazard) {
+          el.className = 'px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 font-semibold transition whitespace-nowrap flex items-center gap-1.5';
+        } else {
+          el.className = 'px-2.5 py-1 rounded-lg text-slate-600 hover:text-blue-700 hover:bg-slate-50 transition whitespace-nowrap flex items-center gap-1.5';
+        }
+      }
+    });
+
+    renderAlertQueue();
+  }
+
+  function toggleIncidentDetails(key) {
+    if (expandedIncidentKeys.has(key)) {
+      expandedIncidentKeys.delete(key);
+    } else {
+      expandedIncidentKeys.add(key);
+    }
+    renderAlertQueue();
+  }
+
+  // =========================================================================
+  // RENDER ALERTS & EMERGENCY INTERFACE
+  // =========================================================================
+  function renderAlertQueue() {
+    const consolidated = groupIncidents(rawIncidents);
+
+    const activeList = consolidated.filter(i => i.status === 'Active');
+    const resolvedList = consolidated.filter(i => i.status === 'Resolved');
+    const critCount = activeList.filter(i => i.severity === 'CRITICAL').length;
+    const warnCount = activeList.filter(i => i.severity === 'WARNING').length;
+    const normalCount = Math.max(0, 4 - activeList.length);
+
+    // Filter Buttons Counters
+    document.getElementById('countFilterAll').textContent = consolidated.length;
+    document.getElementById('countFilterCrit').textContent = critCount;
+    document.getElementById('countFilterWarn').textContent = warnCount;
+    document.getElementById('countFilterResolved').textContent = resolvedList.length;
+
+    // Top Summary Counters
+    document.getElementById('countSummaryCrit').textContent = critCount;
+    document.getElementById('countSummaryWarn').textContent = warnCount;
+    document.getElementById('countSummaryNorm').textContent = normalCount;
+
+    // Summary Banner Update
+    const banner = document.getElementById('alertSummaryBanner');
+    const iconContainer = document.getElementById('summaryIconContainer');
+    const kicker = document.getElementById('summaryKicker');
+    const pulseBadge = document.getElementById('summaryPulseBadge');
+    const heading = document.getElementById('summaryHeading');
+    const sub = document.getElementById('summarySub');
+    const timeLabel = document.getElementById('summaryTimeLabel');
+
+    if (activeList.length > 0) {
+      const topThreat = activeList.find(i => i.severity === 'CRITICAL') || activeList[0];
+      const loc = humanLocations[topThreat.node_id] || "Monitored Region";
+
+      banner.className = 'p-6 bg-white border border-rose-300 rounded-2xl shadow-sm transition-all duration-300';
+      iconContainer.className = 'w-12 h-12 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 flex-shrink-0 text-xl';
+      iconContainer.innerHTML = '<i class="fa-solid fa-triangle-exclamation animate-pulse"></i>';
+      kicker.className = 'text-[11px] font-bold uppercase tracking-wider text-rose-600 font-mono';
+      kicker.textContent = 'ACTIVE ALERTS';
+      pulseBadge.className = 'text-[10px] px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 font-bold animate-pulse font-mono';
+      pulseBadge.classList.remove('hidden');
+
+      heading.textContent = `${activeList.length} Active ${activeList.length === 1 ? 'Threat' : 'Threats'}`;
+      sub.innerHTML = `Critical threat active in <strong class="text-slate-900">${loc}</strong>. Immediate civil defense protocol recommended.`;
+      timeLabel.textContent = getRelativeTime(topThreat.lastUpdated);
+    } else {
+      banner.className = 'p-6 bg-white border border-slate-border rounded-2xl shadow-sm transition-all duration-300';
+      iconContainer.className = 'w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 flex-shrink-0 text-xl';
+      iconContainer.innerHTML = '<i class="fa-solid fa-shield-check"></i>';
+      kicker.className = 'text-[11px] font-bold uppercase tracking-wider text-emerald-600 font-mono';
+      kicker.textContent = 'ALL CLEAR';
+      pulseBadge.classList.add('hidden');
+
+      heading.textContent = 'No active emergencies detected.';
+      sub.textContent = 'All monitored regional zones are operating within nominal safety thresholds.';
+      timeLabel.textContent = 'Just now';
+    }
+
+    // Apply Filter Criteria
+    const filtered = consolidated.filter(inc => {
+      // Status Filter
+      if (currentStatusFilter === 'critical' && (inc.severity !== 'CRITICAL' || inc.status !== 'Active')) return false;
+      if (currentStatusFilter === 'warning' && (inc.severity !== 'WARNING' || inc.status !== 'Active')) return false;
+      if (currentStatusFilter === 'resolved' && inc.status !== 'Resolved') return false;
+
+      // Hazard Filter
+      if (currentHazardFilter !== 'all' && inc.hazard !== currentHazardFilter) return false;
+
+      return true;
+    });
+
+    const filteredActive = filtered.filter(i => i.status === 'Active');
+    const filteredResolved = filtered.filter(i => i.status === 'Resolved');
+
+    const activeSec = document.getElementById('activeAlertsSection');
+    const activeListEl = document.getElementById('activeAlertsList');
+    const resolvedSec = document.getElementById('resolvedAlertsSection');
+    const resolvedListEl = document.getElementById('resolvedAlertsList');
+    const emptyNotice = document.getElementById('emptyResultsNotice');
+
+    document.getElementById('badgeActiveCount').textContent = `${activeList.length} Active`;
+    document.getElementById('badgeResolvedCount').textContent = `${resolvedList.length} Resolved`;
+
+    // Render Active Section
+    if (filteredActive.length > 0) {
+      activeSec.classList.remove('hidden');
+      activeListEl.innerHTML = filteredActive.map(inc => createCleanAlertCard(inc)).join('');
+    } else {
+      if (currentStatusFilter === 'critical' || currentStatusFilter === 'warning') {
+        activeSec.classList.add('hidden');
+      } else {
+        activeSec.classList.remove('hidden');
+        activeListEl.innerHTML = `
+          <div class="p-5 rounded-2xl bg-white border border-slate-border flex items-center justify-between text-xs shadow-sm">
+            <div class="flex items-center gap-3">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+              <div>
+                <span class="font-bold text-slate-900 text-sm">All Monitored Areas Normal</span>
+                <p class="text-slate-500 mt-0.5 text-xs">No active alerts detected. Edge mesh telemetries are nominal.</p>
+              </div>
+            </div>
+            <span class="px-3 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold font-mono text-[11px]">ALL CLEAR</span>
+          </div>
+        `;
+      }
+    }
+
+    // Render Resolved Section
+    if (filteredResolved.length > 0) {
+      resolvedSec.classList.remove('hidden');
+      resolvedListEl.innerHTML = filteredResolved.map(inc => createCleanAlertCard(inc)).join('');
+    } else {
+      resolvedSec.classList.add('hidden');
+    }
+
+    // Completely empty results
+    if (filteredActive.length === 0 && filteredResolved.length === 0) {
+      emptyNotice.classList.remove('hidden');
+      activeSec.classList.add('hidden');
+      resolvedSec.classList.add('hidden');
+    } else {
+      emptyNotice.classList.add('hidden');
+    }
+  }
+
+  // =========================================================================
+  // CLEAN, MODERN ALERT CARD DESIGN (MATCHING USER SPECIFICATION)
+  // =========================================================================
+  function createCleanAlertCard(inc) {
+    const isCrit = inc.severity === 'CRITICAL';
+    const isWarn = inc.severity === 'WARNING';
+    const isActive = inc.status === 'Active';
+    const isExpanded = expandedIncidentKeys.has(inc.groupKey);
+
+    const loc = humanLocations[inc.node_id] || "Monitored Region";
+    const title = humanTitles[inc.hazard] || inc.title;
+    const cleanDesc = cleanDescriptions[inc.hazard] || humanizeDetails(inc.latestDetails);
+    const vital = getVitalMetric(inc.hazard, inc.node_id);
+    const recAction = actionRecommendations[inc.hazard] || "Maintain standard surveillance posture.";
+    const detectedAgo = getRelativeTime(inc.firstDetected);
+    const updatedAgo = getRelativeTime(inc.lastUpdated);
+
+    // Styling containers
+    let cardBorder = "border-slate-border bg-white shadow-sm";
+    let priorityBadge = `<span class="px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 border border-slate-200 font-mono">RESOLVED</span>`;
+
+    if (isActive) {
+      if (isCrit) {
+        cardBorder = "border-rose-300 bg-white shadow-sm";
+        priorityBadge = `
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-rose-50 text-rose-700 border border-rose-200 font-mono">
+            <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span>
+            CRITICAL
+          </span>`;
+      } else if (isWarn) {
+        cardBorder = "border-amber-300 bg-white shadow-sm";
+        priorityBadge = `
+          <span class="px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200 font-mono">
+            WARNING
+          </span>`;
+      }
+    } else {
+      cardBorder = "border-slate-200 bg-slate-50/70";
+    }
+
+    return `
+      <div class="rounded-2xl border ${cardBorder} p-5 sm:p-6 space-y-4 transition-all duration-200">
+        
+        <!-- TOP ROW: PRIORITY BADGE & TIME -->
+        <div class="flex items-center justify-between gap-2">
+          ${priorityBadge}
+          <div class="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+            <i class="fa-solid fa-clock text-slate-400 text-[11px]"></i>
+            <span>Detected ${detectedAgo}</span>
+          </div>
+        </div>
+
+        <!-- HAZARD TITLE & LOCATION -->
+        <div class="space-y-1">
+          <h3 class="text-xl font-bold text-slate-900 tracking-tight">${title}</h3>
+          <div class="flex items-center gap-1.5 text-sm font-semibold text-slate-600">
+            <i class="fa-solid fa-location-dot text-slate-400 text-xs"></i>
+            <span>${loc}</span>
+          </div>
+        </div>
+
+        <!-- CRISP SITUATION SUMMARY -->
+        <p class="text-slate-600 text-sm leading-relaxed">
+          ${cleanDesc}
+        </p>
+
+        <!-- VITAL MEASUREMENT CALLOUT -->
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+          <div>
+            <span class="text-[10px] uppercase font-bold text-slate-500 block">${vital.label}</span>
+            <span class="text-xl font-extrabold text-slate-900 mt-0.5 block tracking-tight font-mono">${vital.val}</span>
+          </div>
+          ${inc.eventCount > 1 ? `
+            <div class="text-right">
+              <span class="text-[11px] font-medium text-slate-500 block flex items-center gap-1 justify-end">
+                <i class="fa-solid fa-layer-group text-slate-400 text-[10px]"></i>
+                <span>${inc.eventCount} related updates</span>
+              </span>
+              <span class="text-[10px] text-slate-400 font-mono mt-0.5 block">Last: ${formatClockTime(inc.lastUpdated)}</span>
+            </div>
+          ` : ''}
+        </div>
+
+        <!-- RECOMMENDED CIVIL DEFENSE ACTION -->
+        <div class="p-3.5 rounded-xl bg-blue-50/60 border border-blue-100 text-xs space-y-1">
+          <div class="text-[11px] font-bold uppercase tracking-wider text-blue-700 flex items-center gap-1.5">
+            <i class="fa-solid fa-bullhorn text-xs"></i>
+            <span>RECOMMENDED ACTION</span>
+          </div>
+          <p class="text-slate-700 text-xs leading-relaxed">
+            ${recAction}
+          </p>
+        </div>
+
+        <!-- ACTION BUTTONS -->
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-100">
+          <div class="flex flex-wrap items-center gap-2">
+            <!-- View Details / View Incident Button -->
+            <button onclick="toggleIncidentDetails('${inc.groupKey}')" class="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 text-xs font-semibold flex items-center gap-1.5 border border-slate-200 shadow-sm transition cursor-pointer">
+              <i class="fa-solid fa-circle-info text-blue-600 text-xs"></i>
+              <span>${isExpanded ? 'Hide Details' : 'View Incident Details'}</span>
+            </button>
+
+            <!-- View on Map Button -->
+            <button onclick="window.location.href='/map'" class="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 border border-slate-200 text-xs font-semibold flex items-center gap-1.5 shadow-sm transition cursor-pointer">
+              <i class="fa-solid fa-location-dot text-slate-400 text-xs"></i>
+              <span>View on Map</span>
+            </button>
+          </div>
+
+          <!-- If Active & Critical: Send Emergency SOS -->
+          ${(isCrit && isActive) ? `
+            <button onclick="openSosModal()" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition cursor-pointer">
+              <i class="fa-solid fa-satellite-dish text-xs animate-pulse"></i>
+              <span>SEND EMERGENCY SOS</span>
+            </button>
+          ` : ''}
+        </div>
+
+        <!-- EXPANDABLE DETAILS ACCORDION -->
+        ${isExpanded ? `
+          <div class="pt-4 border-t border-slate-100 space-y-3">
+            <div class="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+              <i class="fa-solid fa-timeline text-blue-600"></i>
+              <span>Incident Sensor Updates History (${inc.historyEvents.length})</span>
+            </div>
+
+            <div class="space-y-2 max-h-56 overflow-y-auto pr-1">
+              ${inc.historyEvents.map(evt => `
+                <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-200 flex items-start justify-between gap-3 text-xs">
+                  <div class="space-y-0.5">
+                    <div class="flex items-center gap-2">
+                      <span class="font-mono text-[11px] font-bold text-slate-800">${evt.id}</span>
+                      <span class="text-[10px] font-mono px-1.5 py-0.5 rounded font-semibold ${evt.severity === 'CRITICAL' ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-slate-100 text-slate-600 border border-slate-200'}">${evt.severity}</span>
+                      <span class="text-slate-400 text-[11px]">${evt.timestamp}</span>
+                    </div>
+                    <p class="text-slate-600 text-[11px] mt-0.5 leading-relaxed">${humanizeDetails(evt.details)}</p>
+                  </div>
+                  <span class="text-[10px] font-mono text-slate-500 flex-shrink-0">${evt.status}</span>
+                </div>
+              `).join('')}
+            </div>
+
+            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] text-slate-500">
+              <span>Deep ML Horizon: AI forecasting predicts temporal trajectory.</span>
+              <a href="/analytics" class="text-blue-600 hover:text-blue-700 font-semibold inline-flex items-center gap-1 transition">
+                <span>View Analytics &amp; Predictions</span>
+                <i class="fa-solid fa-arrow-right text-[10px]"></i>
+              </a>
+            </div>
+          </div>
+        ` : ''}
+
+      </div>
+    `;
+  }
+
+  // =========================================================================
+  // INITIALIZATION & REAL-TIME EVENT LISTENER
+  // =========================================================================
+  window.addEventListener('sentinel_data', (event) => {
+    if (event.detail) {
+      if (event.detail.incidents) rawIncidents = event.detail.incidents;
+      if (event.detail.nodes) cachedNodes = event.detail.nodes;
+      renderAlertQueue();
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    fetch('/api/incidents')
+      .then(r => r.json())
+      .then(data => {
+        if (data.success && data.incidents) {
+          rawIncidents = data.incidents;
+          fetch('/api/nodes')
+            .then(r2 => r2.json())
+            .then(nodeData => {
+              if (nodeData.success && nodeData.nodes) cachedNodes = nodeData.nodes;
+              renderAlertQueue();
+            })
+            .catch(() => renderAlertQueue());
+        }
+      })
+      .catch(err => console.warn("Error fetching initial incidents:", err));
+  });
+</script>
+{% endblock %}
