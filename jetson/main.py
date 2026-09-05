@@ -46,7 +46,6 @@ from engine.risk_predictor import RiskPredictor
 from engine.alert_manager import AlertManager
 from alerts.sms_sender import SMSSender
 from alerts.buzzer_strobe import BuzzerControl, StrobeControl
-from dashboard.app import DashboardApp
 
 # Configure logging
 logging.basicConfig(
@@ -175,16 +174,8 @@ class DisasterSentinel:
             self.receiver = LoRaReceiver(config.get("lora", {}))
             logger.info("📡 Using REAL LoRa receiver")
 
-        # Dashboard
-        self.dashboard = DashboardApp(
-            self.store,
-            self.alert_manager,
-            risk_predictor=self.risk_predictor,
-            config=config.get("dashboard", {}),
-        )
-
-        # Wire alert manager to dashboard WebSocket
-        self.alert_manager.on_alert(self.dashboard.broadcast)
+        # Dashboard (Port 8080 removed — System uses Central Command Dashboard on Port 5000)
+        self.dashboard = None
 
         # Register packet callback
         self.receiver.on_packet(self.process_packet)
@@ -205,7 +196,6 @@ class DisasterSentinel:
           3. Get historical data for trend analysis
           4. Predict risk
           5. Evaluate alerts
-          6. Push to dashboard via WebSocket
         """
         try:
             # 1. Store reading
@@ -226,14 +216,6 @@ class DisasterSentinel:
 
             # 5. Alert evaluation
             await self.alert_manager.evaluate(risk, self.store)
-
-            # 6. Push combined data to dashboard
-            dashboard_data = {
-                **packet.to_dict(),
-                **risk,
-                "validation": validation,
-            }
-            await self.dashboard.broadcast(dashboard_data)
 
         except Exception as e:
             logger.error(f"Processing error: {e}", exc_info=True)
@@ -262,28 +244,11 @@ class DisasterSentinel:
         logger.info("═" * 55)
         logger.info("  🛡️  DISASTER SENTINEL — Running")
         logger.info(f"  Mode: {'SIMULATION' if self.simulate else 'HARDWARE'}")
-        logger.info(f"  Dashboard: http://0.0.0.0:{self.config.get('dashboard', {}).get('port', 8080)}")
+        logger.info("  Central Command Dashboard: http://localhost:5000")
         logger.info("═" * 55)
 
-        # Run receiver and dashboard concurrently
-        dashboard_config = self.config.get("dashboard", {})
-        host = dashboard_config.get("host", "0.0.0.0")
-        port = dashboard_config.get("port", 8080)
-
-        # Create uvicorn server
-        uvi_config = uvicorn.Config(
-            self.dashboard.app,
-            host=host,
-            port=port,
-            log_level="warning",
-        )
-        server = uvicorn.Server(uvi_config)
-
-        # Run both
-        await asyncio.gather(
-            server.serve(),
-            self.receiver.start(),
-        )
+        # Run receiver
+        await self.receiver.start()
 
     async def shutdown(self):
         """Graceful shutdown."""
