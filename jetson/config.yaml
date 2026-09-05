@@ -176,4 +176,4 @@ web_dashboard:
   host: "0.0.0.0"
   port: 5000
   title: "Disaster Sentinel — Central Command Center"
-  debug: false
+  debug: true
