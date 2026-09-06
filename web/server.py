@@ -21,13 +21,16 @@ sys.path.insert(0, PROJECT_ROOT)
 sys.path.insert(0, os.path.join(PROJECT_ROOT, "ai"))
 
 # Import GRU Model Definition
-try:
-    from ai.model_gru import DisasterGRUForecaster
-except ImportError:
+if HAS_TORCH:
     try:
-        from model_gru import DisasterGRUForecaster
+        from ai.model_gru import DisasterGRUForecaster
     except ImportError:
-        from src.model_gru import DisasterGRUForecaster
+        try:
+            from model_gru import DisasterGRUForecaster
+        except ImportError:
+            DisasterGRUForecaster = None
+else:
+    DisasterGRUForecaster = None
 
 # Ensure UTF-8 output encoding for Windows PowerShell / CMD
 if sys.platform == "win32":
