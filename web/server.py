@@ -4,7 +4,12 @@ import time
 from datetime import datetime
 import json
 import numpy as np
-import torch
+try:
+    import torch
+    HAS_TORCH = True
+except ImportError:
+    torch = None
+    HAS_TORCH = False
 import joblib
 import pandas as pd
 from flask import Flask, jsonify, render_template, request, redirect, url_for
@@ -83,6 +88,9 @@ gru_models = {}
 gru_scalers = {}
 
 def load_gru_models():
+    if not HAS_TORCH:
+        print("[INFO] PyTorch not installed — running in Standard Telemetry Mode.")
+        return
     # Flood GRU (FLD1)
     f_weights = os.path.join(MODELS_DIR, "flood_gru.pth")
     f_scaler = os.path.join(MODELS_DIR, "flood_gru_scaler.json")
@@ -387,7 +395,7 @@ def run_gru_forecast(node_id):
     - Future disaster breach probability P(Hazardous at t+30m)
     - Early Warning Lead Time (mins before threshold breach)
     """
-    if node_id not in gru_models or node_id not in gru_scalers:
+    if not HAS_TORCH or node_id not in gru_models or node_id not in gru_scalers:
         return {"success": False, "error": f"No GRU model registered for node {node_id}"}
     
     scaler = gru_scalers[node_id]
