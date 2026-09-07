@@ -48,6 +48,7 @@
 
 // Layer 2: PM2.5 Dust Sensor (Optical Dust Sensor GP2Y1010AU0F)
 #define PM25_LED_PIN        12  // Drive LED pin
+#define PM25_LED_PIN        4   // Drive LED pin (Moved from GPIO 12 to avoid flash boot brownout)
 #define PM25_ANALOG_PIN     35  // ADC1_CH7 measure pin
 
 // ============================================================
@@ -62,9 +63,9 @@
 // ============================================================
 // TIMING & POWER
 // ============================================================
-#define NORMAL_INTERVAL_MS   120000  // 2 minutes
-#define ALERT_INTERVAL_MS    15000   // 15 seconds
-#define ELEVATED_INTERVAL_MS 30000   // 30 seconds
+#define NORMAL_INTERVAL_MS   5000    // 5 sec for debugging/demo
+#define ALERT_INTERVAL_MS    3000    // 3 sec
+#define ELEVATED_INTERVAL_MS 4000    // 4 sec
 
 #define BATTERY_ADC_PIN      36  // ADC1_CH0
 #define BATTERY_FULL_MV      4200

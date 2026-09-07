@@ -5,11 +5,24 @@
  */
 
 #include "lora_tx.h"
+#include <Arduino.h>
+#include <SPI.h>
 
 bool LoRaTx::begin(int csPin, int rstPin, int dio0Pin,
                     long frequency, int txPower, int sf, long bandwidth) {
     _packetsSent = 0;
     _initialized = false;
+
+    // Ensure hardware reset pulse for SX1278 (10ms LOW, then HIGH)
+    pinMode(rstPin, OUTPUT);
+    digitalWrite(rstPin, LOW);
+    delay(10);
+    digitalWrite(rstPin, HIGH);
+    delay(15);
+
+    // Initialize SPI bus with explicit pins (SCK=18, MISO=19, MOSI=23, CS=5)
+    SPI.begin(18, 19, 23, csPin);
+    LoRa.setSPI(SPI);
 
     // Configure LoRa pins
     LoRa.setPins(csPin, rstPin, dio0Pin);
@@ -18,6 +31,22 @@ bool LoRaTx::begin(int csPin, int rstPin, int dio0Pin,
     Serial.printf("  Frequency: %.1f MHz\n", frequency / 1e6);
     Serial.printf("  TX Power: %d dBm\n", txPower);
     Serial.printf("  SF: %d\n", sf);
+
+    // Direct SPI diagnostic probe
+    pinMode(csPin, OUTPUT);
+    digitalWrite(csPin, LOW);
+    SPI.transfer(0x42 & 0x7F);  // Read REG_VERSION (0x42)
+    uint8_t probeVersion = SPI.transfer(0x00);
+    digitalWrite(csPin, HIGH);
+
+    Serial.printf("  [SPI Probe] SX1278 Chip ID: 0x%02X (Expected 0x12)\n", probeVersion);
+    if (probeVersion == 0x00) {
+        Serial.println("  ==> Cause: LoRa has NO 3.3V POWER, or MISO/MOSI wire is loose!");
+    } else if (probeVersion == 0xFF) {
+        Serial.println("  ==> Cause: NSS (D5) or SCK (D18) wire is loose, or MISO is floating!");
+    } else if (probeVersion == 0x12) {
+        Serial.println("  ==> SPI hardware communication verified OK!");
+    }
 
     // Initialize LoRa module
     if (!LoRa.begin(frequency)) {

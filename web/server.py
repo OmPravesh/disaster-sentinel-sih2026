@@ -570,6 +570,112 @@ def legacy_page():
 # 4. REST API DATA ENDPOINTS
 # -------------------------------------------------------------
 
+@app.route("/api/telemetry", methods=["POST"])
+def ingest_telemetry():
+    """
+    Ingests live decoded LoRa telemetry packets from field nodes, gateway, or serial bridge.
+    Executes real-time Random Forest tripwire and updates PyTorch GRU temporal buffer.
+    """
+    data = request.get_json(force=True, silent=True)
+    if not data or "node_id" not in data:
+        return jsonify({"success": False, "error": "Missing node_id in payload"}), 400
+        
+    node_id = data["node_id"].upper()
+    if node_id not in node_states:
+        return jsonify({"success": False, "error": f"Unknown node: {node_id}"}), 404
+        
+    node = node_states[node_id]
+    
+    # Update battery & RSSI if provided
+    if "battery" in data:
+        node["battery"] = int(data["battery"])
+    if "rssi" in data:
+        node["lora_rssi"] = int(data["rssi"])
+        
+    # Map physical sensor inputs to node sensor attributes
+    if node_id == "FLD1":
+        if "l1_raw" in data:
+            raw_w = float(data["l1_raw"])
+            node["sensors"]["River_Water_Level_m"] = round(raw_w / 100.0 if raw_w > 20 else raw_w, 2)
+        if "l2_raw" in data:
+            node["sensors"]["Rainfall_Intensity_mm_hr"] = round(float(data["l2_raw"]) * 20.0, 2)
+        if "l3_raw" in data:
+            node["sensors"]["Atmospheric_Pressure_hPa"] = round(float(data["l3_raw"]), 1)
+            
+    elif node_id == "SLD2":
+        if "l1_raw" in data:
+            node["sensors"]["Slope_Angle"] = round(float(data["l1_raw"]), 1)
+        if "l2_raw" in data:
+            raw_s = float(data["l2_raw"])
+            node["sensors"]["Soil_Saturation"] = round(raw_s / 100.0 if raw_s > 1.0 else raw_s, 2)
+        if "l3_raw" in data:
+            node["sensors"]["Atmospheric_Pressure_hPa"] = round(float(data["l3_raw"]), 1)
+            
+    elif node_id == "FIR3":
+        if "l1_raw" in data:
+            flame = float(data["l1_raw"])
+        if "l2_raw" in data:
+            raw_g = float(data["l2_raw"])
+            node["sensors"]["TVOC[ppb]"] = round(raw_g * 5000.0 if raw_g <= 1.0 else raw_g, 1)
+        if "l3_raw" in data:
+            node["sensors"]["Temperature[C]"] = round(float(data["l3_raw"]), 1)
+            
+    elif node_id == "POL4":
+        if "l1_raw" in data:
+            raw_aqi = float(data["l1_raw"])
+            node["sensors"]["co"] = round(raw_aqi / 20.0, 1)
+        if "l2_raw" in data:
+            raw_pm = float(data["l2_raw"])
+            node["sensors"]["pm25"] = round(raw_pm, 1)
+            node["sensors"]["pm10"] = round(raw_pm * 2.2, 1)
+
+    # Append to rolling GRU sequence buffer
+    if node_id in node_sequence_buffers:
+        obs = {k: v for k, v in node["sensors"].items()}
+        node_sequence_buffers[node_id].append(obs)
+        if len(node_sequence_buffers[node_id]) > 20:
+            node_sequence_buffers[node_id].pop(0)
+
+    # Run AI inference:
+    # 1. Random Forest Tripwire
+    hazard_key = node["hazard"].lower()
+    if hazard_key in models:
+        try:
+            req_cols = list(models[hazard_key].feature_names_in_)
+            row = {c: node["sensors"].get(c, 0.0) for c in req_cols}
+            df = pd.DataFrame([row])
+            if hazard_key == "fire":
+                pred = models[hazard_key].predict(df)[0]
+                node["status"] = "Hazardous" if pred == 1 else "Safe"
+            elif hazard_key == "landslide":
+                prob = models[hazard_key].predict_proba(df)[0][1]
+                node["risk_prob"] = round(prob * 100, 1)
+                node["status"] = "Hazardous" if prob >= 0.70 else ("Warning" if prob >= 0.35 else "Safe")
+            else:
+                pred = models[hazard_key].predict(df)[0]
+                node["status"] = str(pred)
+        except Exception:
+            pass
+
+    # 2. PyTorch GRU 5-step future forecast
+    forecast_result = run_gru_forecast(node_id)
+    if forecast_result and forecast_result.get("success"):
+        threat = forecast_result.get("threat_level")
+        if threat == "CRITICAL" and node["status"] != "Hazardous":
+            node["status"] = "Warning"
+
+    # Record point into history log & update actuators
+    record_history()
+    update_hub_alert_status()
+
+    return jsonify({
+        "success": True,
+        "node_id": node_id,
+        "status": node["status"],
+        "sensors": node["sensors"],
+        "forecast": forecast_result
+    })
+
 @app.route("/api/incidents", methods=["GET"])
 def get_incidents():
     """Returns chronological disaster incident history log."""

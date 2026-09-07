@@ -48,9 +48,9 @@
 #define PRIORITY_THRESHOLD  0.70f
 #define ELEVATED_THRESHOLD  0.50f
 
-#define NORMAL_INTERVAL_MS   120000  // 2 min
-#define ALERT_INTERVAL_MS    15000   // 15 sec
-#define ELEVATED_INTERVAL_MS 30000   // 30 sec
+#define NORMAL_INTERVAL_MS   5000    // 5 sec for debugging/demo
+#define ALERT_INTERVAL_MS    3000    // 3 sec
+#define ELEVATED_INTERVAL_MS 4000    // 4 sec
 
 #define BATTERY_ADC_PIN      36
 #define BATTERY_FULL_MV      4200

@@ -1,7 +1,7 @@
 /**
  * Disaster Sentinel — Node 3 (Fire) Main Firmware
  * 
- * ESP32 Node FIR3: Flame IR + Smoke/Gas + BME280.
+ * ESP32 Node FIR3: Flame IR + Smoke/Gas + BME280/BMP280.
  * Transmits binary LoRa packets to Jetson Orin Nano gateway.
  * 
  * SIH 2026 · Problem Statement SIH26178 · Qualcomm
@@ -12,6 +12,7 @@
 #include <LoRa.h>
 #include <Wire.h>
 #include <Adafruit_BME280.h>
+#include <Adafruit_BMP280.h>
 #include "config.h"
 
 struct __attribute__((packed)) LoRaPacket {
@@ -34,7 +35,10 @@ struct __attribute__((packed)) LoRaPacket {
 
 static uint16_t g_sequence_num = 0;
 Adafruit_BME280 bme;
+Adafruit_BMP280 bmp;
 bool bme_found = false;
+bool is_bmp = false;
+bool lora_initialized = false;
 
 uint16_t calculate_crc16(const uint8_t* data, size_t length) {
     uint16_t crc = 0xFFFF;
@@ -68,33 +72,88 @@ uint8_t compute_battery_pct() {
 
 void setup() {
     Serial.begin(115200);
+    delay(100);
+    Serial.println("\n═══════════════════════════════════════════════");
+    Serial.println("  DISASTER SENTINEL — Node 3: FIRE (FIR3)");
+    Serial.println("═══════════════════════════════════════════════");
+
     pinMode(FLAME_ANALOG_PIN, INPUT);
     pinMode(GAS_ANALOG_PIN, INPUT);
 
     Wire.begin(BME_SDA, BME_SCL);
-    if (bme.begin(BME_ADDR, &Wire)) {
-        bme_found = true;
+    // Auto-detect BME280 or BMP280 on 0x76 or 0x77
+    uint8_t addrs[2] = {0x76, 0x77};
+    for (uint8_t a : addrs) {
+        if (bme.begin(a, &Wire)) {
+            bme_found = true;
+            is_bmp = false;
+            Serial.printf("✅ BME280 detected on 0x%02X!\n", a);
+            break;
+        }
     }
+    if (!bme_found) {
+        for (uint8_t a : addrs) {
+            if (bmp.begin(a)) {
+                bme_found = true;
+                is_bmp = true;
+                Serial.printf("✅ BMP280 detected on 0x%02X!\n", a);
+                break;
+            }
+        }
+    }
+    if (!bme_found) {
+        Serial.println("⚠️ BME280/BMP280 not found on 0x76 or 0x77 (Layer 3 fallback).");
+    }
+
+    // Hardware reset pulse for SX1278
+    pinMode(LORA_RST, OUTPUT);
+    digitalWrite(LORA_RST, LOW);
+    delay(10);
+    digitalWrite(LORA_RST, HIGH);
+    delay(15);
 
     SPI.begin(LORA_SCK, LORA_MISO, LORA_MOSI, LORA_CS);
+    LoRa.setSPI(SPI);
     LoRa.setPins(LORA_CS, LORA_RST, LORA_DIO0);
 
-    if (!LoRa.begin(LORA_FREQUENCY)) {
-        Serial.println("❌ LoRa initialization failed!");
-        while (1) { delay(1000); }
+    // Direct SPI diagnostic probe
+    pinMode(LORA_CS, OUTPUT);
+    digitalWrite(LORA_CS, LOW);
+    SPI.transfer(0x42 & 0x7F);
+    uint8_t probeVersion = SPI.transfer(0x00);
+    digitalWrite(LORA_CS, HIGH);
+
+    Serial.printf("  [SPI Probe] SX1278 Chip ID: 0x%02X (Expected 0x12)\n", probeVersion);
+    if (probeVersion == 0x12) {
+        Serial.println("  ==> SPI hardware communication verified OK!");
+    } else if (probeVersion == 0x00) {
+        Serial.println("  ==> Cause: LoRa has NO 3.3V POWER, or MISO/MOSI wire is loose!");
+    } else {
+        Serial.println("  ==> Cause: NSS (D5) or SCK (D18) wire is loose!");
     }
 
-    LoRa.setTxPower(LORA_TX_POWER);
-    LoRa.setSpreadingFactor(LORA_SPREADING_FACTOR);
-    LoRa.setSignalBandwidth(LORA_BANDWIDTH);
+    if (LoRa.begin(LORA_FREQUENCY)) {
+        lora_initialized = true;
+        LoRa.setTxPower(LORA_TX_POWER);
+        LoRa.setSpreadingFactor(LORA_SPREADING_FACTOR);
+        LoRa.setSignalBandwidth(LORA_BANDWIDTH);
+        LoRa.setSyncWord(0xF3);
+        LoRa.enableCrc();
+        Serial.println("✅ LoRa SX1278 initialized successfully!");
+    } else {
+        Serial.println("❌ LoRa initialization failed! Check wiring.");
+    }
 
-    Serial.println("✅ Node FIR3 (Fire - 3-Layer Mode) initialized.");
+    Serial.println("✅ Node FIR3 initialization complete.\n");
 }
 
 void loop() {
     float flame = read_flame_sensor();
     float gas = read_gas_sensor();
-    float temp = bme_found ? bme.readTemperature() : 28.0f;
+    float temp = 28.0f;
+    if (bme_found) {
+        temp = is_bmp ? bmp.readTemperature() : bme.readTemperature();
+    }
 
     float l1_anomaly_f = min(1.0f, max(0.0f, flame));
     float l2_anomaly_f = min(1.0f, max(0.0f, (gas - 0.1f) / 0.8f));
@@ -125,12 +184,17 @@ void loop() {
     size_t payload_len = sizeof(LoRaPacket) - 3;
     packet.crc16 = calculate_crc16((const uint8_t*)&packet, payload_len);
 
-    LoRa.beginPacket();
-    LoRa.write((const uint8_t*)&packet, sizeof(packet));
-    LoRa.endPacket();
+    if (lora_initialized) {
+        LoRa.beginPacket();
+        LoRa.write((const uint8_t*)&packet, sizeof(packet));
+        LoRa.endPacket();
 
-    Serial.printf("📡 FIR3 Sent: Flame=%.2f, Gas=%.2f, Temp=%.1f°C | Combined=%.2f | Seq=%d\n",
-                  flame, gas, temp, combined_f, packet.sequence_num);
+        Serial.printf("📡 FIR3 Sent: Flame=%.2f, Gas=%.2f, Temp=%.1f°C | Combined=%.2f | Seq=%d\n",
+                      flame, gas, temp, combined_f, packet.sequence_num);
+    } else {
+        Serial.printf("⚠️ FIR3 Telemetry (LoRa offline): Flame=%.2f, Gas=%.2f, Temp=%.1f°C | Combined=%.2f\n",
+                      flame, gas, temp, combined_f);
+    }
 
     uint32_t interval = is_priority ? ALERT_INTERVAL_MS : (combined_f >= ELEVATED_THRESHOLD ? ELEVATED_INTERVAL_MS : NORMAL_INTERVAL_MS);
     delay(interval);

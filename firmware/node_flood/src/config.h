@@ -96,16 +96,16 @@
 
 // Normal transmission interval (ms)
 #ifndef NORMAL_INTERVAL_MS
-#define NORMAL_INTERVAL_MS 120000  // 2 minutes
+#define NORMAL_INTERVAL_MS 5000  // 5 seconds for debugging (was 120000)
 #endif
 
 // Alert transmission interval (ms)
 #ifndef ALERT_INTERVAL_MS
-#define ALERT_INTERVAL_MS 15000  // 15 seconds
+#define ALERT_INTERVAL_MS 3000  // 3 seconds for debugging (was 15000)
 #endif
 
 // Elevated transmission interval (ms)
-#define ELEVATED_INTERVAL_MS 30000  // 30 seconds
+#define ELEVATED_INTERVAL_MS 4000  // 4 seconds for debugging (was 30000)
 
 // Sensor warm-up time (ms)
 #define SENSOR_WARMUP_MS 500

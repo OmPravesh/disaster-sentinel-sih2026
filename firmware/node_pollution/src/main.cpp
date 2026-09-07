@@ -32,6 +32,7 @@ struct __attribute__((packed)) LoRaPacket {
 };
 
 static uint16_t g_sequence_num = 0;
+bool lora_initialized = false;
 
 uint16_t calculate_crc16(const uint8_t* data, size_t length) {
     uint16_t crc = 0xFFFF;
@@ -77,24 +78,56 @@ uint8_t compute_battery_pct() {
 
 void setup() {
     Serial.begin(115200);
+    delay(100);
+    Serial.println("\n═══════════════════════════════════════════════");
+    Serial.println("  DISASTER SENTINEL — Node 4: POLLUTION (POL4)");
+    Serial.println("═══════════════════════════════════════════════");
+
     pinMode(MQ135_ANALOG_PIN, INPUT);
     pinMode(PM25_ANALOG_PIN, INPUT);
     pinMode(PM25_LED_PIN, OUTPUT);
     digitalWrite(PM25_LED_PIN, HIGH);
 
+    // Hardware reset pulse for SX1278
+    pinMode(LORA_RST, OUTPUT);
+    digitalWrite(LORA_RST, LOW);
+    delay(10);
+    digitalWrite(LORA_RST, HIGH);
+    delay(15);
+
     SPI.begin(LORA_SCK, LORA_MISO, LORA_MOSI, LORA_CS);
+    LoRa.setSPI(SPI);
     LoRa.setPins(LORA_CS, LORA_RST, LORA_DIO0);
 
-    if (!LoRa.begin(LORA_FREQUENCY)) {
-        Serial.println("❌ LoRa initialization failed!");
-        while (1) { delay(1000); }
+    // Direct SPI diagnostic probe
+    pinMode(LORA_CS, OUTPUT);
+    digitalWrite(LORA_CS, LOW);
+    SPI.transfer(0x42 & 0x7F);
+    uint8_t probeVersion = SPI.transfer(0x00);
+    digitalWrite(LORA_CS, HIGH);
+
+    Serial.printf("  [SPI Probe] SX1278 Chip ID: 0x%02X (Expected 0x12)\n", probeVersion);
+    if (probeVersion == 0x12) {
+        Serial.println("  ==> SPI hardware communication verified OK!");
+    } else if (probeVersion == 0x00) {
+        Serial.println("  ==> Cause: LoRa has NO 3.3V POWER, or MISO/MOSI wire is loose!");
+    } else {
+        Serial.println("  ==> Cause: NSS (D5) or SCK (D18) wire is loose!");
     }
 
-    LoRa.setTxPower(LORA_TX_POWER);
-    LoRa.setSpreadingFactor(LORA_SPREADING_FACTOR);
-    LoRa.setSignalBandwidth(LORA_BANDWIDTH);
+    if (LoRa.begin(LORA_FREQUENCY)) {
+        lora_initialized = true;
+        LoRa.setTxPower(LORA_TX_POWER);
+        LoRa.setSpreadingFactor(LORA_SPREADING_FACTOR);
+        LoRa.setSignalBandwidth(LORA_BANDWIDTH);
+        LoRa.setSyncWord(0xF3);
+        LoRa.enableCrc();
+        Serial.println("✅ LoRa SX1278 initialized successfully!");
+    } else {
+        Serial.println("❌ LoRa initialization failed! Check wiring.");
+    }
 
-    Serial.println("✅ Node POL4 (Pollution - 2-Layer Mode) initialized.");
+    Serial.println("✅ Node POL4 initialization complete.\n");
 }
 
 void loop() {
@@ -133,13 +166,17 @@ void loop() {
     size_t payload_len = sizeof(LoRaPacket) - 3; // Excluding crc16 and end_marker
     packet.crc16 = calculate_crc16((const uint8_t*)&packet, payload_len);
 
-    // Send via LoRa
-    LoRa.beginPacket();
-    LoRa.write((const uint8_t*)&packet, sizeof(packet));
-    LoRa.endPacket();
+    if (lora_initialized) {
+        LoRa.beginPacket();
+        LoRa.write((const uint8_t*)&packet, sizeof(packet));
+        LoRa.endPacket();
 
-    Serial.printf("📡 POL4 Sent: AQI=%.1f (L1=%.2f), PM2.5=%.1f (L2=%.2f) | Combined=%.2f | Seq=%d\n",
-                  aqi, l1_anomaly_f, pm25, l2_anomaly_f, combined_f, packet.sequence_num);
+        Serial.printf("📡 POL4 Sent: AQI=%.1f (L1=%.2f), PM2.5=%.1f (L2=%.2f) | Combined=%.2f | Seq=%d\n",
+                      aqi, l1_anomaly_f, pm25, l2_anomaly_f, combined_f, packet.sequence_num);
+    } else {
+        Serial.printf("⚠️ POL4 Telemetry (LoRa offline): AQI=%.1f, PM2.5=%.1f | Combined=%.2f\n",
+                      aqi, pm25, combined_f);
+    }
 
     uint32_t interval = is_priority ? ALERT_INTERVAL_MS : (combined_f >= ELEVATED_THRESHOLD ? ELEVATED_INTERVAL_MS : NORMAL_INTERVAL_MS);
     delay(interval);

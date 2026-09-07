@@ -217,6 +217,19 @@ class DisasterSentinel:
             # 5. Alert evaluation
             await self.alert_manager.evaluate(risk, self.store)
 
+            # 6. Forward to Central Command Web Dashboard (Port 5000)
+            try:
+                import urllib.request
+                import json
+                req = urllib.request.Request(
+                    "http://localhost:5000/api/telemetry",
+                    data=json.dumps(packet.to_dict()).encode("utf-8"),
+                    headers={"Content-Type": "application/json"}
+                )
+                urllib.request.urlopen(req, timeout=0.5)
+            except Exception:
+                pass  # Dashboard might be on another IP or starting up
+
         except Exception as e:
             logger.error(f"Processing error: {e}", exc_info=True)
 

@@ -21,6 +21,7 @@
 
 #include <Arduino.h>
 #include <Adafruit_BME280.h>
+#include <Adafruit_BMP280.h>
 
 struct BME280Reading {
     float temperature;    // °C
@@ -33,6 +34,7 @@ class BME280Sensor {
 public:
     /**
      * Initialize BME280 on I2C bus.
+     * Initialize BME280 or BMP280 on I2C bus.
      * @param addr I2C address (0x76 or 0x77)
      * @return true if sensor found
      */
@@ -63,8 +65,10 @@ public:
 
 private:
     Adafruit_BME280 _bme;
+    Adafruit_BMP280 _bmp;
     BME280Reading _lastReading;
     bool _initialized;
+    bool _isBmp;
 };
 
 #endif // BME280_SENSOR_H
