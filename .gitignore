@@ -30,3 +30,7 @@ ai/jetson_model/models/*.pkl
 # Large datasets and CSV data files (downloadable via scripts in ai/downloaders/)
 data/**/*.csv
 
+# Archive files
+*.zip
+
+
