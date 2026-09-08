@@ -68,7 +68,7 @@
       border: 1px solid #E5E7EB;
       border-radius: 1rem;
       box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
-      transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+      transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease, background-color 0.2s ease;
     }
     .card-base:hover {
       border-color: #CBD5E1;
@@ -87,7 +87,82 @@
     ::-webkit-scrollbar-track { background: #F1F5F9; }
     ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+    /* ========================================================================= */
+    /* DARK MODE GLOBAL OVERRIDES                                                */
+    /* ========================================================================= */
+    html.dark body { background-color: #0F172A; color: #F1F5F9; }
+    html.dark .bg-page { background-color: #0F172A !important; }
+    html.dark .bg-white { background-color: #1E293B !important; }
+    html.dark .bg-slate-50 { background-color: #0F172A !important; }
+    html.dark .bg-slate-100 { background-color: #1E293B !important; }
+    html.dark .border-slate-border, 
+    html.dark .border-slate-200, 
+    html.dark .border-slate-100 { border-color: #334155 !important; }
+    html.dark .text-slate-900, 
+    html.dark .text-slate-800 { color: #F8FAFC !important; }
+    html.dark .text-slate-700 { color: #E2E8F0 !important; }
+    html.dark .text-slate-600, 
+    html.dark .text-slate-muted, 
+    html.dark .text-slate-500 { color: #94A3B8 !important; }
+    html.dark .text-slate-400 { color: #64748B !important; }
+    html.dark .card-base { background: #1E293B; border-color: #334155; }
+    html.dark .card-base:hover { border-color: #475569; }
+    html.dark header.bg-white\/95 { background-color: rgba(30, 41, 59, 0.95) !important; border-bottom-color: #334155 !important; }
+    html.dark .nav-link-active { background-color: rgba(21, 93, 252, 0.2) !important; color: #60A5FA !important; }
+    html.dark .nav-link-active i { color: #60A5FA !important; }
+    html.dark ::-webkit-scrollbar-track { background: #0F172A; }
+    html.dark ::-webkit-scrollbar-thumb { background: #334155; }
+    html.dark ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    html.dark th.bg-slate-50 { background-color: #1E293B !important; color: #E2E8F0 !important; border-bottom-color: #334155 !important; }
+    html.dark td { border-bottom-color: #334155 !important; }
   </style>
+
+  <!-- Theme Toggling Logic -->
+  <script>
+    function applyTheme(theme) {
+      const icon = document.getElementById('themeIcon');
+      const btn = document.getElementById('themeToggleBtn');
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+        if(icon) icon.className = 'fa-solid fa-sun text-lg group-hover:rotate-45 transition-transform';
+        if(btn) { btn.classList.remove('bg-white', 'border-slate-200', 'text-slate-600'); btn.classList.add('bg-slate-800', 'border-slate-700', 'text-amber-400'); }
+        localStorage.setItem('theme', 'dark');
+        if (window.Chart) {
+           Chart.defaults.color = "#94A3B8";
+           Chart.defaults.plugins.tooltip.backgroundColor = "#FFFFFF";
+           Chart.defaults.plugins.tooltip.titleColor = "#0F172A";
+           Chart.defaults.plugins.tooltip.bodyColor = "#1E293B";
+           for(let id in Chart.instances) Chart.instances[id].update();
+        }
+      } else {
+        document.documentElement.classList.remove('dark');
+        if(icon) icon.className = 'fa-solid fa-moon text-lg group-hover:-rotate-12 transition-transform';
+        if(btn) { btn.classList.add('bg-white', 'border-slate-200', 'text-slate-600'); btn.classList.remove('bg-slate-800', 'border-slate-700', 'text-amber-400'); }
+        localStorage.setItem('theme', 'light');
+        if (window.Chart) {
+           Chart.defaults.color = "#64748B";
+           Chart.defaults.plugins.tooltip.backgroundColor = "#0F172A";
+           Chart.defaults.plugins.tooltip.titleColor = "#FFFFFF";
+           Chart.defaults.plugins.tooltip.bodyColor = "#F1F5F9";
+           for(let id in Chart.instances) Chart.instances[id].update();
+        }
+      }
+    }
+
+    function toggleTheme() {
+      const isDark = document.documentElement.classList.contains('dark');
+      applyTheme(isDark ? 'light' : 'dark');
+    }
+
+    // Auto-apply theme early to prevent flash
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    if(savedTheme === 'dark') document.documentElement.classList.add('dark');
+    
+    document.addEventListener("DOMContentLoaded", () => {
+      applyTheme(localStorage.getItem('theme') || 'light');
+    });
+  </script>
 
   <script>
     // Global Chart.js Light-Mode Styling Configuration
@@ -107,6 +182,10 @@
 </head>
 <body class="min-h-screen flex flex-col bg-page text-navy-900 antialiased selection:bg-brand-light selection:text-brand-action">
 
+  <!-- Floating Movable Day/Night Theme Toggle -->
+  <button onclick="toggleTheme()" id="themeToggleBtn" title="Toggle Light/Dark Mode" class="fixed bottom-6 right-6 z-[999] w-12 h-12 rounded-full bg-white shadow-xl border border-slate-200 flex items-center justify-center text-slate-600 hover:scale-110 hover:shadow-2xl transition-all cursor-pointer group">
+    <i id="themeIcon" class="fa-solid fa-moon text-lg group-hover:-rotate-12 transition-transform"></i>
+  </button>
   <!-- ========================================================================= -->
   <!-- 0. DYNAMIC CONDITIONAL EMERGENCY ALERT BAR (HIDDEN WHEN ALL SYSTEMS SAFE) -->
   <!-- ========================================================================= -->
@@ -441,25 +520,59 @@
     let previousAlertCount = 0;
     const API_BASE = window.location.port === '5000' ? '' : 'http://127.0.0.1:5000';
 
-    // Siren Audio Synthesizer via Web Audio API
+    // Deep & Loud Emergency Broadcast Siren
     function playGlobalSiren() {
       if (globalAudioMuted) return;
       try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(440, ctx.currentTime);
-        osc.frequency.linearRampToValueAtTime(880, ctx.currentTime + 0.3);
-        osc.frequency.linearRampToValueAtTime(440, ctx.currentTime + 0.6);
-        gain.gain.setValueAtTime(0.12, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.7);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.7);
+        
+        const masterGain = ctx.createGain();
+        const compressor = ctx.createDynamicsCompressor();
+        
+        // Maximize loudness
+        compressor.threshold.setValueAtTime(-50, ctx.currentTime);
+        compressor.knee.setValueAtTime(40, ctx.currentTime);
+        compressor.ratio.setValueAtTime(12, ctx.currentTime);
+        compressor.attack.setValueAtTime(0, ctx.currentTime);
+        compressor.release.setValueAtTime(0.25, ctx.currentTime);
+        
+        masterGain.connect(compressor);
+        compressor.connect(ctx.destination);
+
+        // Layer 1: Deep Bass Rumble (Depth)
+        const oscLow = ctx.createOscillator();
+        const gainLow = ctx.createGain();
+        oscLow.type = 'square';
+        oscLow.frequency.setValueAtTime(55, ctx.currentTime); // 55Hz sub bass
+        oscLow.frequency.linearRampToValueAtTime(110, ctx.currentTime + 1.5);
+        oscLow.frequency.linearRampToValueAtTime(55, ctx.currentTime + 3.0);
+        gainLow.gain.value = 1.0;
+        oscLow.connect(gainLow);
+        gainLow.connect(masterGain);
+
+        // Layer 2: Piercing High Sweep (Loudness)
+        const oscHigh = ctx.createOscillator();
+        const gainHigh = ctx.createGain();
+        oscHigh.type = 'sawtooth';
+        oscHigh.frequency.setValueAtTime(440, ctx.currentTime);
+        oscHigh.frequency.linearRampToValueAtTime(880, ctx.currentTime + 1.5);
+        oscHigh.frequency.linearRampToValueAtTime(440, ctx.currentTime + 3.0);
+        gainHigh.gain.value = 0.5;
+        oscHigh.connect(gainHigh);
+        gainHigh.connect(masterGain);
+
+        // Master Envelope
+        masterGain.gain.setValueAtTime(0, ctx.currentTime);
+        masterGain.gain.linearRampToValueAtTime(1.5, ctx.currentTime + 0.2); // Overdrive volume
+        masterGain.gain.setValueAtTime(1.5, ctx.currentTime + 2.8);
+        masterGain.gain.linearRampToValueAtTime(0, ctx.currentTime + 3.0);
+
+        oscLow.start();
+        oscHigh.start();
+        oscLow.stop(ctx.currentTime + 3.0);
+        oscHigh.stop(ctx.currentTime + 3.0);
       } catch (e) {
-        console.warn("Audio blocked or not supported", e);
+        console.warn("Audio playback failed", e);
       }
     }
 
