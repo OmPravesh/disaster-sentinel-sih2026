@@ -273,3 +273,4 @@ When presenting the data and machine learning aspects to the Smart India Hackath
 ---
 
 *Authored for Smart India Hackathon 2026 · Problem Statement SIH26178 (Qualcomm) · Repository: [OmPravesh/disaster-sentinel-sih2026](https://github.com/OmPravesh/disaster-sentinel-sih2026)*
+
