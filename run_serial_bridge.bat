@@ -7,3 +7,4 @@ echo ===================================================
 echo Starting Multi-Node Bridge for 4-Port USB Hub...
 python tools\serial_bridge.py
 pause
+
