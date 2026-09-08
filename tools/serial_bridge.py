@@ -1,5 +1,5 @@
 """
-Disaster Sentinel — Multi-Node Serial Telemetry Bridge
+Disaster Sentinel - Multi-Node Serial Telemetry Bridge
 =====================================================
 Bridges live USB serial telemetry from ALL connected ESP32
 field nodes simultaneously (via a 4-Port USB 3.0 Hub or individual ports)
@@ -14,6 +14,13 @@ import argparse
 import urllib.request
 import json
 import threading
+
+if sys.platform == 'win32':
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace', line_buffering=True)
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace', line_buffering=True)
+    except Exception:
+        pass
 
 try:
     import serial
@@ -121,9 +128,9 @@ def parse_and_forward(port_name: str, line: str, api_url: str):
                 fc = result.get("forecast", {})
                 lead = fc.get("lead_time_label", "") if fc else ""
                 ai_info = f" | AI: {lead}" if lead else ""
-                print(f"  [{port_name} ➔ {payload['node_id']}] Synced to Dashboard! | Status: {status}{ai_info}")
+                print(f"  [{port_name} -> {payload['node_id']}] Synced to Dashboard! | Status: {status}{ai_info}")
         except Exception as e:
-            print(f"  [{port_name} ➔ {payload['node_id']}] Sync warning: {e}")
+            print(f"  [{port_name} -> {payload['node_id']}] Sync warning: {e}")
 
 
 def listen_port(port_name: str, baud: int, api_url: str, stop_event: threading.Event):
@@ -164,9 +171,9 @@ def main():
     parser.add_argument("--url", default="http://localhost:5000", help="Web dashboard URL (default: http://localhost:5000)")
     args = parser.parse_args()
 
-    print("═══════════════════════════════════════════════════════════")
-    print("  DISASTER SENTINEL — MULTI-NODE 4-PORT USB BRIDGE")
-    print("═══════════════════════════════════════════════════════════")
+    print("===========================================================")
+    print("  DISASTER SENTINEL - MULTI-NODE 4-PORT USB BRIDGE")
+    print("===========================================================")
     print(f"  Dashboard: {args.url}")
     print(f"  Baud:      {args.baud}")
 
@@ -182,12 +189,13 @@ def main():
             print("  Mode:      Auto-Detect Multi-Hub (Monitoring all connected nodes)")
             print("  Plug your 4-Port USB Hub with ESP32s into any USB port.\n")
 
+            scan_count = 0
             while True:
                 detected_ports = find_esp32_ports()
 
                 for p, desc in detected_ports:
                     if p not in active_threads or not active_threads[p].is_alive():
-                        print(f"  ⚡ Found Node on {p} ({desc})! Starting listener...")
+                        print(f"  [+] Found Node on {p} ({desc})! Starting listener...", flush=True)
                         stop_evt = threading.Event()
                         t = threading.Thread(
                             target=listen_port,
@@ -204,6 +212,10 @@ def main():
                     if p in stop_events:
                         del stop_events[p]
 
+                if not active_threads and scan_count % 5 == 0:
+                    print("  [*] Waiting for ESP32 nodes to be plugged in... (Scanning USB ports)", flush=True)
+
+                scan_count += 1
                 time.sleep(2.0)
 
     except KeyboardInterrupt:
