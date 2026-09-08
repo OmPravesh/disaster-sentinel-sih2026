@@ -247,7 +247,7 @@ node_states = {
             "Temperature_C": "°C",
             "Relative_Humidity_pct": "%"
         },
-        "hardware_layers": "Layer 1: BME280 | Layer 2: YL-83 | Layer 3: HC-SR04/JSN-SR04T"
+        "hardware_layers": "Layer 1: HC-SR04/JSN-SR04T | Layer 2: YL-83 | Layer 3: BME280"
     },
     "SLD2": {
         "node_id": "SLD2",
@@ -273,7 +273,7 @@ node_states = {
             "Temperature_C": "°C",
             "Humidity_percent": "%"
         },
-        "hardware_layers": "Layer 1: BME280 | Layer 2: Soil Moisture v1.2 | Layer 3: MPU6050 Gyro/Tilt"
+        "hardware_layers": "Layer 1: MPU6050 Gyro/Tilt | Layer 2: Soil Moisture v1.2 | Layer 3: BME280"
     },
     "FIR3": {
         "node_id": "FIR3",
@@ -306,7 +306,7 @@ node_states = {
             "Pressure[hPa]": "hPa",
             "PM2.5": "µg/m³"
         },
-        "hardware_layers": "Layer 1: BME280 | Layer 2: MQ-2 Gas/Smoke | Layer 3: KY-026 Flame IR"
+        "hardware_layers": "Layer 1: KY-026 Flame IR | Layer 2: MQ-2 Gas/Smoke | Layer 3: BME280"
     },
     "POL4": {
         "node_id": "POL4",
@@ -329,7 +329,7 @@ node_states = {
             "pm10": "µg/m³",
             "pm25": "µg/m³"
         },
-        "hardware_layers": "Layer 1: N/A (Bypassed) | Layer 2: GP2Y1010AU0F Optical Dust | Layer 3: MQ-135 Gas"
+        "hardware_layers": "Layer 1: MQ-135 Gas | Layer 2: GP2Y1010AU0F Optical Dust"
     }
 }
 

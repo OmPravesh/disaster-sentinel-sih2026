@@ -58,7 +58,15 @@ uint16_t calculate_crc16(const uint8_t* data, size_t length) {
 }
 
 float read_tilt_angle() {
-    if (!mpu_found) return 1.5f;
+    if (!mpu_found) {
+        if (mpu.begin(0x68, &Wire) || mpu.begin(0x69, &Wire)) {
+            mpu_found = true;
+            mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
+            Serial.println("✅ MPU6050 dynamically connected!");
+        } else {
+            return 0.0f;
+        }
+    }
     sensors_event_t a, g, temp;
     mpu.getEvent(&a, &g, &temp);
     float tilt = atan2(sqrt(a.acceleration.x * a.acceleration.x + a.acceleration.y * a.acceleration.y), a.acceleration.z) * 180.0 / 3.14159265;
@@ -67,7 +75,13 @@ float read_tilt_angle() {
 
 float read_soil_moisture() {
     int raw = analogRead(SOIL_ANALOG_PIN);
-    float pct = (4095.0f - raw) / 4095.0f * 100.0f;
+    // Calibrated: in dry air (raw >= 2800) -> 0.0%
+    // in saturated water/soil (raw <= 1200) -> 100.0%
+    const int DRY_AIR_VAL = 2800;
+    const int WET_VAL = 1200;
+    if (raw >= DRY_AIR_VAL) return 0.0f;
+    if (raw <= WET_VAL) return 100.0f;
+    float pct = (float)(DRY_AIR_VAL - raw) / (float)(DRY_AIR_VAL - WET_VAL) * 100.0f;
     return max(0.0f, min(100.0f, pct));
 }
 
@@ -89,12 +103,18 @@ void setup() {
     pinMode(SOIL_ANALOG_PIN, INPUT);
 
     Wire.begin(BME_SDA, BME_SCL);
-    if (mpu.begin(MPU_ADDR, &Wire)) {
+    Wire.setTimeOut(50); // Prevent I2C bus lockup if wires move
+
+    if (mpu.begin(0x68, &Wire)) {
         mpu_found = true;
         mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
-        Serial.println("✅ MPU6050 Accelerometer/Tilt initialized.");
+        Serial.println("✅ MPU6050 Accelerometer/Tilt initialized on 0x68.");
+    } else if (mpu.begin(0x69, &Wire)) {
+        mpu_found = true;
+        mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
+        Serial.println("✅ MPU6050 Accelerometer/Tilt initialized on 0x69.");
     } else {
-        Serial.println("⚠️ MPU6050 not found on 0x68 (using baseline simulation).");
+        Serial.println("⚠️ MPU6050 not detected on 0x68 or 0x69! Check SDA=21, SCL=22, 3.3V power.");
     }
 
     // Auto-detect BME280 or BMP280 on 0x76 or 0x77
