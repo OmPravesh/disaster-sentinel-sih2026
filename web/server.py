@@ -612,11 +612,15 @@ def ingest_telemetry():
             node["sensors"]["Atmospheric_Pressure_hPa"] = round(float(data["l3_raw"]), 1)
             
     elif node_id == "FIR3":
+        flame_val = 0.0
         if "l1_raw" in data:
-            flame = float(data["l1_raw"])
+            flame_val = float(data["l1_raw"])
         if "l2_raw" in data:
             raw_g = float(data["l2_raw"])
-            node["sensors"]["TVOC[ppb]"] = round(raw_g * 5000.0 if raw_g <= 1.0 else raw_g, 1)
+            if raw_g <= 0.12:
+                node["sensors"]["TVOC[ppb]"] = round(raw_g * 350.0, 1)
+            else:
+                node["sensors"]["TVOC[ppb]"] = round(40.0 + (raw_g - 0.12) * 4500.0, 1)
         if "l3_raw" in data:
             node["sensors"]["Temperature[C]"] = round(float(data["l3_raw"]), 1)
             
@@ -646,7 +650,7 @@ def ingest_telemetry():
             df = pd.DataFrame([row])
             if hazard_key == "fire":
                 pred = models[hazard_key].predict(df)[0]
-                node["status"] = "Hazardous" if pred == 1 else "Safe"
+                node["status"] = "Hazardous" if (pred == 1 or flame_val > 0.60) else "Safe"
             elif hazard_key == "landslide":
                 classes = list(models[hazard_key].classes_)
                 haz_idx = classes.index("Hazardous") if "Hazardous" in classes else 0
