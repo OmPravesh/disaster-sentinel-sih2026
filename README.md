@@ -24,9 +24,9 @@ The Jetson executes **layered sensor confirmation** and runs a **PyTorch GRU (Ga
     │  ┌─────────────────┐   ┌──────────────────┐   ┌────────────────────┐   │
     │  │  NODE 1: FLOOD  │   │NODE 2: LANDSLIDE │   │   NODE 3: FIRE     │   │
     │  │   (3-Layer)     │   │    (3-Layer)     │   │    (3-Layer)       │   │
-    │  │ L1: Water Level │   │ L1: MPU6050 Tilt │   │ L1: Flame/IR       │   │
+    │  │ L1: BME280      │   │ L1: BME280       │   │ L1: BME280         │   │
     │  │ L2: Rain Gauge  │   │ L2: Soil Moisture│   │ L2: MQ-2 Gas/Smoke │   │
-    │  │ L3: BME280      │   │ L3: BME280       │   │ L3: BME280         │   │
+    │  │ L3: Water Level │   │ L3: MPU6050 Tilt │   │ L3: Flame/IR       │   │
     │  │ Node ID: FLD1   │   │ Node ID: SLD2    │   │ Node ID: FIR3      │   │
     │  └────────┬────────┘   └────────┬─────────┘   └─────────┬──────────┘   │
     │           │                 │                       │              │
@@ -35,9 +35,9 @@ The Jetson executes **layered sensor confirmation** and runs a **PyTorch GRU (Ga
     │           │      │     ┌─────────────────────┐                     │
     │           │      │     │  NODE 4: POLLUTION  │                     │
     │           │      │     │    (2-Layer Mode)   │                     │
-    │           │      │     │ L1: MQ-135 AQI      │                     │
+    │           │      │     │ L1: N/A (Bypassed)  │                     │
     │           │      │     │ L2: PM2.5 Dust      │                     │
-    │           │      │     │ L3: N/A (Bypassed)  │                     │
+    │           │      │     │ L3: MQ-135 AQI      │                     │
     │           │      │     │ Node ID: POL4       │                     │
     │           │      │     └──────────┬──────────┘                     │
     │           │      │                │                                │
@@ -77,10 +77,10 @@ To eliminate false alarms while supporting specialized node configurations, **ev
 
 | Calamity | Node ID | Validation Mode | Layer 1 (Primary) | Layer 2 (Corroborating) | Layer 3 (Environmental Context) |
 |----------|---------|-----------------|-------------------|--------------------------|---------------------------------|
-| 🌊 **FLOOD** | `FLD1` | **3-Layer** | Ultrasonic Water Level (HC-SR04) | Rain Sensor (YL-83) | BME280 (Pressure drop + High humidity) |
-| ⛰️ **LANDSLIDE** | `SLD2` | **3-Layer** | MPU6050 (Tilt & Gyro Vibration) | Capacitive Soil Moisture | BME280 (Pressure & Rain storm context) |
-| 🔥 **FIRE** | `FIR3` | **3-Layer** | Flame/IR Sensor (KY-026) | MQ-2 Gas/Smoke Sensor | BME280 (Temp spike + Humidity drop) |
-| 🏭 **POLLUTION** | `POL4` | **2-Layer** | MQ-135 Air Quality Index (AQI) | PM2.5 Dust Sensor (GP2Y1010AU0F) | ❌ *Bypassed in 2-Layer Mode* |
+| 🌊 **FLOOD** | `FLD1` | **3-Layer** | BME280 (Pressure drop + High humidity) | Rain Sensor (YL-83) | Ultrasonic Water Level (HC-SR04) |
+| ⛰️ **LANDSLIDE** | `SLD2` | **3-Layer** | BME280 (Pressure & Rain storm context) | Capacitive Soil Moisture | MPU6050 (Tilt & Gyro Vibration) |
+| 🔥 **FIRE** | `FIR3` | **3-Layer** | BME280 (Temp spike + Humidity drop) | MQ-2 Gas/Smoke Sensor | Flame/IR Sensor (KY-026) |
+| 🏭 **POLLUTION** | `POL4` | **2-Layer** | ❌ *Bypassed in 2-Layer Mode* | PM2.5 Dust Sensor (GP2Y1010AU0F) | MQ-135 Air Quality Index (AQI) |
 
 ### 🚦 Confirmation Rules:
 - **3-Layer Mode (FLD1, SLD2, FIR3)**:

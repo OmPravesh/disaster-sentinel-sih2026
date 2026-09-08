@@ -208,16 +208,16 @@
             <span class="text-[11px] font-bold text-slate-900 uppercase tracking-wider block mb-2 font-mono">Connected Sensors (3-Layer Architecture):</span>
             <div class="space-y-1.5">
               <div class="flex justify-between p-2 rounded-lg bg-slate-50 border border-slate-200">
-                <span class="text-slate-800"><strong>Layer 1 (Primary):</strong> Ultrasonic Water Level</span>
-                <span class="text-slate-500 font-mono">HC-SR04 / JSN-SR04T (5V)</span>
+                <span class="text-slate-800"><strong>Layer 1 (Context):</strong> Barometer &amp; Ambient</span>
+                <span class="text-slate-500 font-mono">Bosch BME280 I2C (0x76)</span>
               </div>
               <div class="flex justify-between p-2 rounded-lg bg-slate-50 border border-slate-200">
                 <span class="text-slate-800"><strong>Layer 2 (Corroborating):</strong> Rain Sensor</span>
                 <span class="text-slate-500 font-mono">YL-83 Rain Plate (3.3V)</span>
               </div>
               <div class="flex justify-between p-2 rounded-lg bg-slate-50 border border-slate-200">
-                <span class="text-slate-800"><strong>Layer 3 (Context):</strong> Barometer &amp; Ambient</span>
-                <span class="text-slate-500 font-mono">Bosch BME280 I2C (0x76)</span>
+                <span class="text-slate-800"><strong>Layer 3 (Primary):</strong> Ultrasonic Water Level</span>
+                <span class="text-slate-500 font-mono">HC-SR04 / JSN-SR04T (5V)</span>
               </div>
             </div>
           </div>
@@ -300,16 +300,16 @@
             <span class="text-[11px] font-bold text-slate-900 uppercase tracking-wider block mb-2 font-mono">Connected Sensors (3-Layer Architecture):</span>
             <div class="space-y-1.5">
               <div class="flex justify-between p-2 rounded-lg bg-slate-50 border border-slate-200">
-                <span class="text-slate-800"><strong>Layer 1 (Primary):</strong> 6-Axis Gyro &amp; Tilt</span>
-                <span class="text-slate-500 font-mono">MPU6050 (0x68, 3.3V)</span>
+                <span class="text-slate-800"><strong>Layer 1 (Context):</strong> Barometer &amp; Ambient</span>
+                <span class="text-slate-500 font-mono">Bosch BME280 I2C (0x76)</span>
               </div>
               <div class="flex justify-between p-2 rounded-lg bg-slate-50 border border-slate-200">
                 <span class="text-slate-800"><strong>Layer 2 (Corroborating):</strong> Soil Moisture Probe</span>
                 <span class="text-slate-500 font-mono">Capacitive v1.2 (3.3V)</span>
               </div>
               <div class="flex justify-between p-2 rounded-lg bg-slate-50 border border-slate-200">
-                <span class="text-slate-800"><strong>Layer 3 (Context):</strong> Barometer &amp; Ambient</span>
-                <span class="text-slate-500 font-mono">Bosch BME280 I2C (0x76)</span>
+                <span class="text-slate-800"><strong>Layer 3 (Primary):</strong> 6-Axis Gyro &amp; Tilt</span>
+                <span class="text-slate-500 font-mono">MPU6050 (0x68, 3.3V)</span>
               </div>
             </div>
           </div>
@@ -392,16 +392,16 @@
             <span class="text-[11px] font-bold text-slate-900 uppercase tracking-wider block mb-2 font-mono">Connected Sensors (3-Layer Architecture):</span>
             <div class="space-y-1.5">
               <div class="flex justify-between p-2 rounded-lg bg-slate-50 border border-slate-200">
-                <span class="text-slate-800"><strong>Layer 1 (Primary):</strong> Infrared Flame Sensor</span>
-                <span class="text-slate-500 font-mono">KY-026 Flame IR (3.3V)</span>
+                <span class="text-slate-800"><strong>Layer 1 (Context):</strong> Barometer &amp; Ambient</span>
+                <span class="text-slate-500 font-mono">Bosch BME280 I2C (0x76)</span>
               </div>
               <div class="flex justify-between p-2 rounded-lg bg-slate-50 border border-slate-200">
                 <span class="text-slate-800"><strong>Layer 2 (Corroborating):</strong> Smoke / Gas Sensor</span>
                 <span class="text-slate-500 font-mono">MQ-2 Combustible Gas (5V VIN)</span>
               </div>
               <div class="flex justify-between p-2 rounded-lg bg-slate-50 border border-slate-200">
-                <span class="text-slate-800"><strong>Layer 3 (Context):</strong> Barometer &amp; Ambient</span>
-                <span class="text-slate-500 font-mono">Bosch BME280 I2C (0x76)</span>
+                <span class="text-slate-800"><strong>Layer 3 (Primary):</strong> Infrared Flame Sensor</span>
+                <span class="text-slate-500 font-mono">KY-026 Flame IR (3.3V)</span>
               </div>
             </div>
           </div>
@@ -484,7 +484,11 @@
             <span class="text-[11px] font-bold text-slate-900 uppercase tracking-wider block mb-2 font-mono">Connected Sensors (Dedicated 2-Layer Mode):</span>
             <div class="space-y-1.5">
               <div class="flex justify-between p-2 rounded-lg bg-slate-50 border border-slate-200">
-                <span class="text-slate-800"><strong>Layer 1 (Primary):</strong> Air Quality Index Sensor</span>
+                <span class="text-slate-800"><strong>Layer 1 (Bypassed):</strong> N/A</span>
+                <span class="text-slate-500 font-mono">-</span>
+              </div>
+              <div class="flex justify-between p-2 rounded-lg bg-slate-50 border border-slate-200">
+                <span class="text-slate-800"><strong>Layer 3 (Primary):</strong> Air Quality Index Sensor</span>
                 <span class="text-slate-500 font-mono">MQ-135 Gas Sensor (5V VIN)</span>
               </div>
               <div class="flex justify-between p-2 rounded-lg bg-slate-50 border border-slate-200">
