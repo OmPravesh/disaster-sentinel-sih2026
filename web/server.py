@@ -596,7 +596,7 @@ def ingest_telemetry():
     if node_id == "FLD1":
         if "l1_raw" in data:
             raw_w = float(data["l1_raw"])
-            node["sensors"]["River_Water_Level_m"] = round(raw_w / 100.0 if raw_w > 20 else raw_w, 2)
+            node["sensors"]["River_Water_Level_m"] = round(raw_w / 100.0, 2)
         if "l2_raw" in data:
             node["sensors"]["Rainfall_Intensity_mm_hr"] = round(float(data["l2_raw"]) * 20.0, 2)
         if "l3_raw" in data:
@@ -614,9 +614,11 @@ def ingest_telemetry():
     elif node_id == "FIR3":
         flame_val = 0.0
         if "l1_raw" in data:
+            flame = float(data["l1_raw"])
             flame_val = float(data["l1_raw"])
         if "l2_raw" in data:
             raw_g = float(data["l2_raw"])
+            node["sensors"]["TVOC[ppb]"] = round(raw_g * 5000.0 if raw_g <= 1.0 else raw_g, 1)
             if raw_g <= 0.12:
                 node["sensors"]["TVOC[ppb]"] = round(raw_g * 350.0, 1)
             else:
@@ -650,8 +652,10 @@ def ingest_telemetry():
             df = pd.DataFrame([row])
             if hazard_key == "fire":
                 pred = models[hazard_key].predict(df)[0]
+                node["status"] = "Hazardous" if pred == 1 else "Safe"
                 node["status"] = "Hazardous" if (pred == 1 or flame_val > 0.60) else "Safe"
             elif hazard_key == "landslide":
+                prob = models[hazard_key].predict_proba(df)[0][1]
                 classes = list(models[hazard_key].classes_)
                 haz_idx = classes.index("Hazardous") if "Hazardous" in classes else 0
                 prob = float(models[hazard_key].predict_proba(df)[0][haz_idx])
