@@ -1,21 +1,10 @@
 """
 Disaster Sentinel — Multi-Node Serial Telemetry Bridge
-═══════════════════════════════════════════════════════════
+=====================================================
 Bridges live USB serial telemetry from ALL connected ESP32
 field nodes simultaneously (via a 4-Port USB 3.0 Hub or individual ports)
 directly into the Central Command Dashboard (Port 5000) and the
 PyTorch GRU Real-Time AI Early Warning Engine.
-
-Usage:
-  # Auto-detect and stream ALL connected ESP32s concurrently:
-  python tools/serial_bridge.py
-
-  # Or stream a specific port:
-  python tools/serial_bridge.py --port COM5
-
-  # Custom dashboard URL:
-  python tools/serial_bridge.py --url http://192.168.1.50:5000
-═══════════════════════════════════════════════════════════
 """
 
 import sys
@@ -43,11 +32,9 @@ def find_esp32_ports():
         mfg = (p.manufacturer or "").upper()
         hwid = (p.hwid or "").upper()
 
-        # Skip standard motherboard serial port COM1
         if dev.upper() == "COM1":
             continue
 
-        # Common ESP32 USB-UART ICs: CP2102, CH340, CH9102, FTDI, etc.
         if any(x in desc or x in mfg or x in hwid for x in ["CP210", "CH340", "CH9102", "FTDI", "SILICON LABS", "USB TO UART", "USB-SERIAL", "UART"]):
             detected.append((dev, p.description))
         elif "COM" in dev:
@@ -64,8 +51,6 @@ def parse_and_forward(port_name: str, line: str, api_url: str):
     payload = None
 
     # 1. Node POL4 (Pollution)
-    # Ex: "📡 POL4 Sent: AQI=142.5 (L1=0.37), PM2.5=108.3 (L2=0.56) | Combined=0.45"
-    # Or: "⚠️ POL4 Telemetry (LoRa offline): AQI=142.5, PM2.5=108.3 | Combined=0.45"
     m_pol = re.search(r"POL4.*?(?:Sent:|Telemetry).*?AQI=([\d.]+).*?PM2\.5=([\d.]+).*?Combined=([\d.]+)", line, re.IGNORECASE)
     if m_pol:
         payload = {
@@ -79,8 +64,6 @@ def parse_and_forward(port_name: str, line: str, api_url: str):
         }
 
     # 2. Node FIR3 (Fire)
-    # Ex: "📡 FIR3 Sent: Flame=0.00, Gas=0.29, Temp=29.9°C | Combined=0.07"
-    # Or: "⚠️ FIR3 Telemetry (LoRa offline): Flame=0.00, Gas=0.29, Temp=29.9°C | Combined=0.07"
     m_fir = re.search(r"FIR3.*?(?:Sent:|Telemetry).*?Flame=([\d.]+).*?Gas=([\d.]+).*?Temp=([\d.]+)°?C.*?Combined=([\d.]+)", line, re.IGNORECASE)
     if m_fir:
         payload = {
@@ -94,8 +77,6 @@ def parse_and_forward(port_name: str, line: str, api_url: str):
         }
 
     # 3. Node SLD2 (Landslide)
-    # Ex: "📡 SLD2 Sent: Tilt=1.5°, Soil=36.4%, Press=1013.2hPa | Combined=0.00"
-    # Or: "⚠️ SLD2 Telemetry (LoRa offline): Tilt=1.5°, Soil=36.4%, Press=1013.2hPa | Combined=0.00"
     m_sld = re.search(r"SLD2.*?(?:Sent:|Telemetry).*?Tilt=([\d.]+)°?.*?Soil=([\d.]+)%.*?Press=([\d.]+)hPa.*?Combined=([\d.]+)", line, re.IGNORECASE)
     if m_sld:
         payload = {
@@ -109,7 +90,6 @@ def parse_and_forward(port_name: str, line: str, api_url: str):
         }
 
     # 4. Node FLD1 (Flood)
-    # Ex: "[LoRa TX] Packet #1 sent | Node: FLD1 ... L1=300.0(a0) L2=1.0(a0) L3=981.2(a0) | Combined: 0 | Rate: 0 | Bat: 95%"
     m_fld = re.search(r"Node:\s*FLD1.*?L1=([\d.]+).*?L2=([\d.]+).*?L3=([\d.]+)", line, re.IGNORECASE)
     if m_fld:
         comb_match = re.search(r"Combined:\s*([\d.]+)", line)
@@ -127,7 +107,6 @@ def parse_and_forward(port_name: str, line: str, api_url: str):
             "rssi": -68
         }
 
-    # If telemetry matched, forward to Dashboard HTTP API
     if payload:
         try:
             target_url = f"{api_url.rstrip('/')}/api/telemetry"
@@ -205,8 +184,7 @@ def main():
 
             while True:
                 detected_ports = find_esp32_ports()
-                
-                # Check for newly plugged in ports
+
                 for p, desc in detected_ports:
                     if p not in active_threads or not active_threads[p].is_alive():
                         print(f"  ⚡ Found Node on {p} ({desc})! Starting listener...")
@@ -220,7 +198,6 @@ def main():
                         active_threads[p] = t
                         stop_events[p] = stop_evt
 
-                # Clean dead threads
                 dead = [p for p, t in active_threads.items() if not t.is_alive()]
                 for p in dead:
                     del active_threads[p]
