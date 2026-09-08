@@ -648,7 +648,9 @@ def ingest_telemetry():
                 pred = models[hazard_key].predict(df)[0]
                 node["status"] = "Hazardous" if pred == 1 else "Safe"
             elif hazard_key == "landslide":
-                prob = models[hazard_key].predict_proba(df)[0][1]
+                classes = list(models[hazard_key].classes_)
+                haz_idx = classes.index("Hazardous") if "Hazardous" in classes else 0
+                prob = float(models[hazard_key].predict_proba(df)[0][haz_idx])
                 node["risk_prob"] = round(prob * 100, 1)
                 node["status"] = "Hazardous" if prob >= 0.70 else ("Warning" if prob >= 0.35 else "Safe")
             else:

@@ -1,5 +1,4 @@
-"""
-Disaster Sentinel - Multi-Node Serial Telemetry Bridge
+"""Disaster Sentinel - Multi-Node Serial Telemetry Bridge
 =====================================================
 Bridges live USB serial telemetry from ALL connected ESP32
 field nodes simultaneously (via a 4-Port USB 3.0 Hub or individual ports)
@@ -29,9 +28,14 @@ except ImportError:
     print("[ERROR] pyserial is required. Install via: pip install pyserial")
     sys.exit(1)
 
+print_lock = threading.Lock()
+
+def safe_print(*args, **kwargs):
+    with print_lock:
+        print(*args, **kwargs, flush=True)
+
 
 def find_esp32_ports():
-    """Detects all serial devices connected (e.g. via 4-port USB hub)."""
     detected = []
     for p in serial.tools.list_ports.comports():
         dev = p.device
@@ -50,7 +54,6 @@ def find_esp32_ports():
 
 
 def parse_and_forward(port_name: str, line: str, api_url: str):
-    """Parses incoming serial log lines from any of the 4 nodes and posts to dashboard."""
     line = line.strip()
     if not line:
         return
@@ -70,9 +73,23 @@ def parse_and_forward(port_name: str, line: str, api_url: str):
             "rssi": -68
         }
 
-    # 2. Node FIR3 (Fire)
-    m_fir = re.search(r"FIR3.*?(?:Sent:|Telemetry).*?Flame=([\d.]+).*?Gas=([\d.]+).*?Temp=([\d.]+)°?C.*?Combined=([\d.]+)", line, re.IGNORECASE)
-    if m_fir:
+    # 2. Node FIR3 (Fire) - handles corrupted units or clipped labels gracefully
+    m_fir = re.search(r"FIR3.*?(?:Sent:|Telemetry).*?Flame=([\d.]+).*?Gas=([\d.]+).*?T[a-zA-Z]*=?([\d.]+).*?C[a-zA-Z]*=?([\d.]+)", line, re.IGNORECASE)
+    if not m_fir:
+        m_fir_simple = re.search(r"FIR3.*?(?:Sent:|Telemetry).*?Flame=([\d.]+).*?Gas=([\d.]+).*?Temp=([\d.]+)", line, re.IGNORECASE)
+        if m_fir_simple:
+            comb_m = re.search(r"Combined=([\d.]+)", line, re.IGNORECASE)
+            comb_v = float(comb_m.group(1)) if comb_m else 0.0
+            payload = {
+                "node_id": "FIR3",
+                "l1_raw": float(m_fir_simple.group(1)),
+                "l2_raw": float(m_fir_simple.group(2)),
+                "l3_raw": float(m_fir_simple.group(3)),
+                "combined_score": comb_v,
+                "battery": 92,
+                "rssi": -65
+            }
+    else:
         payload = {
             "node_id": "FIR3",
             "l1_raw": float(m_fir.group(1)),
@@ -83,8 +100,8 @@ def parse_and_forward(port_name: str, line: str, api_url: str):
             "rssi": -65
         }
 
-    # 3. Node SLD2 (Landslide)
-    m_sld = re.search(r"SLD2.*?(?:Sent:|Telemetry).*?Tilt=([\d.]+)°?.*?Soil=([\d.]+)%.*?Press=([\d.]+)hPa.*?Combined=([\d.]+)", line, re.IGNORECASE)
+    # 3. Node SLD2 (Landslide) - tolerant of unit drops
+    m_sld = re.search(r"SLD2.*?(?:Sent:|Telemetry).*?Tilt=([\d.]+).*?Soil=([\d.]+).*?Press=([\d.]+).*?Combined=([\d.]+)", line, re.IGNORECASE)
     if m_sld:
         payload = {
             "node_id": "SLD2",
@@ -114,6 +131,7 @@ def parse_and_forward(port_name: str, line: str, api_url: str):
             "rssi": -68
         }
 
+    # If telemetry matched, forward to Dashboard HTTP API
     if payload:
         try:
             target_url = f"{api_url.rstrip('/')}/api/telemetry"
@@ -128,18 +146,17 @@ def parse_and_forward(port_name: str, line: str, api_url: str):
                 fc = result.get("forecast", {})
                 lead = fc.get("lead_time_label", "") if fc else ""
                 ai_info = f" | AI: {lead}" if lead else ""
-                print(f"  [{port_name} -> {payload['node_id']}] Synced to Dashboard! | Status: {status}{ai_info}")
+                safe_print(f"  [{port_name} -> {payload['node_id']}] Synced to Dashboard! | Status: {status}{ai_info}")
         except Exception as e:
-            print(f"  [{port_name} -> {payload['node_id']}] Sync warning: {e}")
+            safe_print(f"  [{port_name} -> {payload['node_id']}] Sync warning: {e}")
 
 
 def listen_port(port_name: str, baud: int, api_url: str, stop_event: threading.Event):
-    """Worker thread listening to a single COM port."""
     try:
         ser = serial.Serial(port_name, baud, timeout=1)
-        print(f"  [CONNECTED] {port_name} @ {baud} baud")
+        safe_print(f"  [CONNECTED] {port_name} @ {baud} baud")
     except Exception as e:
-        print(f"  [ERROR] Could not open {port_name}: {e}")
+        safe_print(f"  [ERROR] Could not open {port_name}: {e}")
         return
 
     try:
@@ -150,10 +167,10 @@ def listen_port(port_name: str, baud: int, api_url: str, stop_event: threading.E
                     line = raw_line.decode("utf-8", errors="replace").strip()
                     if line:
                         if any(k in line for k in ["Sent:", "Node:", "LoRa", "Telemetry", "DISASTER", "Combined="]):
-                            print(f"[{port_name}] {line}")
+                            safe_print(f"[{port_name}] {line}")
                         parse_and_forward(port_name, line, api_url)
             except serial.SerialException:
-                print(f"  [DISCONNECTED] {port_name} was unplugged.")
+                safe_print(f"  [DISCONNECTED] {port_name} was unplugged.")
                 break
             except Exception:
                 time.sleep(0.1)
@@ -171,23 +188,23 @@ def main():
     parser.add_argument("--url", default="http://localhost:5000", help="Web dashboard URL (default: http://localhost:5000)")
     args = parser.parse_args()
 
-    print("===========================================================")
-    print("  DISASTER SENTINEL - MULTI-NODE 4-PORT USB BRIDGE")
-    print("===========================================================")
-    print(f"  Dashboard: {args.url}")
-    print(f"  Baud:      {args.baud}")
+    safe_print("===========================================================")
+    safe_print("  DISASTER SENTINEL - MULTI-NODE 4-PORT USB BRIDGE")
+    safe_print("===========================================================")
+    safe_print(f"  Dashboard: {args.url}")
+    safe_print(f"  Baud:      {args.baud}")
 
     active_threads = {}
     stop_events = {}
 
     try:
         if args.port:
-            print(f"  Mode:      Single Port ({args.port})\n")
+            safe_print(f"  Mode:      Single Port ({args.port})\n")
             stop_evt = threading.Event()
             listen_port(args.port, args.baud, args.url, stop_evt)
         else:
-            print("  Mode:      Auto-Detect Multi-Hub (Monitoring all connected nodes)")
-            print("  Plug your 4-Port USB Hub with ESP32s into any USB port.\n")
+            safe_print("  Mode:      Auto-Detect Multi-Hub (Monitoring all connected nodes)")
+            safe_print("  Plug your 4-Port USB Hub with ESP32s into any USB port.\n")
 
             scan_count = 0
             while True:
@@ -195,7 +212,7 @@ def main():
 
                 for p, desc in detected_ports:
                     if p not in active_threads or not active_threads[p].is_alive():
-                        print(f"  [+] Found Node on {p} ({desc})! Starting listener...", flush=True)
+                        safe_print(f"  [+] Found Node on {p} ({desc})! Starting listener...")
                         stop_evt = threading.Event()
                         t = threading.Thread(
                             target=listen_port,
@@ -213,17 +230,17 @@ def main():
                         del stop_events[p]
 
                 if not active_threads and scan_count % 5 == 0:
-                    print("  [*] Waiting for ESP32 nodes to be plugged in... (Scanning USB ports)", flush=True)
+                    safe_print("  [*] Waiting for ESP32 nodes to be plugged in... (Scanning USB ports)")
 
                 scan_count += 1
                 time.sleep(2.0)
 
     except KeyboardInterrupt:
-        print("\n\nStopping Multi-Node Bridge...")
+        safe_print("\n\nStopping Multi-Node Bridge...")
         for p, evt in stop_events.items():
             evt.set()
         time.sleep(0.5)
-        print("Done.")
+        safe_print("Done.")
 
 
 if __name__ == "__main__":
