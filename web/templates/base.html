@@ -520,57 +520,14 @@
     let previousAlertCount = 0;
     const API_BASE = window.location.port === '5000' ? '' : 'http://127.0.0.1:5000';
 
-    // Deep & Loud Emergency Broadcast Siren
+    // Pixabay Emergency Siren Audio
+    const sirenAudio = new Audio("https://cdn.pixabay.com/download/audio/2022/03/13/audio_07f92ebab8.mp3?filename=freesound_community-loud-emergency-alarm-54635.mp3");
+
     function playGlobalSiren() {
       if (globalAudioMuted) return;
       try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        
-        const masterGain = ctx.createGain();
-        const compressor = ctx.createDynamicsCompressor();
-        
-        // Maximize loudness
-        compressor.threshold.setValueAtTime(-50, ctx.currentTime);
-        compressor.knee.setValueAtTime(40, ctx.currentTime);
-        compressor.ratio.setValueAtTime(12, ctx.currentTime);
-        compressor.attack.setValueAtTime(0, ctx.currentTime);
-        compressor.release.setValueAtTime(0.25, ctx.currentTime);
-        
-        masterGain.connect(compressor);
-        compressor.connect(ctx.destination);
-
-        // Layer 1: Deep Bass Rumble (Depth)
-        const oscLow = ctx.createOscillator();
-        const gainLow = ctx.createGain();
-        oscLow.type = 'square';
-        oscLow.frequency.setValueAtTime(55, ctx.currentTime); // 55Hz sub bass
-        oscLow.frequency.linearRampToValueAtTime(110, ctx.currentTime + 1.5);
-        oscLow.frequency.linearRampToValueAtTime(55, ctx.currentTime + 3.0);
-        gainLow.gain.value = 1.0;
-        oscLow.connect(gainLow);
-        gainLow.connect(masterGain);
-
-        // Layer 2: Piercing High Sweep (Loudness)
-        const oscHigh = ctx.createOscillator();
-        const gainHigh = ctx.createGain();
-        oscHigh.type = 'sawtooth';
-        oscHigh.frequency.setValueAtTime(440, ctx.currentTime);
-        oscHigh.frequency.linearRampToValueAtTime(880, ctx.currentTime + 1.5);
-        oscHigh.frequency.linearRampToValueAtTime(440, ctx.currentTime + 3.0);
-        gainHigh.gain.value = 0.5;
-        oscHigh.connect(gainHigh);
-        gainHigh.connect(masterGain);
-
-        // Master Envelope
-        masterGain.gain.setValueAtTime(0, ctx.currentTime);
-        masterGain.gain.linearRampToValueAtTime(1.5, ctx.currentTime + 0.2); // Overdrive volume
-        masterGain.gain.setValueAtTime(1.5, ctx.currentTime + 2.8);
-        masterGain.gain.linearRampToValueAtTime(0, ctx.currentTime + 3.0);
-
-        oscLow.start();
-        oscHigh.start();
-        oscLow.stop(ctx.currentTime + 3.0);
-        oscHigh.stop(ctx.currentTime + 3.0);
+        sirenAudio.currentTime = 0;
+        sirenAudio.play().catch(e => console.warn("Auto-play blocked", e));
       } catch (e) {
         console.warn("Audio playback failed", e);
       }
@@ -581,6 +538,10 @@
       const icon = document.getElementById('audioIcon');
       if (globalAudioMuted) {
         icon.className = 'fa-solid fa-volume-xmark text-slate-400';
+        if (typeof sirenAudio !== 'undefined') {
+          sirenAudio.pause();
+          sirenAudio.currentTime = 0;
+        }
       } else {
         icon.className = 'fa-solid fa-volume-high text-brand-action';
       }

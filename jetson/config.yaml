@@ -81,9 +81,8 @@ nodes:
       lon: 77.2120
       description: "Industrial zone monitoring point Delta"
     sensors:
-      layer1: "Not used"
-      layer2: "PM2.5 Dust Sensor (PMS5003)"
-      layer3: "MQ-135 (Air Quality Index / Gas)"
+      layer1: "PM2.5 Dust Sensor (PMS5003)"
+      layer2: "MQ-135 (Air Quality Index / Gas)"
     weights:
       l1: 0.55
       l2: 0.45

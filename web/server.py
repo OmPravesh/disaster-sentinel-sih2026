@@ -247,7 +247,7 @@ node_states = {
             "Temperature_C": "°C",
             "Relative_Humidity_pct": "%"
         },
-        "hardware_layers": "Layer 1: HC-SR04/JSN-SR04T | Layer 2: YL-83 | Layer 3: BME280"
+        "hardware_layers": "Layer 1: BME280 | Layer 2: YL-83 | Layer 3: HC-SR04/JSN-SR04T"
     },
     "SLD2": {
         "node_id": "SLD2",
@@ -273,7 +273,7 @@ node_states = {
             "Temperature_C": "°C",
             "Humidity_percent": "%"
         },
-        "hardware_layers": "Layer 1: MPU6050 Gyro/Tilt | Layer 2: Soil Moisture v1.2 | Layer 3: BME280"
+        "hardware_layers": "Layer 1: BME280 | Layer 2: Soil Moisture v1.2 | Layer 3: MPU6050 Gyro/Tilt"
     },
     "FIR3": {
         "node_id": "FIR3",
@@ -306,7 +306,7 @@ node_states = {
             "Pressure[hPa]": "hPa",
             "PM2.5": "µg/m³"
         },
-        "hardware_layers": "Layer 1: KY-026 Flame IR | Layer 2: MQ-2 Gas/Smoke | Layer 3: BME280"
+        "hardware_layers": "Layer 1: BME280 | Layer 2: MQ-2 Gas/Smoke | Layer 3: KY-026 Flame IR"
     },
     "POL4": {
         "node_id": "POL4",
@@ -329,7 +329,7 @@ node_states = {
             "pm10": "µg/m³",
             "pm25": "µg/m³"
         },
-        "hardware_layers": "Layer 1: MQ-135 Gas | Layer 2: GP2Y1010AU0F Optical Dust"
+        "hardware_layers": "Layer 1: GP2Y1010AU0F Optical Dust | Layer 2: MQ-135 Gas"
     }
 }
 
@@ -596,7 +596,7 @@ def ingest_telemetry():
     if node_id == "FLD1":
         if "l1_raw" in data:
             raw_w = float(data["l1_raw"])
-            node["sensors"]["River_Water_Level_m"] = round(raw_w / 100.0, 2)
+            node["sensors"]["River_Water_Level_m"] = round(raw_w / 100.0 if raw_w > 20 else raw_w, 2)
         if "l2_raw" in data:
             node["sensors"]["Rainfall_Intensity_mm_hr"] = round(float(data["l2_raw"]) * 20.0, 2)
         if "l3_raw" in data:
@@ -612,17 +612,11 @@ def ingest_telemetry():
             node["sensors"]["Atmospheric_Pressure_hPa"] = round(float(data["l3_raw"]), 1)
             
     elif node_id == "FIR3":
-        flame_val = 0.0
         if "l1_raw" in data:
             flame = float(data["l1_raw"])
-            flame_val = float(data["l1_raw"])
         if "l2_raw" in data:
             raw_g = float(data["l2_raw"])
             node["sensors"]["TVOC[ppb]"] = round(raw_g * 5000.0 if raw_g <= 1.0 else raw_g, 1)
-            if raw_g <= 0.12:
-                node["sensors"]["TVOC[ppb]"] = round(raw_g * 350.0, 1)
-            else:
-                node["sensors"]["TVOC[ppb]"] = round(40.0 + (raw_g - 0.12) * 4500.0, 1)
         if "l3_raw" in data:
             node["sensors"]["Temperature[C]"] = round(float(data["l3_raw"]), 1)
             
@@ -653,12 +647,8 @@ def ingest_telemetry():
             if hazard_key == "fire":
                 pred = models[hazard_key].predict(df)[0]
                 node["status"] = "Hazardous" if pred == 1 else "Safe"
-                node["status"] = "Hazardous" if (pred == 1 or flame_val > 0.60) else "Safe"
             elif hazard_key == "landslide":
                 prob = models[hazard_key].predict_proba(df)[0][1]
-                classes = list(models[hazard_key].classes_)
-                haz_idx = classes.index("Hazardous") if "Hazardous" in classes else 0
-                prob = float(models[hazard_key].predict_proba(df)[0][haz_idx])
                 node["risk_prob"] = round(prob * 100, 1)
                 node["status"] = "Hazardous" if prob >= 0.70 else ("Warning" if prob >= 0.35 else "Safe")
             else:
