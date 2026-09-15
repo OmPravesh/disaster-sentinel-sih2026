@@ -1018,5 +1018,5 @@ if __name__ == "__main__":
     print(f"  -> Web Dashboard URL: http://localhost:{port}")
     print(f"  -> LoRa Receiver API: http://localhost:{port}/api/nodes")
     print("=======================================================\n")
-    app.run(host=host, port=port, debug=debug)
+    app.run(host=host, port=port, debug=debug, use_reloader=False)
 

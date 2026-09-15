@@ -46,6 +46,8 @@ class LoRaReceiver:
     async def start(self):
         """Start listening for LoRa packets."""
         try:
+            import os
+            os.environ["JETSON_MODEL_NAME"] = "JETSON_ORIN_NANO"
             import spidev
             import Jetson.GPIO as GPIO
 
@@ -59,18 +61,27 @@ class LoRaReceiver:
             self.spi.mode = 0
 
             # Initialize GPIO for reset and DIO0
+            try:
+                GPIO.cleanup()
+            except Exception:
+                pass
             GPIO.setmode(GPIO.BCM)
             rst_pin = self.config.get("reset_pin", 25)
             dio0_pin = self.config.get("dio0_pin", 4)
 
-            GPIO.setup(rst_pin, GPIO.OUT)
-            GPIO.setup(dio0_pin, GPIO.IN)
+            try:
+                GPIO.setup(rst_pin, GPIO.OUT)
+                GPIO.output(rst_pin, GPIO.LOW)
+                await asyncio.sleep(0.01)
+                GPIO.output(rst_pin, GPIO.HIGH)
+                await asyncio.sleep(0.01)
+            except Exception as e:
+                logger.warning(f"GPIO Reset pin setup skipped/busy: {e}")
 
-            # Reset LoRa module
-            GPIO.output(rst_pin, GPIO.LOW)
-            await asyncio.sleep(0.01)
-            GPIO.output(rst_pin, GPIO.HIGH)
-            await asyncio.sleep(0.01)
+            try:
+                GPIO.setup(dio0_pin, GPIO.IN)
+            except Exception as e:
+                logger.warning(f"GPIO DIO0 pin setup skipped/busy: {e}")
 
             # Configure SX1278 registers
             self._configure_sx1278()
@@ -80,8 +91,23 @@ class LoRaReceiver:
 
             # Main receive loop
             while self.running:
-                # Check for incoming packet (DIO0 goes HIGH on packet received)
-                if GPIO.input(dio0_pin):
+                has_packet = False
+                try:
+                    if GPIO.input(dio0_pin):
+                        has_packet = True
+                except Exception:
+                    pass
+
+                # SPI Register 0x12 fallback check for RxDone (0x40)
+                if not has_packet:
+                    try:
+                        irq = self._read_register(0x12)
+                        if irq & 0x40:
+                            has_packet = True
+                    except Exception:
+                        pass
+
+                if has_packet:
                     raw_data = self._read_packet()
                     if raw_data:
                         rssi = self._read_rssi()
@@ -98,16 +124,18 @@ class LoRaReceiver:
             raise
 
     def _configure_sx1278(self):
-        """Configure SX1278 registers for LoRa reception."""
+        """Configure SX1278 registers for LoRa reception (433MHz Low-Frequency mode)."""
         freq = self.config.get("frequency", 433000000)
         sf = self.config.get("spreading_factor", 7)
         bw = self.config.get("bandwidth", 125000)
         sync = self.config.get("sync_word", 0xF3)
 
-        # Set to sleep mode
-        self._write_register(0x01, 0x00)
-        # Set to LoRa mode
-        self._write_register(0x01, 0x80)
+        # Set to sleep mode with Low Frequency mode bit (0x08)
+        self._write_register(0x01, 0x08)
+        # Set to LoRa mode LF
+        self._write_register(0x01, 0x88)
+        time.sleep(0.01)
+        self._write_register(0x01, 0x89)  # Standby
 
         # Set frequency
         frf = int(freq * (2**19) / 32000000)
@@ -115,16 +143,37 @@ class LoRaReceiver:
         self._write_register(0x07, (frf >> 8) & 0xFF)
         self._write_register(0x08, frf & 0xFF)
 
-        # Set spreading factor
+        # LNA Gain MAX (G1, highest gain, LNA boost on)
+        self._write_register(0x0C, 0x23)
+        # FIFO RX Base Addr = 0x00
+        self._write_register(0x0F, 0x00)
+
+        # Modem Config 1: BW 125kHz (0x70), CR 4/5 (0x02), Explicit Header (0x00) => 0x72
+        self._write_register(0x1D, 0x72)
+
+        # Modem Config 2: Spreading factor + RxPayloadCrcOn (0x04)
         self._write_register(0x1E, (sf << 4) | 0x04)
+
+        # Modem Config 3: AGC Auto On => 0x04
+        self._write_register(0x26, 0x04)
+
+        # Preamble 8 bytes
+        self._write_register(0x20, 0x00)
+        self._write_register(0x21, 0x08)
 
         # Set sync word
         self._write_register(0x39, sync)
 
-        # Set to continuous receive mode
-        self._write_register(0x01, 0x85)
+        # DIO0 Mapping -> RxDone (0x00)
+        self._write_register(0x40, 0x00)
 
-        logger.info(f"SX1278 configured: freq={freq/1e6}MHz, SF={sf}, sync=0x{sync:02X}")
+        # Clear IRQ
+        self._write_register(0x12, 0xFF)
+
+        # Set to continuous receive mode LF (0x8D: LoRa + LowFreq + RxContinuous)
+        self._write_register(0x01, 0x8D)
+
+        logger.info(f"SX1278 configured (433MHz LF mode 0x8D): freq={freq/1e6}MHz, SF={sf}, sync=0x{sync:02X}")
 
     def _write_register(self, addr: int, value: int):
         """Write a single SX1278 register via SPI."""

@@ -203,14 +203,24 @@ def decode_packet(raw_bytes: bytes, rssi: int = 0) -> Optional[DecodedPacket]:
 
 
 def format_packet_log(pkt: DecodedPacket) -> str:
-    """Format a decoded packet for console logging."""
+    """Format a decoded packet with human-readable sensor names and units."""
     priority_tag = "🔴 PRIORITY" if pkt.is_priority else "🟢 NORMAL"
+    
+    if pkt.node_id == "SLD2":
+        sensor_details = f"Tilt={pkt.l1_raw:.1f}° | Soil Moisture={pkt.l2_raw:.1f}% | Pressure={pkt.l3_raw:.1f}hPa"
+    elif pkt.node_id == "FLD1":
+        sensor_details = f"Water Level={pkt.l1_raw:.2f}m | Rain={pkt.l2_raw:.1f}mm/h | Pressure={pkt.l3_raw:.1f}hPa"
+    elif pkt.node_id == "FIR3":
+        sensor_details = f"Flame={pkt.l1_raw:.0f} | Gas/Smoke={pkt.l2_raw:.1f}ppb | Temp={pkt.l3_raw:.1f}°C"
+    elif pkt.node_id == "POL4":
+        sensor_details = f"AQI/CO={pkt.l1_raw:.1f} | PM2.5={pkt.l2_raw:.1f}µg/m³"
+    else:
+        sensor_details = f"L1={pkt.l1_raw:.1f} | L2={pkt.l2_raw:.1f} | L3={pkt.l3_raw:.1f}"
+
     return (
-        f"[{priority_tag}] {pkt.node_id} | {pkt.hazard_name} | "
-        f"L1={pkt.l1_raw:.1f}(a{pkt.l1_anomaly:.2f}) "
-        f"L2={pkt.l2_raw:.1f}(a{pkt.l2_anomaly:.2f}) "
-        f"L3={pkt.l3_raw:.1f}(a{pkt.l3_anomaly:.2f}) | "
-        f"Combined={pkt.combined_score:.2f} | Rate={pkt.rate_name} | "
-        f"Bat={pkt.battery}% | Seq={pkt.seq_num} | "
-        f"RSSI={pkt.rssi}dBm | CRC={'✅' if pkt.crc_valid else '❌'}"
+        f"[{priority_tag}] {pkt.node_id} ({pkt.hazard_name}) | "
+        f"{sensor_details} | "
+        f"Combined Risk={pkt.combined_score:.2f} | "
+        f"Bat={pkt.battery}% | Seq=#{pkt.seq_num} | "
+        f"RSSI={pkt.rssi}dBm | CRC={'✅ OK' if pkt.crc_valid else '❌ ERR'}"
     )

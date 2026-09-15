@@ -58,19 +58,65 @@ uint16_t calculate_crc16(const uint8_t* data, size_t length) {
 }
 
 float read_tilt_angle() {
-    if (!mpu_found) {
-        if (mpu.begin(0x68, &Wire) || mpu.begin(0x69, &Wire)) {
-            mpu_found = true;
-            mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
-            Serial.println("✅ MPU6050 dynamically connected!");
-        } else {
-            return 0.0f;
+    static float s_last_valid_tilt = 0.0f;
+    static uint8_t s_mpu_address = 0x68;
+    static bool s_mpu_ready = false;
+
+    if (!s_mpu_ready) {
+        for (uint8_t addr : {0x68, 0x69}) {
+            Wire.beginTransmission(addr);
+            Wire.write(0x6B); // PWR_MGMT_1 register
+            Wire.write(0x00); // Wake up MPU-6050
+            if (Wire.endTransmission(true) == 0) {
+                s_mpu_address = addr;
+                s_mpu_ready = true;
+                break;
+            }
         }
     }
-    sensors_event_t a, g, temp;
-    mpu.getEvent(&a, &g, &temp);
-    float tilt = atan2(sqrt(a.acceleration.x * a.acceleration.x + a.acceleration.y * a.acceleration.y), a.acceleration.z) * 180.0 / 3.14159265;
-    return abs(tilt);
+
+    // Take 5 fast samples and average them to eliminate sensor noise & vibration jitter
+    float ax_sum = 0.0f, ay_sum = 0.0f, az_sum = 0.0f;
+    int valid_samples = 0;
+
+    for (int i = 0; i < 5; i++) {
+        Wire.beginTransmission(s_mpu_address);
+        Wire.write(0x3B); // ACCEL_XOUT_H register
+        if (Wire.endTransmission(false) == 0) {
+            if (Wire.requestFrom((int)s_mpu_address, 6, (int)true) == 6) {
+                int16_t rawX = (Wire.read() << 8) | Wire.read();
+                int16_t rawY = (Wire.read() << 8) | Wire.read();
+                int16_t rawZ = (Wire.read() << 8) | Wire.read();
+
+                ax_sum += (float)rawX / 16384.0f;
+                ay_sum += (float)rawY / 16384.0f;
+                az_sum += (float)rawZ / 16384.0f;
+                valid_samples++;
+            }
+        }
+        delayMicroseconds(500);
+    }
+
+    // If I2C bus momentarily glitched, maintain the last valid tilt angle (never drop to 0.0° incorrectly)
+    if (valid_samples == 0) {
+        return s_last_valid_tilt;
+    }
+
+    float ax = ax_sum / (float)valid_samples;
+    float ay = ay_sum / (float)valid_samples;
+    float az = az_sum / (float)valid_samples;
+
+    float raw_tilt = atan2(sqrt(ax * ax + ay * ay), fabs(az)) * 180.0f / 3.14159265f;
+    if (isnan(raw_tilt)) raw_tilt = 0.0f;
+
+    // Apply exponential low-pass filter (alpha = 0.3) for smooth, rock-solid angle calibration
+    if (s_last_valid_tilt == 0.0f) {
+        s_last_valid_tilt = raw_tilt;
+    } else {
+        s_last_valid_tilt = (0.3f * raw_tilt) + (0.7f * s_last_valid_tilt);
+    }
+
+    return s_last_valid_tilt;
 }
 
 float read_soil_moisture() {
@@ -103,16 +149,28 @@ void setup() {
     pinMode(SOIL_ANALOG_PIN, INPUT);
 
     Wire.begin(BME_SDA, BME_SCL);
-    Wire.setTimeOut(50); // Prevent I2C bus lockup if wires move
+    Wire.setClock(100000); // Enforce 100kHz standard I2C speed for shared bus (MPU6050 + BME280)
+    Wire.setTimeOut(100);  // Prevent bus lockup on shared breadboard jumpers
+
+    // Wake up MPU6050 from power-on sleep state
+    for (uint8_t addr : {0x68, 0x69}) {
+        Wire.beginTransmission(addr);
+        Wire.write(0x6B); // PWR_MGMT_1
+        Wire.write(0x00); // Wake up
+        Wire.endTransmission();
+    }
+    delay(15);
 
     if (mpu.begin(0x68, &Wire)) {
         mpu_found = true;
         mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
-        Serial.println("✅ MPU6050 Accelerometer/Tilt initialized on 0x68.");
+        Wire.setClock(100000);
+        Serial.println("✅ MPU6050 Accelerometer/Tilt initialized on 0x68 (100kHz Shared I2C).");
     } else if (mpu.begin(0x69, &Wire)) {
         mpu_found = true;
         mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
-        Serial.println("✅ MPU6050 Accelerometer/Tilt initialized on 0x69.");
+        Wire.setClock(100000);
+        Serial.println("✅ MPU6050 Accelerometer/Tilt initialized on 0x69 (100kHz Shared I2C).");
     } else {
         Serial.println("⚠️ MPU6050 not detected on 0x68 or 0x69! Check SDA=21, SCL=22, 3.3V power.");
     }

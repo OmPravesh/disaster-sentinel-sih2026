@@ -38,13 +38,27 @@ class BuzzerControl:
             logger.warning("[Buzzer] GPIO not available — running in simulation mode")
             self._gpio = None
 
+    def _safe_output(self, state):
+        """Safely write GPIO output, re-initializing pin if unexported by cleanup."""
+        if not self._gpio:
+            return
+        try:
+            self._gpio.output(self.pin, state)
+        except Exception:
+            try:
+                self._gpio.setmode(self._gpio.BCM)
+                self._gpio.setup(self.pin, self._gpio.OUT)
+                self._gpio.output(self.pin, state)
+            except Exception as e:
+                logger.debug(f"[Buzzer] GPIO pin {self.pin} write skipped: {e}")
+
     async def short_beep(self, duration_ms: int = 500):
         """Single short beep."""
         logger.info(f"[Buzzer] Short beep ({duration_ms}ms)")
         if self._gpio:
-            self._gpio.output(self.pin, self._gpio.HIGH)
+            self._safe_output(self._gpio.HIGH)
             await asyncio.sleep(duration_ms / 1000)
-            self._gpio.output(self.pin, self._gpio.LOW)
+            self._safe_output(self._gpio.LOW)
 
     async def continuous_on(self, interval_ms: int = 1000):
         """Start continuous beeping pattern."""
@@ -57,9 +71,9 @@ class BuzzerControl:
         async def _beep_loop():
             while self._is_on:
                 if self._gpio:
-                    self._gpio.output(self.pin, self._gpio.HIGH)
+                    self._safe_output(self._gpio.HIGH)
                     await asyncio.sleep(0.3)
-                    self._gpio.output(self.pin, self._gpio.LOW)
+                    self._safe_output(self._gpio.LOW)
                     await asyncio.sleep(interval_ms / 1000 - 0.3)
                 else:
                     await asyncio.sleep(1)
@@ -73,13 +87,13 @@ class BuzzerControl:
             self._continuous_task.cancel()
             self._continuous_task = None
         if self._gpio:
-            self._gpio.output(self.pin, self._gpio.LOW)
+            self._safe_output(self._gpio.LOW)
         logger.info("[Buzzer] OFF")
 
     def cleanup(self):
         """Cleanup GPIO."""
         if self._gpio:
-            self._gpio.output(self.pin, self._gpio.LOW)
+            self._safe_output(self._gpio.LOW)
 
 
 class StrobeControl:
@@ -98,14 +112,30 @@ class StrobeControl:
             return
 
         try:
+            import os
+            os.environ["JETSON_MODEL_NAME"] = "JETSON_ORIN_NANO"
             import Jetson.GPIO as GPIO
             self._gpio = GPIO
             GPIO.setmode(GPIO.BCM)
             GPIO.setup(self.pin, GPIO.OUT, initial=GPIO.LOW)
             logger.info(f"[Strobe] Initialized on GPIO {self.pin}")
-        except ImportError:
-            logger.warning("[Strobe] GPIO not available — running in simulation mode")
+        except Exception as e:
+            logger.warning(f"[Strobe] GPIO setup skipped: {e}")
             self._gpio = None
+
+    def _safe_output(self, state):
+        """Safely write GPIO output for strobe."""
+        if not self._gpio:
+            return
+        try:
+            self._gpio.output(self.pin, state)
+        except Exception:
+            try:
+                self._gpio.setmode(self._gpio.BCM)
+                self._gpio.setup(self.pin, self._gpio.OUT)
+                self._gpio.output(self.pin, state)
+            except Exception as e:
+                logger.debug(f"[Strobe] GPIO pin {self.pin} write skipped: {e}")
 
     async def on(self):
         """Turn strobe ON."""
@@ -113,17 +143,17 @@ class StrobeControl:
             return
         self._is_on = True
         if self._gpio:
-            self._gpio.output(self.pin, self._gpio.HIGH)
+            self._safe_output(self._gpio.HIGH)
         logger.warning("[Strobe] WARNING LIGHT ON")
 
     async def off(self):
         """Turn strobe OFF."""
         self._is_on = False
         if self._gpio:
-            self._gpio.output(self.pin, self._gpio.LOW)
+            self._safe_output(self._gpio.LOW)
         logger.info("[Strobe] Light OFF")
 
     def cleanup(self):
         """Cleanup GPIO."""
         if self._gpio:
-            self._gpio.output(self.pin, self._gpio.LOW)
+            self._safe_output(self._gpio.LOW)
