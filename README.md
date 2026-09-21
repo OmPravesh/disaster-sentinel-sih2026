@@ -1,7 +1,7 @@
 # 🛡️ Disaster Sentinel
 
 > **Solar-Powered Distributed Early-Warning Network with Layered Validation & PyTorch GRU AI Predictive Engine**  
-> *Smart India Hackathon (SIH) 2026 · Problem Statement SIH26178 · Qualcomm*
+> *Smart India Hackathon (SIH) 2026
 
 ---
 
@@ -194,4 +194,4 @@ cd firmware/node_pollution && pio run -t upload
 ---
 
 ## 🛡️ License & SIH 2026 Credits
-Built for **Smart India Hackathon 2026** — Qualcomm Sponsored Problem Statement **SIH26178**.
+Built for **Smart India Hackathon 2026**
