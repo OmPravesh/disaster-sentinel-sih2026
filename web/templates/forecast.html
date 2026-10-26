@@ -39,7 +39,7 @@
   <!-- ========================================================================= -->
   <!-- 2. EARLY WARNING LEAD-TIME COUNTDOWN BANNER -->
   <!-- ========================================================================= -->
-  <div id="leadTimeBanner" class="p-5 rounded-2xl border transition-all duration-300 bg-emerald-950/20 border-emerald-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+  <div id="leadTimeBanner" class="p-5 rounded-lg border transition-all duration-300 bg-emerald-950/20 border-emerald-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
     <div class="flex items-center gap-4">
       <div id="leadTimeIconContainer" class="w-12 h-12 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 text-2xl flex-shrink-0">
         <i id="leadTimeIcon" class="fa-solid fa-circle-check"></i>
@@ -73,7 +73,7 @@
   <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
     
     <!-- Stat 1: Current Observation (t) -->
-    <div class="glass-card p-4 rounded-2xl space-y-1">
+    <div class="glass-card p-4 rounded-lg space-y-1">
       <div class="flex items-center justify-between text-slate-400 text-xs">
         <span>Current Reading (t)</span>
         <i class="fa-solid fa-satellite-dish text-cyan-400"></i>
@@ -86,7 +86,7 @@
     </div>
 
     <!-- Stat 2: Projected +50m Horizon Peak -->
-    <div class="glass-card p-4 rounded-2xl space-y-1">
+    <div class="glass-card p-4 rounded-lg space-y-1">
       <div class="flex items-center justify-between text-slate-400 text-xs">
         <span>Projected +50m Peak</span>
         <i class="fa-solid fa-chart-line text-purple-400"></i>
@@ -99,7 +99,7 @@
     </div>
 
     <!-- Stat 3: Lead-Time Margin -->
-    <div class="glass-card p-4 rounded-2xl space-y-1">
+    <div class="glass-card p-4 rounded-lg space-y-1">
       <div class="flex items-center justify-between text-slate-400 text-xs">
         <span>Lead-Time Margin</span>
         <i class="fa-solid fa-stopwatch text-amber-400"></i>
@@ -109,7 +109,7 @@
     </div>
 
     <!-- Stat 4: Jetson Edge AI Engine -->
-    <div class="glass-card p-4 rounded-2xl space-y-1">
+    <div class="glass-card p-4 rounded-lg space-y-1">
       <div class="flex items-center justify-between text-slate-400 text-xs">
         <span>Hardware AI Engine</span>
         <i class="fa-solid fa-microchip text-emerald-400"></i>
@@ -123,7 +123,7 @@
   <!-- ========================================================================= -->
   <!-- 4. FUTURE TRAJECTORY CANVAS CHART -->
   <!-- ========================================================================= -->
-  <div class="glass-card rounded-2xl p-5 sm:p-6 space-y-4">
+  <div class="glass-card rounded-lg p-5 sm:p-6 space-y-4">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-dark-750 pb-3">
       <div>
         <h3 class="text-base font-bold text-white flex items-center gap-2">
@@ -170,7 +170,7 @@
   <!-- ========================================================================= -->
   <!-- 6. DUAL-BRAIN ARCHITECTURE EXPLAINER (FOR SIH EVALUATORS) -->
   <!-- ========================================================================= -->
-  <div class="glass-card rounded-2xl p-5 sm:p-6 space-y-4 border-l-4 border-l-purple-500">
+  <div class="glass-card rounded-lg p-5 sm:p-6 space-y-4">
     <div class="flex items-center gap-2.5">
       <div class="w-8 h-8 rounded-lg bg-purple-500/20 border border-purple-500/40 flex items-center justify-center text-purple-300">
         <i class="fa-solid fa-diagram-project"></i>
@@ -212,6 +212,7 @@
   let activeNode = 'FLD1';
   let forecastChart = null;
   let cachedData = null;
+  let currentChartNode = null;
 
   const nodeColorSchemes = {
     FLD1: { primary: '#06B6D4', rgba: 'rgba(6, 182, 212, 0.2)', unit: 'm', title: 'River Water Level' },
@@ -255,16 +256,16 @@
     riskHead.textContent = `${f.risk_probability_pct}%`;
 
     if (f.threat_level === 'CRITICAL') {
-      banner.className = 'p-5 rounded-2xl border transition-all duration-300 bg-rose-950/30 border-rose-500/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-pulse-slow';
-      iconContainer.className = 'w-12 h-12 rounded-xl bg-rose-500/20 border border-rose-500/50 flex items-center justify-center text-rose-400 text-2xl flex-shrink-0 animate-bounce';
+      banner.className = 'p-5 rounded-lg border transition-all duration-300 bg-rose-950/30 border-rose-500/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-pulse-slow';
+      iconContainer.className = 'w-12 h-12 rounded-lg bg-rose-500/20 border border-rose-500/50 flex items-center justify-center text-rose-400 text-2xl flex-shrink-0';
       icon.className = 'fa-solid fa-triangle-exclamation';
       title.className = 'text-base sm:text-lg font-black font-mono text-rose-300 tracking-tight';
-      title.textContent = `🚨 ${f.lead_time_label}`;
+      title.textContent = f.lead_time_label;
       sub.textContent = `GRU recurrent forecaster projects hazard breach above critical threshold (${f.thresholds.critical} ${f.unit}). Evacuation window active!`;
       riskHead.className = 'text-lg font-extrabold text-rose-400';
     } else {
-      banner.className = 'p-5 rounded-2xl border transition-all duration-300 bg-emerald-950/20 border-emerald-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4';
-      iconContainer.className = 'w-12 h-12 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 text-2xl flex-shrink-0';
+      banner.className = 'p-5 rounded-lg border transition-all duration-300 bg-emerald-950/20 border-emerald-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4';
+      iconContainer.className = 'w-12 h-12 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 text-2xl flex-shrink-0';
       icon.className = 'fa-solid fa-circle-check';
       title.className = 'text-base sm:text-lg font-black font-mono text-emerald-300 tracking-tight';
       title.textContent = `NORMAL · 50+ MINUTE HORIZON SAFE`;
@@ -317,7 +318,7 @@
       }
 
       return `
-        <div class="glass-card p-3.5 rounded-xl space-y-2 border-t-2 ${isBreach ? 'border-t-rose-500' : 'border-t-cyan-500'}">
+        <div class="glass-card p-3.5 rounded-lg space-y-2 border-t-2 ${isBreach ? 'border-t-rose-500' : 'border-t-cyan-500'}">
           <div class="flex items-center justify-between text-[11px]">
             <span class="font-mono text-cyan-400 font-bold">${step.step}</span>
             <span class="text-[9px] font-mono px-1.5 py-0.2 rounded ${badgeClass}">${statusText}</span>
@@ -336,7 +337,9 @@
   }
 
   function renderTrajectoryChart(forecast, theme) {
-    const ctx = document.getElementById('forecastCanvas').getContext('2d');
+    const canvas = document.getElementById('forecastCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
 
     const historyLabels = forecast.history_values.map((_, i) => `t-${forecast.history_values.length - 1 - i}`);
     const futureLabels = forecast.future_steps.map(s => s.step);
@@ -354,10 +357,48 @@
     const critLine = new Array(allLabels.length).fill(forecast.thresholds.critical);
     const warnLine = new Array(allLabels.length).fill(forecast.thresholds.warning);
 
+    const nodeChanged = (currentChartNode !== activeNode);
+
     if (forecastChart) {
-      forecastChart.destroy();
+      forecastChart.data.labels = allLabels;
+      
+      // 0. Update recorded history dataset
+      forecastChart.data.datasets[0].data = historyData;
+
+      // 1. Update future prediction dataset & active node theme colors
+      forecastChart.data.datasets[1].data = futureData;
+      forecastChart.data.datasets[1].borderColor = theme.primary;
+      forecastChart.data.datasets[1].backgroundColor = theme.rgba;
+      forecastChart.data.datasets[1].pointBackgroundColor = theme.primary;
+
+      // 2. Update critical & warning thresholds
+      forecastChart.data.datasets[2].data = critLine;
+      forecastChart.data.datasets[2].label = `Critical Danger Threshold (${forecast.thresholds.critical} ${forecast.unit})`;
+      forecastChart.data.datasets[3].data = warnLine;
+      forecastChart.data.datasets[3].label = `Warning Threshold (${forecast.thresholds.warning} ${forecast.unit})`;
+
+      // 3. Dynamic unit in tooltip and Y-axis scales
+      if (forecastChart.options.scales && forecastChart.options.scales.y) {
+        forecastChart.options.scales.y.title.text = `${forecast.target_name} (${forecast.unit})`;
+        forecastChart.options.scales.y.ticks.callback = (val) => `${val} ${forecast.unit}`;
+      }
+      if (forecastChart.options.plugins && forecastChart.options.plugins.tooltip) {
+        forecastChart.options.plugins.tooltip.callbacks = {
+          label: (c) => `${c.dataset.label}: ${c.parsed.y} ${forecast.unit}`
+        };
+      }
+
+      currentChartNode = activeNode;
+
+      if (nodeChanged) {
+        forecastChart.update(); // Smooth easing when user switches sensor node
+      } else {
+        forecastChart.update('none'); // Real-time 1-sec stream update without canvas recreation or animation flicker
+      }
+      return;
     }
 
+    currentChartNode = activeNode;
     forecastChart = new Chart(ctx, {
       type: 'line',
       data: {
@@ -366,11 +407,11 @@
           {
             label: 'Recorded History',
             data: historyData,
-            borderColor: '#94A3B8',
-            backgroundColor: 'rgba(148, 163, 184, 0.1)',
+            borderColor: '#CBD5E1',
+            backgroundColor: 'rgba(203, 213, 225, 0.1)',
             borderWidth: 2.5,
-            pointRadius: 3,
-            pointBackgroundColor: '#94A3B8',
+            pointRadius: 3.5,
+            pointBackgroundColor: '#CBD5E1',
             tension: 0.25,
             fill: false
           },
@@ -391,7 +432,7 @@
             label: `Critical Danger Threshold (${forecast.thresholds.critical} ${forecast.unit})`,
             data: critLine,
             borderColor: '#F43F5E',
-            borderWidth: 1.5,
+            borderWidth: 2,
             borderDash: [4, 4],
             pointRadius: 0,
             fill: false
@@ -400,7 +441,7 @@
             label: `Warning Threshold (${forecast.thresholds.warning} ${forecast.unit})`,
             data: warnLine,
             borderColor: '#F59E0B',
-            borderWidth: 1.2,
+            borderWidth: 1.8,
             borderDash: [4, 4],
             pointRadius: 0,
             fill: false
@@ -410,17 +451,27 @@
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        animation: { duration: 300 },
         interaction: { mode: 'index', intersect: false },
         plugins: {
           legend: {
-            display: false
+            display: true,
+            position: 'top',
+            labels: {
+              color: '#F8FAFC',
+              font: { family: 'JetBrains Mono', size: 12, weight: '600' },
+              boxWidth: 16,
+              padding: 16,
+              usePointStyle: true,
+              pointStyle: 'circle'
+            }
           },
           tooltip: {
             backgroundColor: '#0B0F19',
             borderColor: '#334155',
             borderWidth: 1,
-            titleFont: { family: 'JetBrains Mono', size: 11 },
-            bodyFont: { family: 'Inter', size: 12 },
+            titleFont: { family: 'JetBrains Mono', size: 12 },
+            bodyFont: { family: 'JetBrains Mono', size: 11 },
             callbacks: {
               label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y} ${forecast.unit}`
             }
@@ -428,12 +479,31 @@
         },
         scales: {
           x: {
-            grid: { color: 'rgba(51, 65, 85, 0.25)' },
-            ticks: { color: '#94A3B8', font: { family: 'JetBrains Mono', size: 10 } }
+            grid: { color: 'rgba(148, 163, 184, 0.15)', drawBorder: false },
+            ticks: { color: '#E2E8F0', font: { family: 'JetBrains Mono', size: 11, weight: '600' } },
+            title: {
+              display: true,
+              text: 'Horizon Progression (Recorded Past Steps → +50m Projections)',
+              color: '#94A3B8',
+              font: { family: 'JetBrains Mono', size: 10, weight: '600' },
+              padding: { top: 6 }
+            }
           },
           y: {
-            grid: { color: 'rgba(51, 65, 85, 0.35)' },
-            ticks: { color: '#94A3B8', font: { family: 'JetBrains Mono', size: 10 } }
+            grid: { color: 'rgba(148, 163, 184, 0.15)', drawBorder: false },
+            ticks: {
+              color: '#E2E8F0',
+              font: { family: 'JetBrains Mono', size: 11, weight: '600' },
+              padding: 8,
+              callback: (val) => `${val} ${forecast.unit}`
+            },
+            title: {
+              display: true,
+              text: `${forecast.target_name} (${forecast.unit})`,
+              color: '#94A3B8',
+              font: { family: 'JetBrains Mono', size: 11, weight: '600' },
+              padding: { bottom: 6 }
+            }
           }
         }
       }

@@ -2,6 +2,9 @@
 
 {% block title %}IoT Hardware Diagnostics · Disaster Sentinel{% endblock %}
 
+{% block page_title %}Jetson &amp; LoRa IoT Hardware{% endblock %}
+{% block page_subtitle %}Field node diagnostics, SPI pinouts, UART telemetry, and actuator relays{% endblock %}
+
 {% block content %}
 <div class="space-y-8 pb-16">
 
@@ -31,7 +34,7 @@
   <!-- ========================================================================= -->
   <!-- 2. LEVEL 1: HARDWARE HEALTH SUMMARY (IS MY HARDWARE WORKING?) -->
   <!-- ========================================================================= -->
-  <div class="p-6 bg-white border border-slate-border rounded-2xl space-y-4 shadow-sm">
+  <div class="p-6 bg-white border border-slate-border rounded-lg space-y-4 shadow-sm">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
       <div class="flex items-center gap-2.5">
         <div class="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 text-sm">
@@ -150,7 +153,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
 
       <!-- NODE 1: FLOOD (FLD1) -->
-      <div class="p-5 sm:p-6 bg-white border border-slate-border rounded-2xl space-y-4 shadow-sm hover:border-slate-300 transition">
+      <div class="p-5 sm:p-6 bg-white border border-slate-border rounded-lg space-y-4 shadow-sm hover:border-slate-300 transition">
         <div class="flex items-start justify-between">
           <div class="flex items-center gap-3">
             <div class="w-11 h-11 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 text-lg">
@@ -242,7 +245,7 @@
       </div>
 
       <!-- NODE 2: LANDSLIDE (SLD2) -->
-      <div class="p-5 sm:p-6 bg-white border border-slate-border rounded-2xl space-y-4 shadow-sm hover:border-slate-300 transition">
+      <div class="p-5 sm:p-6 bg-white border border-slate-border rounded-lg space-y-4 shadow-sm hover:border-slate-300 transition">
         <div class="flex items-start justify-between">
           <div class="flex items-center gap-3">
             <div class="w-11 h-11 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600 text-lg">
@@ -334,7 +337,7 @@
       </div>
 
       <!-- NODE 3: FIRE (FIR3) -->
-      <div class="p-5 sm:p-6 bg-white border border-slate-border rounded-2xl space-y-4 shadow-sm hover:border-slate-300 transition">
+      <div class="p-5 sm:p-6 bg-white border border-slate-border rounded-lg space-y-4 shadow-sm hover:border-slate-300 transition">
         <div class="flex items-start justify-between">
           <div class="flex items-center gap-3">
             <div class="w-11 h-11 rounded-xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600 text-lg">
@@ -426,7 +429,7 @@
       </div>
 
       <!-- NODE 4: POLLUTION (POL4 - DEDICATED 2-LAYER MODE) -->
-      <div class="p-5 sm:p-6 bg-white border border-slate-border rounded-2xl space-y-4 shadow-sm hover:border-slate-300 transition">
+      <div class="p-5 sm:p-6 bg-white border border-slate-border rounded-lg space-y-4 shadow-sm hover:border-slate-300 transition">
         <div class="flex items-start justify-between">
           <div class="flex items-center gap-3">
             <div class="w-11 h-11 rounded-xl bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600 text-lg">
@@ -521,7 +524,7 @@
   <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
     <!-- LEFT: CENTRAL HUB (6 Cols) -->
-    <div class="lg:col-span-6 p-6 bg-white border border-slate-border rounded-2xl space-y-4 shadow-sm">
+    <div class="lg:col-span-6 p-6 bg-white border border-slate-border rounded-lg space-y-4 shadow-sm">
       <div class="flex items-start justify-between border-b border-slate-100 pb-4">
         <div class="flex items-center gap-3">
           <div class="w-11 h-11 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 text-lg">
@@ -598,7 +601,7 @@
     <div class="lg:col-span-6 space-y-5">
       
       <!-- Communication Status Card -->
-      <div class="p-6 bg-white border border-slate-border rounded-2xl space-y-4 shadow-sm">
+      <div class="p-6 bg-white border border-slate-border rounded-lg space-y-4 shadow-sm">
         <div class="flex items-center justify-between border-b border-slate-100 pb-3">
           <div class="flex items-center gap-2.5">
             <i class="fa-solid fa-tower-cell text-blue-600 text-sm"></i>
@@ -641,7 +644,7 @@
       </div>
 
       <!-- Emergency Actuators Card -->
-      <div class="p-6 bg-white border border-slate-border rounded-2xl space-y-4 shadow-sm">
+      <div class="p-6 bg-white border border-slate-border rounded-lg space-y-4 shadow-sm">
         <div class="flex items-center justify-between border-b border-slate-100 pb-3">
           <div class="flex items-center gap-2.5">
             <i class="fa-solid fa-bullhorn text-amber-500 text-sm"></i>
@@ -688,7 +691,7 @@
   <!-- ========================================================================= -->
   <!-- 5. DEMO & SIMULATION MODE (SEPARATED & COLLAPSED BY DEFAULT) -->
   <!-- ========================================================================= -->
-  <div class="p-6 bg-white border border-purple-200 rounded-2xl space-y-4 shadow-sm">
+  <div class="p-6 bg-white border border-purple-200 rounded-lg space-y-4 shadow-sm">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center text-purple-600 text-base">
@@ -784,7 +787,7 @@
   <!-- ========================================================================= -->
   <!-- 6. LEVEL 3: ADVANCED DIAGNOSTICS & PROTOCOL SPECIFICATIONS -->
   <!-- ========================================================================= -->
-  <div class="p-6 bg-white border border-slate-border rounded-2xl space-y-4 shadow-sm">
+  <div class="p-6 bg-white border border-slate-border rounded-lg space-y-4 shadow-sm">
     <div class="flex items-center justify-between border-b border-slate-100 pb-3">
       <div class="flex items-center gap-2.5">
         <i class="fa-solid fa-screwdriver-wrench text-slate-500 text-sm"></i>
@@ -870,7 +873,7 @@
   <!-- ========================================================================= -->
   <!-- 7. COMPLETE HARDWARE PINOUT & WIRING GUIDE (SIH 2026 REFERENCE) -->
   <!-- ========================================================================= -->
-  <div class="p-6 sm:p-8 bg-white border border-slate-border rounded-2xl space-y-6 shadow-sm" id="hardwareGuideSection">
+  <div class="p-6 sm:p-8 bg-white border border-slate-border rounded-lg space-y-6 shadow-sm" id="hardwareGuideSection">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
       <div class="flex items-center gap-3">
         <div class="w-11 h-11 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 text-xl">
@@ -898,23 +901,23 @@
         <button onclick="showHwGuideTab('sld2')" id="tabBtn_sld2" class="px-3 py-1.5 rounded-xl font-semibold bg-white text-slate-600 hover:bg-slate-50 border border-slate-200 transition cursor-pointer">
           SLD2
         </button>
-        <button onclick="showHwGuideTab('fir3')" id="tabBtn_fir3" class="px-3 py-1.5 rounded-xl font-semibold bg-white text-slate-600 hover:bg-slate-50 border border-slate-200 transition cursor-pointer">
+        <button onclick="showHwGuideTab('fir3')" id="tabBtn_fir3" class="px-3 py-1.5 rounded-lg font-semibold bg-white text-slate-600 hover:bg-slate-50 border border-slate-200 transition cursor-pointer">
           FIR3
         </button>
-        <button onclick="showHwGuideTab('pol4')" id="tabBtn_pol4" class="px-3 py-1.5 rounded-xl font-semibold bg-white text-slate-600 hover:bg-slate-50 border border-slate-200 transition cursor-pointer">
+        <button onclick="showHwGuideTab('pol4')" id="tabBtn_pol4" class="px-3 py-1.5 rounded-lg font-semibold bg-white text-slate-600 hover:bg-slate-50 border border-slate-200 transition cursor-pointer">
           POL4
         </button>
-        <button onclick="showHwGuideTab('jetson')" id="tabBtn_jetson" class="px-3 py-1.5 rounded-xl font-semibold bg-white text-slate-600 hover:bg-slate-50 border border-slate-200 transition cursor-pointer">
-          🧠 Jetson Hub
+        <button onclick="showHwGuideTab('jetson')" id="tabBtn_jetson" class="px-3 py-1.5 rounded-lg font-semibold bg-white text-slate-600 hover:bg-slate-50 border border-slate-200 transition cursor-pointer flex items-center gap-1.5">
+          <i class="fa-solid fa-microchip text-xs"></i> Jetson Hub
         </button>
-        <button onclick="showHwGuideTab('solar')" id="tabBtn_solar" class="px-3 py-1.5 rounded-xl font-semibold bg-white text-slate-600 hover:bg-slate-50 border border-slate-200 transition cursor-pointer">
-          ☀️ Solar
+        <button onclick="showHwGuideTab('solar')" id="tabBtn_solar" class="px-3 py-1.5 rounded-lg font-semibold bg-white text-slate-600 hover:bg-slate-50 border border-slate-200 transition cursor-pointer flex items-center gap-1.5">
+          <i class="fa-solid fa-solar-panel text-xs"></i> Solar
         </button>
-        <button onclick="showHwGuideTab('flow')" id="tabBtn_flow" class="px-3 py-1.5 rounded-xl font-semibold bg-white text-slate-600 hover:bg-slate-50 border border-slate-200 transition cursor-pointer">
-          🔄 Flow
+        <button onclick="showHwGuideTab('flow')" id="tabBtn_flow" class="px-3 py-1.5 rounded-lg font-semibold bg-white text-slate-600 hover:bg-slate-50 border border-slate-200 transition cursor-pointer flex items-center gap-1.5">
+          <i class="fa-solid fa-diagram-project text-xs"></i> Flow
         </button>
-        <button onclick="showHwGuideTab('checklist')" id="tabBtn_checklist" class="px-3 py-1.5 rounded-xl font-semibold bg-white text-slate-600 hover:bg-slate-50 border border-slate-200 transition cursor-pointer">
-          🔍 Checklist
+        <button onclick="showHwGuideTab('checklist')" id="tabBtn_checklist" class="px-3 py-1.5 rounded-lg font-semibold bg-white text-slate-600 hover:bg-slate-50 border border-slate-200 transition cursor-pointer flex items-center gap-1.5">
+          <i class="fa-solid fa-list-check text-xs"></i> Checklist
         </button>
       </div>
     </div>
@@ -1166,101 +1169,101 @@
               <td class="p-3 font-bold text-slate-900" rowspan="7">SX1278 LoRa Transceiver</td>
               <td class="p-3 font-mono">SCK / MISO / MOSI</td>
               <td class="p-3 font-mono font-bold text-amber-700">GPIO 18 / 19 / 23</td>
-              <td class="p-3">🟢 Green / 🟡 Yellow / 🟠 Orange</td>
+              <td class="p-3">Green / Yellow / Orange</td>
               <td class="p-3 text-slate-600">Standard SPI Bus</td>
             </tr>
             <tr class="hover:bg-slate-50/60">
               <td class="p-3 font-mono">NSS / CS</td>
               <td class="p-3 font-mono font-bold text-amber-700">GPIO 5</td>
-              <td class="p-3">🔵 Blue</td>
+              <td class="p-3">Blue</td>
               <td class="p-3 text-slate-600">SPI Chip Select</td>
             </tr>
             <tr class="hover:bg-slate-50/60">
               <td class="p-3 font-mono">RST</td>
               <td class="p-3 font-mono font-bold text-amber-700">GPIO 14</td>
-              <td class="p-3">⚪ White</td>
+              <td class="p-3">White</td>
               <td class="p-3 text-slate-600">Hardware Reset</td>
             </tr>
             <tr class="hover:bg-slate-50/60">
               <td class="p-3 font-mono">DIO0</td>
               <td class="p-3 font-mono font-bold text-amber-700">GPIO 2</td>
-              <td class="p-3">🟣 Purple</td>
+              <td class="p-3">Purple</td>
               <td class="p-3 text-slate-600">Interrupt Request (IRQ)</td>
             </tr>
             <tr class="hover:bg-slate-50/60">
               <td class="p-3 font-mono">VCC</td>
               <td class="p-3 font-mono font-bold text-rose-600">3.3V</td>
-              <td class="p-3">🔴 Red</td>
+              <td class="p-3">Red</td>
               <td class="p-3 text-rose-600 font-bold">3.3V Power</td>
             </tr>
             <tr class="hover:bg-slate-50/60">
               <td class="p-3 font-mono">GND</td>
               <td class="p-3 font-mono font-bold text-slate-900">GND</td>
-              <td class="p-3">🖤 Black</td>
+              <td class="p-3">Black</td>
               <td class="p-3 text-slate-600">Ground</td>
             </tr>
             <tr class="hover:bg-slate-50/60 bg-amber-50/30">
               <td class="p-3 font-bold text-slate-900" rowspan="4">MPU6050 Gyro/Tilt<br><span class="text-[10px] text-amber-600 font-normal">(Layer 1 Primary)</span></td>
               <td class="p-3 font-mono">SDA</td>
               <td class="p-3 font-mono font-bold text-amber-700">GPIO 21</td>
-              <td class="p-3">🟢 Green</td>
+              <td class="p-3">Green</td>
               <td class="p-3 text-slate-600">I2C Data (Shared bus, address <code class="font-bold">0x68</code>)</td>
             </tr>
             <tr class="hover:bg-slate-50/60 bg-amber-50/30">
               <td class="p-3 font-mono">SCL</td>
               <td class="p-3 font-mono font-bold text-amber-700">GPIO 22</td>
-              <td class="p-3">🟡 Yellow</td>
+              <td class="p-3">Yellow</td>
               <td class="p-3 text-slate-600">I2C Clock (Shared bus)</td>
             </tr>
             <tr class="hover:bg-slate-50/60 bg-amber-50/30">
               <td class="p-3 font-mono">VCC</td>
               <td class="p-3 font-mono font-bold text-rose-600">3.3V</td>
-              <td class="p-3">🔴 Red</td>
+              <td class="p-3">Red</td>
               <td class="p-3 text-slate-600">3.3V Power</td>
             </tr>
             <tr class="hover:bg-slate-50/60 bg-amber-50/30">
               <td class="p-3 font-mono">GND</td>
               <td class="p-3 font-mono font-bold text-slate-900">GND</td>
-              <td class="p-3">🖤 Black</td>
+              <td class="p-3">Black</td>
               <td class="p-3 text-slate-600">Ground</td>
             </tr>
             <tr class="hover:bg-slate-50/60">
               <td class="p-3 font-bold text-slate-900" rowspan="3">Soil Moisture v1.2<br><span class="text-[10px] text-amber-600 font-normal">(Layer 2 Corroborating)</span></td>
               <td class="p-3 font-mono">AOUT</td>
               <td class="p-3 font-mono font-bold text-amber-700">GPIO 32 (ADC1_CH4)</td>
-              <td class="p-3">🔵 Blue</td>
+              <td class="p-3">Blue</td>
               <td class="p-3 text-slate-600">Soil Water Saturation Analog Reading</td>
             </tr>
             <tr class="hover:bg-slate-50/60">
               <td class="p-3 font-mono">VCC</td>
               <td class="p-3 font-mono font-bold text-rose-600">3.3V</td>
-              <td class="p-3">🔴 Red</td>
+              <td class="p-3">Red</td>
               <td class="p-3 text-slate-600">3.3V Power</td>
             </tr>
             <tr class="hover:bg-slate-50/60">
               <td class="p-3 font-mono">GND</td>
               <td class="p-3 font-mono font-bold text-slate-900">GND</td>
-              <td class="p-3">🖤 Black</td>
+              <td class="p-3">Black</td>
               <td class="p-3 text-slate-600">Ground</td>
             </tr>
             <tr class="hover:bg-slate-50/60 bg-amber-50/30">
               <td class="p-3 font-bold text-slate-900" rowspan="4">BME280 Sensor<br><span class="text-[10px] text-amber-600 font-normal">(Layer 3 Context)</span></td>
               <td class="p-3 font-mono">SDA / SCL</td>
               <td class="p-3 font-mono font-bold text-amber-700">GPIO 21 / GPIO 22</td>
-              <td class="p-3">🟢 Green / 🟡 Yellow</td>
+              <td class="p-3">Green / Yellow</td>
               <td class="p-3 text-slate-600">Shared I2C Bus (address <code class="font-bold">0x76</code>)</td>
             </tr>
             <tr class="hover:bg-slate-50/60 bg-amber-50/30">
               <td class="p-3 font-mono">VCC / GND</td>
               <td class="p-3 font-mono font-bold text-rose-600">3.3V / GND</td>
-              <td class="p-3">🔴 Red / 🖤 Black</td>
+              <td class="p-3">Red / Black</td>
               <td class="p-3 text-slate-600">Power &amp; Ground</td>
             </tr>
             <tr class="hover:bg-slate-50/60">
               <td class="p-3 font-bold text-slate-900">Battery Divider</td>
               <td class="p-3 font-mono">ADC Pin</td>
               <td class="p-3 font-mono font-bold text-purple-700">GPIO 36 (ADC1_CH0)</td>
-              <td class="p-3">🟣 Purple</td>
+              <td class="p-3">Purple</td>
               <td class="p-3 text-slate-600">Voltage divider (2x 10k&Omega; from Battery B+)</td>
             </tr>
           </tbody>
@@ -1297,83 +1300,83 @@
               <td class="p-3 font-bold text-slate-900" rowspan="4">SX1278 LoRa Transceiver</td>
               <td class="p-3 font-mono">SCK / MISO / MOSI</td>
               <td class="p-3 font-mono font-bold text-rose-700">GPIO 18 / 19 / 23</td>
-              <td class="p-3">🟢 Green / 🟡 Yellow / 🟠 Orange</td>
+              <td class="p-3">Green / Yellow / Orange</td>
               <td class="p-3 text-slate-600">SPI Bus</td>
             </tr>
             <tr class="hover:bg-slate-50/60">
               <td class="p-3 font-mono">NSS / RST / DIO0</td>
               <td class="p-3 font-mono font-bold text-rose-700">GPIO 5 / 14 / 2</td>
-              <td class="p-3">🔵 Blue / ⚪ White / 🟣 Purple</td>
+              <td class="p-3">Blue / White / Purple</td>
               <td class="p-3 text-slate-600">Chip Select, Reset &amp; IRQ</td>
             </tr>
             <tr class="hover:bg-slate-50/60">
               <td class="p-3 font-mono">VCC / GND</td>
               <td class="p-3 font-mono font-bold text-rose-600">3.3V / GND</td>
-              <td class="p-3">🔴 Red / 🖤 Black</td>
+              <td class="p-3">Red / Black</td>
               <td class="p-3 text-rose-600 font-bold">3.3V Power ONLY</td>
             </tr>
             <tr class="hover:bg-slate-50/60 bg-rose-50/30">
               <td class="p-3 font-bold text-slate-900" rowspan="4">KY-026 Flame Sensor<br><span class="text-[10px] text-rose-600 font-normal">(Layer 1 Primary)</span></td>
               <td class="p-3 font-mono">AO</td>
               <td class="p-3 font-mono font-bold text-rose-700">GPIO 34 (ADC1_CH6)</td>
-              <td class="p-3">🔵 Blue</td>
+              <td class="p-3">Blue</td>
               <td class="p-3 text-slate-600">Flame IR Intensity Analog Reading</td>
             </tr>
             <tr class="hover:bg-slate-50/60 bg-rose-50/30">
               <td class="p-3 font-mono">DO</td>
               <td class="p-3 font-mono font-bold text-rose-700">GPIO 27</td>
-              <td class="p-3">⚪ White</td>
+              <td class="p-3">White</td>
               <td class="p-3 text-slate-600">Digital Flame Trigger Interrupt</td>
             </tr>
             <tr class="hover:bg-slate-50/60 bg-rose-50/30">
               <td class="p-3 font-mono">VCC / GND</td>
               <td class="p-3 font-mono font-bold text-rose-600">3.3V / GND</td>
-              <td class="p-3">🔴 Red / 🖤 Black</td>
+              <td class="p-3">Red / Black</td>
               <td class="p-3 text-slate-600">3.3V Power</td>
             </tr>
             <tr class="hover:bg-slate-50/60">
               <td class="p-3 font-bold text-slate-900" rowspan="4">MQ-2 Smoke/Gas Sensor<br><span class="text-[10px] text-rose-600 font-normal">(Layer 2 Corroborating)</span></td>
               <td class="p-3 font-mono">AO</td>
               <td class="p-3 font-mono font-bold text-rose-700">GPIO 35 (ADC1_CH7)</td>
-              <td class="p-3">🔵 Blue</td>
+              <td class="p-3">Blue</td>
               <td class="p-3 text-slate-600">Gas Concentration Analog Reading</td>
             </tr>
             <tr class="hover:bg-slate-50/60">
               <td class="p-3 font-mono">DO</td>
               <td class="p-3 font-mono font-bold text-rose-700">GPIO 26</td>
-              <td class="p-3">⚪ White</td>
+              <td class="p-3">White</td>
               <td class="p-3 text-slate-600">Digital Gas Threshold Trigger</td>
             </tr>
             <tr class="hover:bg-slate-50/60">
               <td class="p-3 font-mono">VCC</td>
               <td class="p-3 font-mono font-bold text-rose-600">5V (VIN)</td>
-              <td class="p-3">🔴 Red</td>
+              <td class="p-3">Red</td>
               <td class="p-3 text-rose-600 font-bold">MUST BE 5V for internal heater!</td>
             </tr>
             <tr class="hover:bg-slate-50/60">
               <td class="p-3 font-mono">GND</td>
               <td class="p-3 font-mono font-bold text-slate-900">GND</td>
-              <td class="p-3">🖤 Black</td>
+              <td class="p-3">Black</td>
               <td class="p-3 text-slate-600">Ground</td>
             </tr>
             <tr class="hover:bg-slate-50/60 bg-rose-50/30">
               <td class="p-3 font-bold text-slate-900" rowspan="3">BME280 Sensor<br><span class="text-[10px] text-rose-600 font-normal">(Layer 3 Context)</span></td>
               <td class="p-3 font-mono">SDA / SCL</td>
               <td class="p-3 font-mono font-bold text-rose-700">GPIO 21 / GPIO 22</td>
-              <td class="p-3">🟢 Green / 🟡 Yellow</td>
+              <td class="p-3">Green / Yellow</td>
               <td class="p-3 text-slate-600">I2C Data &amp; Clock (address <code class="font-bold">0x76</code>)</td>
             </tr>
             <tr class="hover:bg-slate-50/60 bg-rose-50/30">
               <td class="p-3 font-mono">VCC / GND</td>
               <td class="p-3 font-mono font-bold text-rose-600">3.3V / GND</td>
-              <td class="p-3">🔴 Red / 🖤 Black</td>
+              <td class="p-3">Red / Black</td>
               <td class="p-3 text-slate-600">3.3V Power &amp; Ground</td>
             </tr>
             <tr class="hover:bg-slate-50/60">
               <td class="p-3 font-bold text-slate-900">Battery Divider</td>
               <td class="p-3 font-mono">ADC Pin</td>
               <td class="p-3 font-mono font-bold text-purple-700">GPIO 36 (ADC1_CH0)</td>
-              <td class="p-3">🟣 Purple</td>
+              <td class="p-3">Purple</td>
               <td class="p-3 text-slate-600">Voltage divider (2x 10k&Omega; from Battery B+)</td>
             </tr>
           </tbody>
@@ -1410,82 +1413,82 @@
               <td class="p-3 font-bold text-slate-900" rowspan="3">SX1278 LoRa Transceiver</td>
               <td class="p-3 font-mono">SCK / MISO / MOSI</td>
               <td class="p-3 font-mono font-bold text-purple-700">GPIO 18 / 19 / 23</td>
-              <td class="p-3">🟢 Green / 🟡 Yellow / 🟠 Orange</td>
+              <td class="p-3">Green / Yellow / Orange</td>
               <td class="p-3 text-slate-600">SPI Bus</td>
             </tr>
             <tr class="hover:bg-slate-50/60">
               <td class="p-3 font-mono">NSS / RST / DIO0</td>
               <td class="p-3 font-mono font-bold text-purple-700">GPIO 5 / 14 / 2</td>
-              <td class="p-3">🔵 Blue / ⚪ White / 🟣 Purple</td>
+              <td class="p-3">Blue / White / Purple</td>
               <td class="p-3 text-slate-600">Chip Select, Reset &amp; IRQ</td>
             </tr>
             <tr class="hover:bg-slate-50/60">
               <td class="p-3 font-mono">VCC / GND</td>
               <td class="p-3 font-mono font-bold text-rose-600">3.3V / GND</td>
-              <td class="p-3">🔴 Red / 🖤 Black</td>
+              <td class="p-3">Red / Black</td>
               <td class="p-3 text-rose-600 font-bold">3.3V Power ONLY</td>
             </tr>
             <tr class="hover:bg-slate-50/60 bg-purple-50/30">
               <td class="p-3 font-bold text-slate-900" rowspan="4">MQ-135 Air Quality Sensor<br><span class="text-[10px] text-purple-600 font-normal">(Layer 1 Primary)</span></td>
               <td class="p-3 font-mono">AO</td>
               <td class="p-3 font-mono font-bold text-purple-700">GPIO 34 (ADC1_CH6)</td>
-              <td class="p-3">🔵 Blue</td>
+              <td class="p-3">Blue</td>
               <td class="p-3 text-slate-600">AQI / Hazardous Gas Analog Reading</td>
             </tr>
             <tr class="hover:bg-slate-50/60 bg-purple-50/30">
               <td class="p-3 font-mono">DO</td>
               <td class="p-3 font-mono font-bold text-purple-700">GPIO 27</td>
-              <td class="p-3">⚪ White</td>
+              <td class="p-3">White</td>
               <td class="p-3 text-slate-600">Digital Threshold Trigger</td>
             </tr>
             <tr class="hover:bg-slate-50/60 bg-purple-50/30">
               <td class="p-3 font-mono">VCC</td>
               <td class="p-3 font-mono font-bold text-rose-600">5V (VIN)</td>
-              <td class="p-3">🔴 Red</td>
+              <td class="p-3">Red</td>
               <td class="p-3 text-rose-600 font-bold">5V Power for internal heater</td>
             </tr>
             <tr class="hover:bg-slate-50/60 bg-purple-50/30">
               <td class="p-3 font-mono">GND</td>
               <td class="p-3 font-mono font-bold text-slate-900">GND</td>
-              <td class="p-3">🖤 Black</td>
+              <td class="p-3">Black</td>
               <td class="p-3 text-slate-600">Ground</td>
             </tr>
             <tr class="hover:bg-slate-50/60">
               <td class="p-3 font-bold text-slate-900" rowspan="5">GP2Y1010AU0F Dust Sensor<br><span class="text-[10px] text-purple-600 font-normal">(Layer 2 Corroborating)</span></td>
               <td class="p-3 font-mono">Pin 3 (LED Drive)</td>
               <td class="p-3 font-mono font-bold text-purple-700">GPIO 12</td>
-              <td class="p-3">🟠 Orange</td>
+              <td class="p-3">Orange</td>
               <td class="p-3 text-slate-600">Pulled LOW to drive internal IR LED pulse</td>
             </tr>
             <tr class="hover:bg-slate-50/60">
               <td class="p-3 font-mono">Pin 5 (Vo Analog Out)</td>
               <td class="p-3 font-mono font-bold text-purple-700">GPIO 35 (ADC1_CH7)</td>
-              <td class="p-3">🔵 Blue</td>
+              <td class="p-3">Blue</td>
               <td class="p-3 text-slate-600">PM2.5 Analog Voltage Output</td>
             </tr>
             <tr class="hover:bg-slate-50/60">
               <td class="p-3 font-mono">Pin 1 (V-LED)</td>
               <td class="p-3 font-mono font-bold text-rose-600">5V (via 150&Omega; resistor)</td>
-              <td class="p-3">🔴 Red</td>
+              <td class="p-3">Red</td>
               <td class="p-3 text-slate-600">LED power resistor circuit</td>
             </tr>
             <tr class="hover:bg-slate-50/60">
               <td class="p-3 font-mono">Pin 2 &amp; 4 (GND)</td>
               <td class="p-3 font-mono font-bold text-slate-900">GND</td>
-              <td class="p-3">🖤 Black</td>
+              <td class="p-3">Black</td>
               <td class="p-3 text-slate-600">Sensor Ground</td>
             </tr>
             <tr class="hover:bg-slate-50/60">
               <td class="p-3 font-mono">Pin 6 (VCC)</td>
               <td class="p-3 font-mono font-bold text-rose-600">5V</td>
-              <td class="p-3">🔴 Red</td>
+              <td class="p-3">Red</td>
               <td class="p-3 text-slate-600">5V Sensor Power</td>
             </tr>
             <tr class="hover:bg-slate-50/60 bg-purple-50/30">
               <td class="p-3 font-bold text-slate-900">Battery Divider</td>
               <td class="p-3 font-mono">ADC Pin</td>
               <td class="p-3 font-mono font-bold text-purple-700">GPIO 36 (ADC1_CH0)</td>
-              <td class="p-3">🟣 Purple</td>
+              <td class="p-3">Purple</td>
               <td class="p-3 text-slate-600">Voltage divider (2x 10k&Omega; from Battery B+)</td>
             </tr>
           </tbody>
@@ -1592,7 +1595,7 @@
             <tr class="hover:bg-slate-50/60 bg-blue-50/30">
               <td class="p-3 font-mono">VCC</td>
               <td class="p-3 font-mono">External 4.0V Supply</td>
-              <td class="p-3 font-mono font-bold text-rose-600">&mdash;</td>
+              <td class="p-3 font-mono font-bold text-rose-600">-</td>
               <td class="p-3 text-rose-600 font-bold">DO NOT connect to Jetson 5V! Use 2A peak power source</td>
             </tr>
             <tr class="hover:bg-slate-50/60 bg-blue-50/30">

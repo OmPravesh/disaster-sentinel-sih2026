@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}Alerts & Emergency · Disaster Sentinel{% endblock %}
+{% block title %}Alerts &amp; Emergency Command · Disaster Sentinel{% endblock %}
+
+{% block page_title %}Alerts &amp; Emergency Command{% endblock %}
+{% block page_subtitle %}Prioritized hazard queue, automated evacuation protocols, and NDRF satellite dispatch{% endblock %}
 
 {% block content %}
 <div class="space-y-6 pb-12">
@@ -8,12 +11,12 @@
   <!-- ========================================================================= -->
   <!-- 1. PAGE HEADER: SIMPLE, CLEAN & DELIBERATE EMERGENCY ACTION -->
   <!-- ========================================================================= -->
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
     <div>
-      <h1 class="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
+      <h1 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2.5">
         <span>Alerts &amp; Emergency</span>
       </h1>
-      <p class="text-xs sm:text-sm text-slate-500 mt-1">
+      <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
         Monitor active threats and coordinate emergency response protocols.
       </p>
     </div>
@@ -30,40 +33,40 @@
   <!-- ========================================================================= -->
   <!-- 2. ACTIVE EMERGENCY SUMMARY (COMPACT & INFORMATIVE) -->
   <!-- ========================================================================= -->
-  <div id="alertSummaryBanner" class="p-6 bg-white border border-slate-border rounded-2xl shadow-sm transition-all duration-300">
+  <div id="alertSummaryBanner" class="p-6 bg-white dark:bg-[#131B2E] border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm transition-all duration-300">
     <!-- Populated dynamically via JS -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-5">
       <div class="flex items-start md:items-center gap-4">
-        <div id="summaryIconContainer" class="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 flex-shrink-0 text-xl">
+        <div id="summaryIconContainer" class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-emerald-600 dark:text-emerald-400 flex-shrink-0 text-xl">
           <i class="fa-solid fa-shield-check"></i>
         </div>
         <div>
           <div class="flex items-center gap-2">
-            <span id="summaryKicker" class="text-[11px] font-bold uppercase tracking-wider text-emerald-600 font-mono">ALL CLEAR</span>
-            <span id="summaryPulseBadge" class="hidden text-[10px] px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 font-bold animate-pulse font-mono">ACTION REQUIRED</span>
+            <span id="summaryKicker" class="text-[11px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 font-mono">ALL CLEAR</span>
+            <span id="summaryPulseBadge" class="hidden text-[10px] px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 font-bold animate-pulse font-mono">ACTION REQUIRED</span>
           </div>
-          <h2 id="summaryHeading" class="text-xl font-bold text-slate-900 tracking-tight mt-0.5">No Active Emergencies Detected</h2>
-          <p id="summarySub" class="text-xs text-slate-500 mt-1">All monitored regional zones are reporting nominal conditions within safe thresholds.</p>
+          <h2 id="summaryHeading" class="text-xl font-bold text-slate-900 dark:text-white tracking-tight mt-0.5">No Active Emergencies Detected</h2>
+          <p id="summarySub" class="text-xs text-slate-500 dark:text-slate-400 mt-1">All monitored regional zones are reporting nominal conditions within safe thresholds.</p>
         </div>
       </div>
 
       <!-- Quick Triage Counts & Last Updated -->
       <div class="flex flex-wrap items-center gap-2.5 text-xs">
-        <div class="px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-center min-w-[75px]">
-          <span class="text-[10px] text-slate-500 uppercase block font-semibold">Critical</span>
-          <span id="countSummaryCrit" class="text-base font-bold text-rose-600 font-mono">0</span>
+        <div class="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-center min-w-[75px]">
+          <span class="text-[10px] text-slate-500 dark:text-slate-400 uppercase block font-semibold">Critical</span>
+          <span id="countSummaryCrit" class="text-base font-bold text-rose-600 dark:text-rose-400 font-mono">0</span>
         </div>
-        <div class="px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-center min-w-[75px]">
-          <span class="text-[10px] text-slate-500 uppercase block font-semibold">Warning</span>
-          <span id="countSummaryWarn" class="text-base font-bold text-amber-600 font-mono">0</span>
+        <div class="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-center min-w-[75px]">
+          <span class="text-[10px] text-slate-500 dark:text-slate-400 uppercase block font-semibold">Warning</span>
+          <span id="countSummaryWarn" class="text-base font-bold text-amber-600 dark:text-amber-400 font-mono">0</span>
         </div>
-        <div class="px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-center min-w-[75px]">
-          <span class="text-[10px] text-slate-500 uppercase block font-semibold">Normal</span>
-          <span id="countSummaryNorm" class="text-base font-bold text-emerald-600 font-mono">4</span>
+        <div class="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-center min-w-[75px]">
+          <span class="text-[10px] text-slate-500 dark:text-slate-400 uppercase block font-semibold">Normal</span>
+          <span id="countSummaryNorm" class="text-base font-bold text-emerald-600 dark:text-emerald-400 font-mono">4</span>
         </div>
-        <div class="pl-3 border-l border-slate-200 hidden sm:block text-right text-xs text-slate-500">
-          <span class="text-[10px] uppercase block font-medium text-slate-400">Last updated</span>
-          <span id="summaryTimeLabel" class="font-bold text-slate-800">Just now</span>
+        <div class="pl-3 border-l border-slate-200 dark:border-slate-800 hidden sm:block text-right text-xs text-slate-500 dark:text-slate-400">
+          <span class="text-[10px] uppercase block font-medium text-slate-400 dark:text-slate-500">Last updated</span>
+          <span id="summaryTimeLabel" class="font-bold text-slate-800 dark:text-slate-200">Just now</span>
         </div>
       </div>
     </div>
@@ -72,41 +75,41 @@
   <!-- ========================================================================= -->
   <!-- 3. SIMPLE FILTERS BAR -->
   <!-- ========================================================================= -->
-  <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white p-3 rounded-2xl border border-slate-border shadow-sm">
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white dark:bg-[#131B2E] p-3 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
     <!-- Priority Filters: All, Critical, Warning, Resolved -->
     <div class="flex flex-wrap items-center gap-1.5 text-xs font-medium">
-      <button onclick="setStatusFilter('all')" id="btnFilterAll" class="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-900 font-semibold shadow-sm transition">
+      <button onclick="setStatusFilter('all')" id="btnFilterAll" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold shadow-sm transition">
         All (<span id="countFilterAll">0</span>)
       </button>
-      <button onclick="setStatusFilter('critical')" id="btnFilterCrit" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-rose-700 transition">
+      <button onclick="setStatusFilter('critical')" id="btnFilterCrit" class="px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition">
         Critical (<span id="countFilterCrit">0</span>)
       </button>
-      <button onclick="setStatusFilter('warning')" id="btnFilterWarn" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-amber-700 transition">
+      <button onclick="setStatusFilter('warning')" id="btnFilterWarn" class="px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 transition">
         Warning (<span id="countFilterWarn">0</span>)
       </button>
-      <button onclick="setStatusFilter('resolved')" id="btnFilterResolved" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-emerald-700 transition">
+      <button onclick="setStatusFilter('resolved')" id="btnFilterResolved" class="px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition">
         Resolved (<span id="countFilterResolved">0</span>)
       </button>
     </div>
 
     <!-- Hazard Type Filter -->
     <div class="flex items-center gap-1 overflow-x-auto text-xs font-medium pb-1 md:pb-0">
-      <button onclick="setHazardFilter('all')" id="btnHazAll" class="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 font-semibold transition whitespace-nowrap">
+      <button onclick="setHazardFilter('all')" id="btnHazAll" class="px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 font-semibold transition whitespace-nowrap">
         All Hazards
       </button>
-      <button onclick="setHazardFilter('Flood')" id="btnHazFlood" class="px-2.5 py-1 rounded-lg text-slate-600 hover:text-blue-700 hover:bg-slate-50 transition whitespace-nowrap flex items-center gap-1.5">
+      <button onclick="setHazardFilter('Flood')" id="btnHazFlood" class="px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition whitespace-nowrap flex items-center gap-1.5">
         <i class="fa-solid fa-water text-blue-500 text-[11px]"></i>
         <span>Flood</span>
       </button>
-      <button onclick="setHazardFilter('Landslide')" id="btnHazLandslide" class="px-2.5 py-1 rounded-lg text-slate-600 hover:text-amber-700 hover:bg-slate-50 transition whitespace-nowrap flex items-center gap-1.5">
+      <button onclick="setHazardFilter('Landslide')" id="btnHazLandslide" class="px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition whitespace-nowrap flex items-center gap-1.5">
         <i class="fa-solid fa-mountain text-amber-500 text-[11px]"></i>
         <span>Landslide</span>
       </button>
-      <button onclick="setHazardFilter('Wildfire')" id="btnHazFire" class="px-2.5 py-1 rounded-lg text-slate-600 hover:text-rose-700 hover:bg-slate-50 transition whitespace-nowrap flex items-center gap-1.5">
+      <button onclick="setHazardFilter('Wildfire')" id="btnHazFire" class="px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition whitespace-nowrap flex items-center gap-1.5">
         <i class="fa-solid fa-fire-flame-curved text-rose-500 text-[11px]"></i>
         <span>Fire</span>
       </button>
-      <button onclick="setHazardFilter('Air Pollution')" id="btnHazSmog" class="px-2.5 py-1 rounded-lg text-slate-600 hover:text-purple-700 hover:bg-slate-50 transition whitespace-nowrap flex items-center gap-1.5">
+      <button onclick="setHazardFilter('Air Pollution')" id="btnHazSmog" class="px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition whitespace-nowrap flex items-center gap-1.5">
         <i class="fa-solid fa-smog text-purple-500 text-[11px]"></i>
         <span>Pollution</span>
       </button>
@@ -117,12 +120,12 @@
   <!-- 4. ACTIVE ALERTS SECTION -->
   <!-- ========================================================================= -->
   <div id="activeAlertsSection" class="space-y-4">
-    <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+    <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
       <div class="flex items-center gap-2.5">
         <span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping"></span>
-        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-900 font-mono">ACTIVE ALERTS</h2>
+        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white font-mono">ACTIVE ALERTS</h2>
       </div>
-      <span id="badgeActiveCount" class="text-xs px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 font-semibold font-mono">0 Active</span>
+      <span id="badgeActiveCount" class="text-xs px-2.5 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 font-semibold font-mono">0 Active</span>
     </div>
 
     <!-- Active Cards List -->
@@ -135,12 +138,12 @@
   <!-- 5. RESOLVED ALERTS SECTION (VISUALLY QUIETER) -->
   <!-- ========================================================================= -->
   <div id="resolvedAlertsSection" class="space-y-4 pt-4">
-    <div class="flex items-center justify-between border-b border-slate-200 pb-3">
-      <div class="flex items-center gap-2 text-slate-500">
-        <i class="fa-solid fa-circle-check text-emerald-600 text-xs"></i>
-        <h2 class="text-xs font-bold uppercase tracking-wider font-mono text-slate-600">RESOLVED</h2>
+    <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+      <div class="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+        <i class="fa-solid fa-circle-check text-emerald-600 dark:text-emerald-400 text-xs"></i>
+        <h2 class="text-xs font-bold uppercase tracking-wider font-mono text-slate-700 dark:text-slate-300">RESOLVED</h2>
       </div>
-      <span id="badgeResolvedCount" class="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 font-mono">0 Resolved</span>
+      <span id="badgeResolvedCount" class="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-mono">0 Resolved</span>
     </div>
 
     <!-- Resolved Cards List -->
@@ -150,13 +153,13 @@
   </div>
 
   <!-- Empty Filter Notice -->
-  <div id="emptyResultsNotice" class="hidden p-12 text-center bg-white border border-slate-border rounded-2xl space-y-3 shadow-sm">
-    <div class="w-12 h-12 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 mx-auto text-lg">
+  <div id="emptyResultsNotice" class="hidden p-12 text-center bg-white dark:bg-[#131B2E] border border-slate-200 dark:border-slate-800 rounded-xl space-y-3 shadow-sm">
+    <div class="w-12 h-12 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400 dark:text-slate-500 mx-auto text-lg">
       <i class="fa-solid fa-inbox"></i>
     </div>
-    <h3 class="text-sm font-bold text-slate-900">No Alerts Match Selected Filter</h3>
-    <p class="text-xs text-slate-500 max-w-sm mx-auto">There are currently no incidents matching your active filter criteria.</p>
-    <button onclick="setStatusFilter('all'); setHazardFilter('all');" class="px-3.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs text-slate-700 font-semibold transition border border-slate-200">
+    <h3 class="text-sm font-bold text-slate-900 dark:text-white">No Alerts Match Selected Filter</h3>
+    <p class="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">There are currently no incidents matching your active filter criteria.</p>
+    <button onclick="setStatusFilter('all'); setHazardFilter('all');" class="px-3.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs text-slate-700 dark:text-slate-200 font-semibold transition border border-slate-200 dark:border-slate-700 cursor-pointer">
       Reset Filters
     </button>
   </div>
@@ -164,73 +167,73 @@
   <!-- ========================================================================= -->
   <!-- 6. STANDARD OPERATING PROCEDURES (SOP) REFERENCE GUIDE -->
   <!-- ========================================================================= -->
-  <div class="p-5 sm:p-6 bg-white border border-slate-border rounded-2xl space-y-4 shadow-sm">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+  <div class="p-5 sm:p-6 bg-white dark:bg-[#131B2E] border border-slate-200 dark:border-slate-800 rounded-xl space-y-4 shadow-sm">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-4">
       <div>
-        <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
-          <i class="fa-solid fa-clipboard-check text-blue-600"></i>
+        <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <i class="fa-solid fa-clipboard-check text-blue-600 dark:text-blue-400"></i>
           <span>Civil Defense Standard Operating Procedures (SOP)</span>
         </h3>
-        <p class="text-xs text-slate-500 mt-0.5">Pre-authorized autonomous response protocols triggered when critical thresholds are breached.</p>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Pre-authorized autonomous response protocols triggered when critical thresholds are breached.</p>
       </div>
-      <span class="text-[11px] text-slate-500 font-mono bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200">NDRF / SDMA Protocol Matrix</span>
+      <span class="text-[11px] text-slate-500 dark:text-slate-400 font-mono bg-slate-50 dark:bg-slate-800 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700">NDRF / SDMA Protocol Matrix</span>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
       
       <!-- SOP Flood -->
-      <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2 border-t-2 border-t-blue-500">
-        <div class="flex items-center justify-between font-bold text-blue-700">
+      <div class="p-4 rounded-xl bg-slate-50 dark:bg-[#0B0F19] border border-slate-200 dark:border-slate-800 space-y-2 border-t-2 border-t-blue-500">
+        <div class="flex items-center justify-between font-bold text-blue-700 dark:text-blue-400">
           <span class="flex items-center gap-1.5">
             <i class="fa-solid fa-water text-xs"></i>
             <span>River Flood</span>
           </span>
-          <span class="font-mono text-[10px] text-slate-500">&gt; 10.0 m</span>
+          <span class="font-mono text-[10px] text-slate-500 dark:text-slate-400">&gt; 10.0 m</span>
         </div>
-        <p class="text-slate-600 text-[11px] leading-relaxed">
-          <strong class="text-slate-900">Recommended Action:</strong> Sound village alert sirens. Initiate immediate evacuation of downstream floodplains within 5 km. Alert NDRF Battalion 11.
+        <p class="text-slate-600 dark:text-slate-300 text-[11px] leading-relaxed">
+          <strong class="text-slate-900 dark:text-white">Recommended Action:</strong> Sound village alert sirens. Initiate immediate evacuation of downstream floodplains within 5 km. Alert NDRF Battalion 11.
         </p>
       </div>
 
       <!-- SOP Landslide -->
-      <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2 border-t-2 border-t-amber-500">
-        <div class="flex items-center justify-between font-bold text-amber-700">
+      <div class="p-4 rounded-xl bg-slate-50 dark:bg-[#0B0F19] border border-slate-200 dark:border-slate-800 space-y-2 border-t-2 border-t-amber-500">
+        <div class="flex items-center justify-between font-bold text-amber-700 dark:text-amber-400">
           <span class="flex items-center gap-1.5">
             <i class="fa-solid fa-mountain text-xs"></i>
             <span>Slope Failure</span>
           </span>
-          <span class="font-mono text-[10px] text-slate-500">&gt; 45.0°</span>
+          <span class="font-mono text-[10px] text-slate-500 dark:text-slate-400">&gt; 45.0°</span>
         </div>
-        <p class="text-slate-600 text-[11px] leading-relaxed">
-          <strong class="text-slate-900">Recommended Action:</strong> Close vulnerable mountain highway sectors (NH-58). Dispatch drone terrain reconnaissance. Mobilize road-clearing excavators.
+        <p class="text-slate-600 dark:text-slate-300 text-[11px] leading-relaxed">
+          <strong class="text-slate-900 dark:text-white">Recommended Action:</strong> Close vulnerable mountain highway sectors (NH-58). Dispatch drone terrain reconnaissance. Mobilize road-clearing excavators.
         </p>
       </div>
 
       <!-- SOP Wildfire -->
-      <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2 border-t-2 border-t-rose-500">
-        <div class="flex items-center justify-between font-bold text-rose-700">
+      <div class="p-4 rounded-xl bg-slate-50 dark:bg-[#0B0F19] border border-slate-200 dark:border-slate-800 space-y-2 border-t-2 border-t-rose-500">
+        <div class="flex items-center justify-between font-bold text-rose-700 dark:text-rose-400">
           <span class="flex items-center gap-1.5">
             <i class="fa-solid fa-fire-flame-curved text-xs"></i>
             <span>Wildfire</span>
           </span>
-          <span class="font-mono text-[10px] text-slate-500">&gt; 5,000 ppb</span>
+          <span class="font-mono text-[10px] text-slate-500 dark:text-slate-400">&gt; 5,000 ppb</span>
         </div>
-        <p class="text-slate-600 text-[11px] leading-relaxed">
-          <strong class="text-slate-900">Recommended Action:</strong> Deploy forest ranger suppression crews. Activate firebreak counter-burn trenches. Restrict public access to forest perimeter.
+        <p class="text-slate-600 dark:text-slate-300 text-[11px] leading-relaxed">
+          <strong class="text-slate-900 dark:text-white">Recommended Action:</strong> Deploy forest ranger suppression crews. Activate firebreak counter-burn trenches. Restrict public access to forest perimeter.
         </p>
       </div>
 
       <!-- SOP Pollution -->
-      <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2 border-t-2 border-t-purple-500">
-        <div class="flex items-center justify-between font-bold text-purple-700">
+      <div class="p-4 rounded-xl bg-slate-50 dark:bg-[#0B0F19] border border-slate-200 dark:border-slate-800 space-y-2 border-t-2 border-t-purple-500">
+        <div class="flex items-center justify-between font-bold text-purple-700 dark:text-purple-400">
           <span class="flex items-center gap-1.5">
             <i class="fa-solid fa-smog text-xs"></i>
             <span>Toxic Smog</span>
           </span>
-          <span class="font-mono text-[10px] text-slate-500">&gt; 150 µg/m³</span>
+          <span class="font-mono text-[10px] text-slate-500 dark:text-slate-400">&gt; 150 µg/m³</span>
         </div>
-        <p class="text-slate-600 text-[11px] leading-relaxed">
-          <strong class="text-slate-900">Recommended Action:</strong> Issue public health advisory. Temporarily suspend industrial diesel generators in Cluster A. Deploy municipal mist cannons.
+        <p class="text-slate-600 dark:text-slate-300 text-[11px] leading-relaxed">
+          <strong class="text-slate-900 dark:text-white">Recommended Action:</strong> Issue public health advisory. Temporarily suspend industrial diesel generators in Cluster A. Deploy municipal mist cannons.
         </p>
       </div>
 
@@ -436,9 +439,9 @@
       const el = document.getElementById(btnMap[k]);
       if (el) {
         if (k === status) {
-          el.className = 'px-3 py-1.5 rounded-lg bg-slate-100 text-slate-900 font-semibold shadow-sm transition';
+          el.className = 'px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold shadow-sm transition';
         } else {
-          el.className = 'px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition';
+          el.className = 'px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition';
         }
       }
     });
@@ -460,9 +463,9 @@
       const el = document.getElementById(hazBtns[k]);
       if (el) {
         if (k === hazard) {
-          el.className = 'px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 font-semibold transition whitespace-nowrap flex items-center gap-1.5';
+          el.className = 'px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 font-semibold transition whitespace-nowrap flex items-center gap-1.5';
         } else {
-          el.className = 'px-2.5 py-1 rounded-lg text-slate-600 hover:text-blue-700 hover:bg-slate-50 transition whitespace-nowrap flex items-center gap-1.5';
+          el.className = 'px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition whitespace-nowrap flex items-center gap-1.5';
         }
       }
     });
@@ -515,22 +518,22 @@
       const topThreat = activeList.find(i => i.severity === 'CRITICAL') || activeList[0];
       const loc = humanLocations[topThreat.node_id] || "Monitored Region";
 
-      banner.className = 'p-6 bg-white border border-rose-300 rounded-2xl shadow-sm transition-all duration-300';
-      iconContainer.className = 'w-12 h-12 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 flex-shrink-0 text-xl';
+      banner.className = 'p-6 bg-white dark:bg-[#131B2E] border border-rose-300 dark:border-rose-800 rounded-xl shadow-sm transition-all duration-300';
+      iconContainer.className = 'w-12 h-12 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 flex items-center justify-center text-rose-600 dark:text-rose-400 flex-shrink-0 text-xl';
       iconContainer.innerHTML = '<i class="fa-solid fa-triangle-exclamation animate-pulse"></i>';
-      kicker.className = 'text-[11px] font-bold uppercase tracking-wider text-rose-600 font-mono';
+      kicker.className = 'text-[11px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 font-mono';
       kicker.textContent = 'ACTIVE ALERTS';
-      pulseBadge.className = 'text-[10px] px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 font-bold animate-pulse font-mono';
+      pulseBadge.className = 'text-[10px] px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 font-bold animate-pulse font-mono';
       pulseBadge.classList.remove('hidden');
 
       heading.textContent = `${activeList.length} Active ${activeList.length === 1 ? 'Threat' : 'Threats'}`;
-      sub.innerHTML = `Critical threat active in <strong class="text-slate-900">${loc}</strong>. Immediate civil defense protocol recommended.`;
+      sub.innerHTML = `Critical threat active in <strong class="text-slate-900 dark:text-white">${loc}</strong>. Immediate civil defense protocol recommended.`;
       timeLabel.textContent = getRelativeTime(topThreat.lastUpdated);
     } else {
-      banner.className = 'p-6 bg-white border border-slate-border rounded-2xl shadow-sm transition-all duration-300';
-      iconContainer.className = 'w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 flex-shrink-0 text-xl';
+      banner.className = 'p-6 bg-white dark:bg-[#131B2E] border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm transition-all duration-300';
+      iconContainer.className = 'w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-emerald-600 dark:text-emerald-400 flex-shrink-0 text-xl';
       iconContainer.innerHTML = '<i class="fa-solid fa-shield-check"></i>';
-      kicker.className = 'text-[11px] font-bold uppercase tracking-wider text-emerald-600 font-mono';
+      kicker.className = 'text-[11px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 font-mono';
       kicker.textContent = 'ALL CLEAR';
       pulseBadge.classList.add('hidden');
 
@@ -574,15 +577,15 @@
       } else {
         activeSec.classList.remove('hidden');
         activeListEl.innerHTML = `
-          <div class="p-5 rounded-2xl bg-white border border-slate-border flex items-center justify-between text-xs shadow-sm">
+          <div class="p-5 rounded-xl bg-white dark:bg-[#131B2E] border border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs shadow-sm">
             <div class="flex items-center gap-3">
-              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 beacon-active"></span>
               <div>
-                <span class="font-bold text-slate-900 text-sm">All Monitored Areas Normal</span>
-                <p class="text-slate-500 mt-0.5 text-xs">No active alerts detected. Edge mesh telemetries are nominal.</p>
+                <span class="font-bold text-slate-900 dark:text-white text-sm">All Monitored Areas Normal</span>
+                <p class="text-slate-500 dark:text-slate-400 mt-0.5 text-xs">No active alerts detected. Edge mesh telemetries are nominal.</p>
               </div>
             </div>
-            <span class="px-3 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold font-mono text-[11px]">ALL CLEAR</span>
+            <span class="px-3 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 font-bold font-mono text-[11px]">ALL CLEAR</span>
           </div>
         `;
       }
@@ -624,94 +627,94 @@
     const updatedAgo = getRelativeTime(inc.lastUpdated);
 
     // Styling containers
-    let cardBorder = "border-slate-border bg-white shadow-sm";
-    let priorityBadge = `<span class="px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 border border-slate-200 font-mono">RESOLVED</span>`;
+    let cardBorder = "border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131B2E] shadow-sm";
+    let priorityBadge = `<span class="px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-mono">RESOLVED</span>`;
 
     if (isActive) {
       if (isCrit) {
-        cardBorder = "border-rose-300 bg-white shadow-sm";
+        cardBorder = "border-rose-300 dark:border-rose-800/80 bg-white dark:bg-[#131B2E] shadow-sm";
         priorityBadge = `
-          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-rose-50 text-rose-700 border border-rose-200 font-mono">
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 font-mono">
             <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span>
             CRITICAL
           </span>`;
       } else if (isWarn) {
-        cardBorder = "border-amber-300 bg-white shadow-sm";
+        cardBorder = "border-amber-300 dark:border-amber-800/80 bg-white dark:bg-[#131B2E] shadow-sm";
         priorityBadge = `
-          <span class="px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200 font-mono">
+          <span class="px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 font-mono">
             WARNING
           </span>`;
       }
     } else {
-      cardBorder = "border-slate-200 bg-slate-50/70";
+      cardBorder = "border-slate-200 dark:border-slate-800/80 bg-white dark:bg-[#131B2E] shadow-sm";
     }
 
     return `
-      <div class="rounded-2xl border ${cardBorder} p-5 sm:p-6 space-y-4 transition-all duration-200">
+      <div class="rounded-xl border ${cardBorder} p-5 sm:p-6 space-y-4 transition-all duration-200">
         
         <!-- TOP ROW: PRIORITY BADGE & TIME -->
         <div class="flex items-center justify-between gap-2">
           ${priorityBadge}
-          <div class="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-            <i class="fa-solid fa-clock text-slate-400 text-[11px]"></i>
+          <div class="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium">
+            <i class="fa-solid fa-clock text-slate-400 dark:text-slate-500 text-[11px]"></i>
             <span>Detected ${detectedAgo}</span>
           </div>
         </div>
 
         <!-- HAZARD TITLE & LOCATION -->
         <div class="space-y-1">
-          <h3 class="text-xl font-bold text-slate-900 tracking-tight">${title}</h3>
-          <div class="flex items-center gap-1.5 text-sm font-semibold text-slate-600">
-            <i class="fa-solid fa-location-dot text-slate-400 text-xs"></i>
+          <h3 class="text-xl font-bold text-slate-900 dark:text-white tracking-tight">${title}</h3>
+          <div class="flex items-center gap-1.5 text-sm font-semibold text-slate-600 dark:text-slate-300">
+            <i class="fa-solid fa-location-dot text-blue-500 dark:text-blue-400 text-xs"></i>
             <span>${loc}</span>
           </div>
         </div>
 
         <!-- CRISP SITUATION SUMMARY -->
-        <p class="text-slate-600 text-sm leading-relaxed">
+        <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
           ${cleanDesc}
         </p>
 
         <!-- VITAL MEASUREMENT CALLOUT -->
-        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+        <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-[#0B0F19] border border-slate-200 dark:border-slate-800 flex items-center justify-between">
           <div>
-            <span class="text-[10px] uppercase font-bold text-slate-500 block">${vital.label}</span>
-            <span class="text-xl font-extrabold text-slate-900 mt-0.5 block tracking-tight font-mono">${vital.val}</span>
+            <span class="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 block">${vital.label}</span>
+            <span class="text-xl font-extrabold text-slate-900 dark:text-white mt-0.5 block tracking-tight font-mono tabular-nums">${vital.val}</span>
           </div>
           ${inc.eventCount > 1 ? `
             <div class="text-right">
-              <span class="text-[11px] font-medium text-slate-500 block flex items-center gap-1 justify-end">
-                <i class="fa-solid fa-layer-group text-slate-400 text-[10px]"></i>
+              <span class="text-[11px] font-medium text-slate-500 dark:text-slate-400 block flex items-center gap-1 justify-end">
+                <i class="fa-solid fa-layer-group text-slate-400 dark:text-slate-500 text-[10px]"></i>
                 <span>${inc.eventCount} related updates</span>
               </span>
-              <span class="text-[10px] text-slate-400 font-mono mt-0.5 block">Last: ${formatClockTime(inc.lastUpdated)}</span>
+              <span class="text-[10px] text-slate-400 dark:text-slate-500 font-mono mt-0.5 block">Last: ${formatClockTime(inc.lastUpdated)}</span>
             </div>
           ` : ''}
         </div>
 
         <!-- RECOMMENDED CIVIL DEFENSE ACTION -->
-        <div class="p-3.5 rounded-xl bg-blue-50/60 border border-blue-100 text-xs space-y-1">
-          <div class="text-[11px] font-bold uppercase tracking-wider text-blue-700 flex items-center gap-1.5">
+        <div class="p-3.5 rounded-xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60 text-xs space-y-1">
+          <div class="text-[11px] font-bold uppercase tracking-wider text-blue-700 dark:text-blue-400 flex items-center gap-1.5">
             <i class="fa-solid fa-bullhorn text-xs"></i>
             <span>RECOMMENDED ACTION</span>
           </div>
-          <p class="text-slate-700 text-xs leading-relaxed">
+          <p class="text-slate-700 dark:text-slate-200 text-xs leading-relaxed font-medium">
             ${recAction}
           </p>
         </div>
 
         <!-- ACTION BUTTONS -->
-        <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-100">
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
           <div class="flex flex-wrap items-center gap-2">
             <!-- View Details / View Incident Button -->
-            <button onclick="toggleIncidentDetails('${inc.groupKey}')" class="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 text-xs font-semibold flex items-center gap-1.5 border border-slate-200 shadow-sm transition cursor-pointer">
-              <i class="fa-solid fa-circle-info text-blue-600 text-xs"></i>
+            <button onclick="toggleIncidentDetails('${inc.groupKey}')" class="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white text-xs font-semibold flex items-center gap-1.5 border border-slate-200 dark:border-slate-700 shadow-sm transition cursor-pointer">
+              <i class="fa-solid fa-circle-info text-blue-600 dark:text-blue-400 text-xs"></i>
               <span>${isExpanded ? 'Hide Details' : 'View Incident Details'}</span>
             </button>
 
             <!-- View on Map Button -->
-            <button onclick="window.location.href='/map'" class="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 border border-slate-200 text-xs font-semibold flex items-center gap-1.5 shadow-sm transition cursor-pointer">
-              <i class="fa-solid fa-location-dot text-slate-400 text-xs"></i>
+            <button onclick="window.location.href='/map'" class="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-700 text-xs font-semibold flex items-center gap-1.5 shadow-sm transition cursor-pointer">
+              <i class="fa-solid fa-location-dot text-slate-400 dark:text-slate-500 text-xs"></i>
               <span>View on Map</span>
             </button>
           </div>
@@ -727,31 +730,31 @@
 
         <!-- EXPANDABLE DETAILS ACCORDION -->
         ${isExpanded ? `
-          <div class="pt-4 border-t border-slate-100 space-y-3">
-            <div class="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-              <i class="fa-solid fa-timeline text-blue-600"></i>
+          <div class="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-3">
+            <div class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+              <i class="fa-solid fa-timeline text-blue-600 dark:text-blue-400"></i>
               <span>Incident Sensor Updates History (${inc.historyEvents.length})</span>
             </div>
 
             <div class="space-y-2 max-h-56 overflow-y-auto pr-1">
               ${inc.historyEvents.map(evt => `
-                <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-200 flex items-start justify-between gap-3 text-xs">
+                <div class="p-2.5 rounded-lg bg-slate-50 dark:bg-[#0B0F19] border border-slate-200 dark:border-slate-800 flex items-start justify-between gap-3 text-xs">
                   <div class="space-y-0.5">
                     <div class="flex items-center gap-2">
-                      <span class="font-mono text-[11px] font-bold text-slate-800">${evt.id}</span>
-                      <span class="text-[10px] font-mono px-1.5 py-0.5 rounded font-semibold ${evt.severity === 'CRITICAL' ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-slate-100 text-slate-600 border border-slate-200'}">${evt.severity}</span>
-                      <span class="text-slate-400 text-[11px]">${evt.timestamp}</span>
+                      <span class="font-mono text-[11px] font-bold text-slate-800 dark:text-slate-200">${evt.id}</span>
+                      <span class="text-[10px] font-mono px-1.5 py-0.5 rounded font-semibold ${evt.severity === 'CRITICAL' ? 'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700'}">${evt.severity}</span>
+                      <span class="text-slate-400 dark:text-slate-500 text-[11px]">${evt.timestamp}</span>
                     </div>
-                    <p class="text-slate-600 text-[11px] mt-0.5 leading-relaxed">${humanizeDetails(evt.details)}</p>
+                    <p class="text-slate-600 dark:text-slate-300 text-[11px] mt-0.5 leading-relaxed">${humanizeDetails(evt.details)}</p>
                   </div>
-                  <span class="text-[10px] font-mono text-slate-500 flex-shrink-0">${evt.status}</span>
+                  <span class="text-[10px] font-mono text-slate-500 dark:text-slate-400 flex-shrink-0">${evt.status}</span>
                 </div>
               `).join('')}
             </div>
 
-            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] text-slate-500">
+            <div class="p-3 rounded-xl bg-slate-50 dark:bg-[#0B0F19] border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] text-slate-500 dark:text-slate-400">
               <span>Deep ML Horizon: AI forecasting predicts temporal trajectory.</span>
-              <a href="/analytics" class="text-blue-600 hover:text-blue-700 font-semibold inline-flex items-center gap-1 transition">
+              <a href="/analytics" class="text-blue-600 dark:text-blue-400 hover:underline font-semibold inline-flex items-center gap-1 transition">
                 <span>View Analytics &amp; Predictions</span>
                 <i class="fa-solid fa-arrow-right text-[10px]"></i>
               </a>

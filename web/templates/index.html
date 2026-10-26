@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Disaster Sentinel · Central Command AI Dashboard (Uttarakhand, India)</title>
   
-  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <!-- Google Fonts: IBM Plex Sans & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -17,7 +17,7 @@
       theme: {
         extend: {
           fontFamily: {
-            sans: ['Inter', 'sans-serif'],
+            sans: ['IBM Plex Sans', 'sans-serif'],
             mono: ['JetBrains Mono', 'monospace'],
           },
           colors: {
@@ -66,18 +66,17 @@
     body {
       background-color: #F9FAFB;
       color: #0F172A;
-      font-family: 'Inter', sans-serif;
+      font-family: 'IBM Plex Sans', sans-serif;
     }
     .card-base {
       background: #FFFFFF;
       border: 1px solid #E5E7EB;
-      border-radius: 1rem;
-      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
-      transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+      border-radius: 0.5rem;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+      transition: border-color 0.15s ease, background-color 0.15s ease;
     }
     .card-base:hover {
       border-color: #CBD5E1;
-      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05), 0 8px 10px -6px rgba(15, 23, 42, 0.03);
     }
     .nav-link-active {
       background-color: #EFF6FF !important;
@@ -278,7 +277,7 @@
               responsive: true,
               maintainAspectRatio: false,
               plugins: {
-                legend: { position: 'top', labels: { boxWidth: 12, font: { family: 'Inter', size: 11 }, color: '#475569' } },
+                legend: { position: 'top', labels: { boxWidth: 12, font: { family: 'IBM Plex Sans', size: 11 }, color: '#475569' } },
                 tooltip: { backgroundColor: '#0F172A', titleColor: '#FFFFFF', bodyColor: '#F1F5F9', padding: 10, cornerRadius: 8 }
               },
               scales: {
@@ -345,7 +344,7 @@
                   <span className="w-2.5 h-2.5 rounded-full bg-white animate-ping flex-shrink-0"></span>
                   <span className="font-extrabold tracking-wide uppercase flex items-center gap-1.5">
                     <i className="fa-solid fa-triangle-exclamation"></i>
-                    <span>CRITICAL ALERT &mdash; ACTIVE DISASTER IN UTTARAKHAND</span>
+                    <span>CRITICAL ALERT - ACTIVE DISASTER IN UTTARAKHAND</span>
                   </span>
                   <span className="text-rose-200 hidden sm:inline">&bull;</span>
                   <span className="text-rose-100 truncate">{activeHazardCount} monitored region(s) exceeding critical danger threshold.</span>
@@ -365,7 +364,7 @@
                 
                 {/* Brand Logo */}
                 <div className="flex items-center gap-3 shrink-0">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-700 to-blue-500 flex items-center justify-center text-white shadow-sm shadow-blue-500/20 shrink-0">
+                  <div className="w-10 h-10 rounded-lg bg-blue-700 flex items-center justify-center text-white shrink-0">
                     <i className="fa-solid fa-shield-halved text-lg"></i>
                   </div>
                   <div className="flex flex-col justify-center">
@@ -502,8 +501,8 @@
             <section className={`card-base p-6 sm:p-8 transition-all ${hasEmergency ? 'border-rose-300 bg-rose-50/40' : 'bg-white'}`}>
               <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
                 <div className="flex items-start gap-5 flex-1">
-                  <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl flex-shrink-0 shadow-sm border ${hasEmergency ? 'bg-rose-100 border-rose-300 text-rose-600' : 'bg-emerald-50 border-emerald-200 text-emerald-600'}`}>
-                    <i className={`fa-solid ${hasEmergency ? 'fa-triangle-exclamation animate-bounce' : 'fa-circle-check'}`}></i>
+                  <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-lg flex items-center justify-center text-2xl sm:text-3xl flex-shrink-0 shadow-sm border ${hasEmergency ? 'bg-rose-100 border-rose-300 text-rose-600' : 'bg-emerald-50 border-emerald-200 text-emerald-600'}`}>
+                    <i className={`fa-solid ${hasEmergency ? 'fa-triangle-exclamation' : 'fa-circle-check'}`}></i>
                   </div>
                   <div className="space-y-1.5">
                     <div className="flex items-center gap-2.5">
@@ -729,9 +728,9 @@
                   </a>
                 </div>
 
-                <div className="relative w-full h-96 bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden flex items-center justify-center shadow-inner">
+                <div className="relative w-full h-96 bg-slate-50 rounded-lg border border-slate-200 overflow-hidden flex items-center justify-center shadow-inner">
                   {/* Grid overlay */}
-                  <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#0284C7_1px,transparent_1px)] [background-size:24px_24px]"></div>
+                  {/* Grid overlay removed — dot grids are a vibecoded pattern */}
 
                   {/* River Flow Line */}
                   <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
@@ -750,7 +749,7 @@
 
                   {/* Central Hub: Jetson Orin Nano */}
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center z-20">
-                    <div className="h-12 w-12 rounded-2xl bg-white border-2 border-blue-600 flex items-center justify-center text-blue-600 shadow-lg relative">
+                    <div className="h-12 w-12 rounded-lg bg-white border-2 border-blue-600 flex items-center justify-center text-blue-600 shadow-md relative">
                       <i className="fa-solid fa-microchip text-lg"></i>
                       <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-emerald-500 border-2 border-white"></span>
                     </div>
@@ -761,7 +760,7 @@
 
                   {/* FLD1: Rishikesh */}
                   <div className="absolute top-[60%] left-[28%] -translate-x-1/2 -translate-y-1/2 text-center z-10 cursor-pointer">
-                    <div className={`w-10 h-10 rounded-2xl bg-white border-2 flex items-center justify-center shadow-md transition group-hover:scale-110 ${nodes.FLD1.status === 'Hazardous' ? 'border-rose-600 text-rose-600 animate-pulse' : 'border-emerald-500 text-emerald-600'}`}>
+                    <div className={`w-10 h-10 rounded-lg bg-white border-2 flex items-center justify-center shadow-sm transition ${nodes.FLD1.status === 'Hazardous' ? 'border-rose-600 text-rose-600 animate-pulse' : 'border-emerald-500 text-emerald-600'}`}>
                       <i className="fa-solid fa-water text-xs"></i>
                     </div>
                     <span className="text-[10px] font-bold text-slate-800 bg-white px-2 py-0.5 rounded border border-slate-200 shadow-sm block mt-1">
@@ -771,7 +770,7 @@
 
                   {/* SLD2: Chamoli */}
                   <div className="absolute top-[24%] left-[72%] -translate-x-1/2 -translate-y-1/2 text-center z-10 cursor-pointer">
-                    <div className={`w-10 h-10 rounded-2xl bg-white border-2 flex items-center justify-center shadow-md transition group-hover:scale-110 ${nodes.SLD2.status === 'Hazardous' ? 'border-rose-600 text-rose-600 animate-pulse' : 'border-emerald-500 text-emerald-600'}`}>
+                    <div className={`w-10 h-10 rounded-lg bg-white border-2 flex items-center justify-center shadow-sm transition ${nodes.SLD2.status === 'Hazardous' ? 'border-rose-600 text-rose-600 animate-pulse' : 'border-emerald-500 text-emerald-600'}`}>
                       <i className="fa-solid fa-mountain text-xs"></i>
                     </div>
                     <span className="text-[10px] font-bold text-slate-800 bg-white px-2 py-0.5 rounded border border-slate-200 shadow-sm block mt-1">
@@ -781,7 +780,7 @@
 
                   {/* FIR3: Almora */}
                   <div className="absolute top-[65%] left-[70%] -translate-x-1/2 -translate-y-1/2 text-center z-10 cursor-pointer">
-                    <div className={`w-10 h-10 rounded-2xl bg-white border-2 flex items-center justify-center shadow-md transition group-hover:scale-110 ${nodes.FIR3.status === 'Hazardous' ? 'border-rose-600 text-rose-600 animate-pulse' : 'border-emerald-500 text-emerald-600'}`}>
+                    <div className={`w-10 h-10 rounded-lg bg-white border-2 flex items-center justify-center shadow-sm transition ${nodes.FIR3.status === 'Hazardous' ? 'border-rose-600 text-rose-600 animate-pulse' : 'border-emerald-500 text-emerald-600'}`}>
                       <i className="fa-solid fa-fire-flame-curved text-xs"></i>
                     </div>
                     <span className="text-[10px] font-bold text-slate-800 bg-white px-2 py-0.5 rounded border border-slate-200 shadow-sm block mt-1">
@@ -791,7 +790,7 @@
 
                   {/* POL4: Dehradun */}
                   <div className="absolute top-[78%] left-[18%] -translate-x-1/2 -translate-y-1/2 text-center z-10 cursor-pointer">
-                    <div className={`w-10 h-10 rounded-2xl bg-white border-2 flex items-center justify-center shadow-md transition group-hover:scale-110 ${nodes.POL4.status === 'Hazardous' ? 'border-rose-600 text-rose-600 animate-pulse' : 'border-emerald-500 text-emerald-600'}`}>
+                    <div className={`w-10 h-10 rounded-lg bg-white border-2 flex items-center justify-center shadow-sm transition ${nodes.POL4.status === 'Hazardous' ? 'border-rose-600 text-rose-600 animate-pulse' : 'border-emerald-500 text-emerald-600'}`}>
                       <i className="fa-solid fa-smog text-xs"></i>
                     </div>
                     <span className="text-[10px] font-bold text-slate-800 bg-white px-2 py-0.5 rounded border border-slate-200 shadow-sm block mt-1">
@@ -886,9 +885,9 @@
           {/* SOS MODAL */}
           {sosModalOpen && (
             <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-              <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200 animate-fadeIn">
+              <div className="bg-white rounded-lg max-w-md w-full p-6 space-y-4 shadow-xl border border-slate-200 animate-fadeIn">
                 <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
-                  <div className="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center text-lg">
+                  <div className="w-10 h-10 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center text-lg">
                     <i className="fa-solid fa-tower-broadcast"></i>
                   </div>
                   <div>
@@ -898,7 +897,7 @@
                 </div>
 
                 {sosData && (
-                  <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1.5 font-mono text-slate-700">
+                  <div className="p-3.5 rounded-lg bg-slate-50 border border-slate-200 text-xs space-y-1.5 font-mono text-slate-700">
                     <div><strong>Recipient:</strong> {sosData.recipient}</div>
                     <div><strong>AT Command:</strong> {sosData.hardware_at_command}</div>
                     <div><strong>Payload:</strong> {sosData.sms_payload}</div>

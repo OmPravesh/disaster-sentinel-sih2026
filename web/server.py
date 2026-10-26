@@ -513,9 +513,11 @@ def run_gru_forecast(node_id):
 # -------------------------------------------------------------
 
 @app.route("/")
-def overview_page():
-    """Page 1 — Overview: 5-second executive situational awareness."""
-    return render_template("overview.html", active_page="overview")
+@app.route("/dashboard")
+@app.route("/overview")
+def dashboard_page():
+    """Page 1 — Executive Command Dashboard (Foxstocks UI/UX)."""
+    return render_template("dashboard.html", active_page="dashboard")
 
 @app.route("/monitoring")
 def monitoring_page():

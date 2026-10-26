@@ -1,458 +1,811 @@
 {% extends "base.html" %}
 
-{% block title %}Executive Dashboard · Disaster Sentinel{% endblock %}
+{% block title %}Executive Command Dashboard · Disaster Sentinel{% endblock %}
+
+{% block extra_head %}
+<style>
+  /* Foxstocks / Everett-style clean typography & surfaces */
+  .fox-sidebar {
+    width: 250px;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  @media (max-width: 1024px) {
+    .fox-sidebar {
+      transform: translateX(-100%);
+      position: fixed;
+      z-index: 50;
+      height: 100vh;
+    }
+    .fox-sidebar.open {
+      transform: translateX(0);
+    }
+  }
+
+  /* Range Bar Needle styling */
+  .threshold-track {
+    position: relative;
+    height: 6px;
+    background: #E2E8F0;
+    border-radius: 9999px;
+  }
+  html.dark .threshold-track {
+    background: #334155;
+  }
+  .threshold-needle {
+    position: absolute;
+    top: -4px;
+    width: 3px;
+    height: 14px;
+    background: #0F172A;
+    border-radius: 2px;
+    transform: translateX(-50%);
+    transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  html.dark .threshold-needle {
+    background: #F8FAFC;
+  }
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Interactive Sparkline Waves */
+  .sparkline-svg {
+    width: 100%;
+    height: 38px;
+    overflow: visible;
+  }
+
+  /* Active Nav Pill */
+  .sidebar-link-active {
+    background-color: #EFEBFD !important;
+    color: #6425FE !important;
+    font-weight: 700 !important;
+  }
+  html.dark .sidebar-link-active {
+    background-color: rgba(100, 37, 254, 0.25) !important;
+    color: #C4B5FD !important;
+  }
+</style>
+{% endblock %}
+
+{% block page_title %}Hello Commander,{% endblock %}
+{% block page_subtitle %}Uttarakhand Multi-Hazard Autonomous Surveillance Network{% endblock %}
 
 {% block content %}
-<div class="space-y-6">
-
-  <!-- ========================================================================= -->
-  <!-- 1. PAGE HEADER & QUICK ACTION BAR -->
-  <!-- ========================================================================= -->
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-dark-800 pb-5">
-    <div>
-      <h1 class="text-2xl font-extrabold text-white tracking-tight flex items-center gap-2.5">
-        <span>Executive Situational Awareness</span>
-        <span class="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">LEVEL 1</span>
-      </h1>
-      <p class="text-xs sm:text-sm text-slate-400 mt-1">
-        High-level posture across 4 monitored catchment, mountain, forest, and industrial zones.
-      </p>
-    </div>
-    <div class="flex items-center gap-2">
-      <a href="/map" class="px-3.5 py-2 rounded-xl bg-dark-800 hover:bg-dark-750 text-slate-200 hover:text-white border border-dark-700 text-xs font-medium flex items-center gap-2 transition">
-        <i class="fa-solid fa-map-location-dot text-cyan-400"></i>
-        <span>Tactical Map</span>
-      </a>
-      <a href="/forecast" class="px-3.5 py-2 rounded-xl bg-purple-950/60 hover:bg-purple-900/80 text-purple-300 border border-purple-800 text-xs font-semibold flex items-center gap-2 transition shadow-sm">
-        <i class="fa-solid fa-brain text-purple-400"></i>
-        <span>AI Predictor</span>
-      </a>
-    </div>
-  </div>
-
-  <!-- ========================================================================= -->
-  <!-- 2. HERO OPERATIONAL THREAT BANNER -->
-  <!-- ========================================================================= -->
-  <div id="heroThreatBanner" class="p-5 rounded-2xl border transition-all duration-300 bg-emerald-950/20 border-emerald-500/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-    <div class="flex items-start gap-4">
-      <div id="heroIconContainer" class="w-12 h-12 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 text-2xl flex-shrink-0">
-        <i id="heroIcon" class="fa-solid fa-circle-check"></i>
-      </div>
+<!-- ======================================================================= -->
+<!-- 1. TOP ROW: FOUR SECTOR HORIZONTAL CARDS (MATCHING FOXSTOCKS STOCK CARDS) -->
+<!-- ======================================================================= -->
       <div>
-        <div class="flex items-center gap-2">
-          <h2 id="heroTitle" class="text-base sm:text-lg font-bold text-emerald-300">
-            NORMAL OPERATIONAL POSTURE · ALL CLEAR
-          </h2>
-          <span id="heroBadge" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 uppercase">SAFE</span>
-        </div>
-        <p id="heroDesc" class="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed">
-          All 4 LoRa edge field stations are transmitting nominal readings. Brain 2 PyTorch GRU recurrent forecasters project a safe baseline over the next 50 minutes.
-        </p>
-      </div>
-    </div>
-    <div class="flex items-center gap-3 self-end md:self-center">
-      <button onclick="openSimDrawer()" class="px-3.5 py-2 rounded-xl bg-dark-800 hover:bg-dark-750 text-cyan-300 border border-dark-700 text-xs font-medium flex items-center gap-2 transition">
-        <i class="fa-solid fa-flask text-xs"></i>
-        <span>Test Surges</span>
-      </button>
-      <a href="/incidents" class="px-3.5 py-2 rounded-xl bg-dark-800 hover:bg-dark-750 text-slate-200 border border-dark-700 text-xs font-medium transition">
-        Incident Center &rarr;
-      </a>
-    </div>
-  </div>
-
-  <!-- ========================================================================= -->
-  <!-- 3. FOUR HIGH-LEVEL EXECUTIVE KPIS -->
-  <!-- ========================================================================= -->
-  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-    
-    <!-- KPI 1: Overall Threat Level -->
-    <div class="glass-card p-4 rounded-2xl space-y-1">
-      <div class="flex items-center justify-between text-slate-400 text-xs">
-        <span>Global Threat Index</span>
-        <i class="fa-solid fa-shield-halved text-cyan-400"></i>
-      </div>
-      <div id="kpiThreatLevel" class="text-xl font-extrabold text-emerald-400 font-mono">NORMAL</div>
-      <div class="text-[11px] text-slate-400">0 critical threshold breaches</div>
-    </div>
-
-    <!-- KPI 2: Field Station Coverage -->
-    <div class="glass-card p-4 rounded-2xl space-y-1">
-      <div class="flex items-center justify-between text-slate-400 text-xs">
-        <span>Edge Stations Online</span>
-        <i class="fa-solid fa-tower-broadcast text-cyan-400"></i>
-      </div>
-      <div class="text-xl font-extrabold text-white font-mono">4 / 4 NODES</div>
-      <div class="text-[11px] text-slate-400">SX1278 LoRa @ 433.0 MHz</div>
-    </div>
-
-    <!-- KPI 3: Earliest AI Lead Time -->
-    <div class="glass-card p-4 rounded-2xl space-y-1">
-      <div class="flex items-center justify-between text-slate-400 text-xs">
-        <span>Earliest GRU Lead Time</span>
-        <i class="fa-solid fa-clock text-purple-400"></i>
-      </div>
-      <div id="kpiLeadTime" class="text-xl font-extrabold text-emerald-400 font-mono">50+ MIN SAFE</div>
-      <div class="text-[11px] text-slate-400">Jetson Orin GRU projection</div>
-    </div>
-
-    <!-- KPI 4: NDRF Dispatch Status -->
-    <div class="glass-card p-4 rounded-2xl space-y-1">
-      <div class="flex items-center justify-between text-slate-400 text-xs">
-        <span>Emergency Link</span>
-        <i class="fa-solid fa-satellite-dish text-rose-400"></i>
-      </div>
-      <div id="kpiGsmStatus" class="text-xl font-extrabold text-slate-200 font-mono">STANDBY</div>
-      <div class="text-[11px] text-slate-400">SIM800L GSM RSSI 28/31</div>
-    </div>
-
-  </div>
-
-  <!-- ========================================================================= -->
-  <!-- 4. FOUR SECTOR GLANCE CARDS -->
-  <!-- ========================================================================= -->
-  <div>
-    <div class="flex items-center justify-between mb-3">
-      <h3 class="text-sm font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
-        <i class="fa-solid fa-network-wired text-cyan-400"></i> Monitored District Sectors
-      </h3>
-      <a href="/nodes" class="text-xs text-cyan-400 hover:text-cyan-300 font-medium">View detailed telemetry &rarr;</a>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      
-      <!-- Sector 1: Flood (FLD1) -->
-      <div id="sectorCardFLD1" class="glass-card p-5 rounded-2xl space-y-3 border-l-4 border-l-cyan-500">
-        <div class="flex items-center justify-between">
-          <div>
-            <span class="text-[10px] font-mono uppercase tracking-wider text-cyan-400 font-bold">FLD1 · River Catchment</span>
-            <h4 class="text-sm font-bold text-white">Ganga Catchment #4</h4>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 beacon-active"></span>
+            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Active Monitored Sectors</h2>
           </div>
-          <span id="badgeFLD1" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300">SAFE</span>
+          <button type="button" class="text-xs text-[#6425FE] hover:text-[#5219E0] dark:text-[#A78BFA] dark:hover:text-[#C4B5FD] font-semibold flex items-center gap-1.5 cursor-pointer transition-colors focus-visible:ring-1 focus-visible:ring-[#6425FE] rounded-lg px-2 py-0.5" onclick="openSimDrawer()">
+            <span>Simulate Sector Breach</span>
+            <i class="fa-solid fa-arrow-right text-[10px]"></i>
+          </button>
         </div>
-        <div>
-          <div class="text-[11px] text-slate-400">River Water Level</div>
-          <div class="flex items-baseline gap-1.5">
-            <span id="valFLD1" class="text-2xl font-black font-mono text-white">2.10</span>
-            <span class="text-xs text-slate-400">meters</span>
-          </div>
-        </div>
-        <div class="pt-2 border-t border-dark-750 flex items-center justify-between text-[11px]">
-          <span class="text-slate-400">AI +30m Lead:</span>
-          <span id="leadFLD1" class="font-mono text-emerald-400 font-semibold">NORMAL</span>
-        </div>
-      </div>
 
-      <!-- Sector 2: Landslide (SLD2) -->
-      <div id="sectorCardSLD2" class="glass-card p-5 rounded-2xl space-y-3 border-l-4 border-l-amber-500">
-        <div class="flex items-center justify-between">
-          <div>
-            <span class="text-[10px] font-mono uppercase tracking-wider text-amber-400 font-bold">SLD2 · Mountain Slope</span>
-            <h4 class="text-sm font-bold text-white">Himalayan Sector 2B</h4>
-          </div>
-          <span id="badgeSLD2" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300">SAFE</span>
-        </div>
-        <div>
-          <div class="text-[11px] text-slate-400">Slope Incline Angle</div>
-          <div class="flex items-baseline gap-1.5">
-            <span id="valSLD2" class="text-2xl font-black font-mono text-white">12.0</span>
-            <span class="text-xs text-slate-400">degrees (°)</span>
-          </div>
-        </div>
-        <div class="pt-2 border-t border-dark-750 flex items-center justify-between text-[11px]">
-          <span class="text-slate-400">AI +30m Lead:</span>
-          <span id="leadSLD2" class="font-mono text-emerald-400 font-semibold">STABLE</span>
-        </div>
-      </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
-      <!-- Sector 3: Wildfire (FIR3) -->
-      <div id="sectorCardFIR3" class="glass-card p-5 rounded-2xl space-y-3 border-l-4 border-l-rose-500">
-        <div class="flex items-center justify-between">
-          <div>
-            <span class="text-[10px] font-mono uppercase tracking-wider text-rose-400 font-bold">FIR3 · Reserved Forest</span>
-            <h4 class="text-sm font-bold text-white">Pine Forest Perimeter</h4>
-          </div>
-          <span id="badgeFIR3" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300">SAFE</span>
-        </div>
-        <div>
-          <div class="text-[11px] text-slate-400">Combustion Gas TVOC</div>
-          <div class="flex items-baseline gap-1.5">
-            <span id="valFIR3" class="text-2xl font-black font-mono text-white">818</span>
-            <span class="text-xs text-slate-400">ppb</span>
-          </div>
-        </div>
-        <div class="pt-2 border-t border-dark-750 flex items-center justify-between text-[11px]">
-          <span class="text-slate-400">AI +30m Lead:</span>
-          <span id="leadFIR3" class="font-mono text-emerald-400 font-semibold">CLEAR</span>
-        </div>
-      </div>
-
-      <!-- Sector 4: Air Pollution (POL4) -->
-      <div id="sectorCardPOL4" class="glass-card p-5 rounded-2xl space-y-3 border-l-4 border-l-purple-500">
-        <div class="flex items-center justify-between">
-          <div>
-            <span class="text-[10px] font-mono uppercase tracking-wider text-purple-400 font-bold">POL4 · Industrial Hub</span>
-            <h4 class="text-sm font-bold text-white">Industrial Basin Cluster A</h4>
-          </div>
-          <span id="badgePOL4" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300">SAFE</span>
-        </div>
-        <div>
-          <div class="text-[11px] text-slate-400">PM2.5 Particulate Dust</div>
-          <div class="flex items-baseline gap-1.5">
-            <span id="valPOL4" class="text-2xl font-black font-mono text-white">11.5</span>
-            <span class="text-xs text-slate-400">&micro;g/m&sup3;</span>
-          </div>
-        </div>
-        <div class="pt-2 border-t border-dark-750 flex items-center justify-between text-[11px]">
-          <span class="text-slate-400">AI +30m Lead:</span>
-          <span id="leadPOL4" class="font-mono text-emerald-400 font-semibold">NORMAL</span>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- ========================================================================= -->
-  <!-- 5. LOWER SPLIT: RECENT INCIDENT FEED & HUB HARDWARE HEALTH -->
-  <!-- ========================================================================= -->
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    
-    <!-- Left 2 Cols: Recent Activity & Safety Log -->
-    <div class="lg:col-span-2 glass-card rounded-2xl p-5 space-y-4">
-      <div class="flex items-center justify-between border-b border-dark-750 pb-3">
-        <div class="flex items-center gap-2">
-          <i class="fa-solid fa-clock-rotate-left text-cyan-400 text-sm"></i>
-          <h3 class="text-sm font-bold text-white">Live System Log & Recent Incidents</h3>
-        </div>
-        <a href="/incidents" class="text-xs text-cyan-400 hover:underline">View full incident history &rarr;</a>
-      </div>
-
-      <div id="recentIncidentFeed" class="space-y-3">
-        <!-- Dynamically populated from /api/incidents -->
-        <div class="p-3 rounded-xl bg-dark-850/70 border border-dark-750 flex items-start gap-3 text-xs">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 mt-1.5 flex-shrink-0"></span>
-          <div class="flex-1">
-            <div class="flex items-center justify-between">
-              <span class="font-semibold text-slate-200">System Telemetry Online</span>
-              <span class="text-[10px] font-mono text-slate-400">Live</span>
+          <!-- Card 1: River Catchment (FLD1) - Mint Green Swatch -->
+          <div id="cardFLD1" class="relative overflow-hidden p-5 rounded-2xl bg-[#A6F7E2] dark:bg-[#0D382B] text-slate-900 dark:text-slate-100 shadow-sm border border-emerald-300/40 dark:border-emerald-800/50 flex flex-col justify-between space-y-3 transition-transform hover:-translate-y-0.5">
+            <div class="flex items-start justify-between">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-emerald-800/10 dark:bg-emerald-400/20 flex items-center justify-center text-emerald-900 dark:text-emerald-300 text-sm">
+                  <i class="fa-solid fa-water"></i>
+                </div>
+                <div>
+                  <h3 class="font-bold text-xs text-emerald-950 dark:text-emerald-100">FLD1 · River Basin</h3>
+                  <span class="text-[10px] text-emerald-900/70 dark:text-emerald-300/70 font-mono">Ganga #4</span>
+                </div>
+              </div>
+              <span id="badgeFLD1" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-800/15 dark:bg-emerald-500/20 text-emerald-950 dark:text-emerald-300 uppercase">SAFE</span>
             </div>
-            <p class="text-slate-400 text-[11px] mt-0.5">All 4 edge field nodes connected via SX1278 SPI LoRa link.</p>
+
+            <div>
+              <span class="text-[10px] text-emerald-900/80 dark:text-emerald-300/80 font-medium block">River Water Level</span>
+              <div class="flex items-baseline gap-1 mt-0.5">
+                <span id="valFLD1" class="text-2xl font-black font-mono tabular-nums text-emerald-950 dark:text-white">2.10</span>
+                <span class="text-xs font-mono text-emerald-900/80 dark:text-emerald-200">meters</span>
+              </div>
+            </div>
+
+            <!-- Mini Live Sparkline Trend -->
+            <div class="pt-1">
+              <svg class="sparkline-svg" viewBox="0 0 100 28" fill="none">
+                <path d="M 0 20 Q 25 14 50 18 T 100 8" stroke="#047857" stroke-width="2.5" stroke-linecap="round" fill="none" />
+                <path d="M 0 20 Q 25 14 50 18 T 100 8 L 100 28 L 0 28 Z" fill="rgba(4, 120, 87, 0.08)" />
+              </svg>
+            </div>
+
+            <div class="pt-2 border-t border-emerald-800/15 dark:border-emerald-700/30 flex items-center justify-between text-[11px]">
+              <span class="text-emerald-900/70 dark:text-emerald-300/70">AI Horizon:</span>
+              <span id="leadFLD1" class="font-mono font-bold text-emerald-950 dark:text-emerald-300">+50m SAFE</span>
+            </div>
+          </div>
+
+          <!-- Card 2: Mountain Slope (SLD2) - Soft Lavender Swatch -->
+          <div id="cardSLD2" class="relative overflow-hidden p-5 rounded-2xl bg-[#D5C4FD] dark:bg-[#2A1E4F] text-slate-900 dark:text-slate-100 shadow-sm border border-purple-300/40 dark:border-purple-800/50 flex flex-col justify-between space-y-3 transition-transform hover:-translate-y-0.5">
+            <div class="flex items-start justify-between">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-purple-900/10 dark:bg-purple-400/20 flex items-center justify-center text-purple-900 dark:text-purple-300 text-sm">
+                  <i class="fa-solid fa-mountain"></i>
+                </div>
+                <div>
+                  <h3 class="font-bold text-xs text-purple-950 dark:text-purple-100">SLD2 · Slope Incline</h3>
+                  <span class="text-[10px] text-purple-900/70 dark:text-purple-300/70 font-mono">Chamoli #2B</span>
+                </div>
+              </div>
+              <span id="badgeSLD2" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-purple-900/15 dark:bg-purple-500/20 text-purple-950 dark:text-purple-300 uppercase">SAFE</span>
+            </div>
+
+            <div>
+              <span class="text-[10px] text-purple-900/80 dark:text-purple-300/80 font-medium block">Tilt Incline Angle</span>
+              <div class="flex items-baseline gap-1 mt-0.5">
+                <span id="valSLD2" class="text-2xl font-black font-mono tabular-nums text-purple-950 dark:text-white">12.0</span>
+                <span class="text-xs font-mono text-purple-900/80 dark:text-purple-200">degrees (°)</span>
+              </div>
+            </div>
+
+            <!-- Mini Live Sparkline Trend -->
+            <div class="pt-1">
+              <svg class="sparkline-svg" viewBox="0 0 100 28" fill="none">
+                <path d="M 0 15 Q 25 18 50 14 T 100 12" stroke="#6D28D9" stroke-width="2.5" stroke-linecap="round" fill="none" />
+                <path d="M 0 15 Q 25 18 50 14 T 100 12 L 100 28 L 0 28 Z" fill="rgba(109, 40, 217, 0.08)" />
+              </svg>
+            </div>
+
+            <div class="pt-2 border-t border-purple-800/15 dark:border-purple-700/30 flex items-center justify-between text-[11px]">
+              <span class="text-purple-900/70 dark:text-purple-300/70">AI Horizon:</span>
+              <span id="leadSLD2" class="font-mono font-bold text-purple-950 dark:text-purple-300">+50m SAFE</span>
+            </div>
+          </div>
+
+          <!-- Card 3: Reserved Forest (FIR3) - Soft Butter Yellow Swatch -->
+          <div id="cardFIR3" class="relative overflow-hidden p-5 rounded-2xl bg-[#FFE5A5] dark:bg-[#3D2E0B] text-slate-900 dark:text-slate-100 shadow-sm border border-amber-300/40 dark:border-amber-800/50 flex flex-col justify-between space-y-3 transition-transform hover:-translate-y-0.5">
+            <div class="flex items-start justify-between">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-amber-900/10 dark:bg-amber-400/20 flex items-center justify-center text-amber-900 dark:text-amber-300 text-sm">
+                  <i class="fa-solid fa-fire-flame-curved"></i>
+                </div>
+                <div>
+                  <h3 class="font-bold text-xs text-amber-950 dark:text-amber-100">FIR3 · Reserved Forest</h3>
+                  <span class="text-[10px] text-amber-900/70 dark:text-amber-300/70 font-mono">Pine Perimeter</span>
+                </div>
+              </div>
+              <span id="badgeFIR3" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-900/15 dark:bg-amber-500/20 text-amber-950 dark:text-amber-300 uppercase">SAFE</span>
+            </div>
+
+            <div>
+              <span class="text-[10px] text-amber-900/80 dark:text-amber-300/80 font-medium block">Combustion Gas (TVOC)</span>
+              <div class="flex items-baseline gap-1 mt-0.5">
+                <span id="valFIR3" class="text-2xl font-black font-mono tabular-nums text-amber-950 dark:text-white">818</span>
+                <span class="text-xs font-mono text-amber-900/80 dark:text-amber-200">ppb</span>
+              </div>
+            </div>
+
+            <!-- Mini Live Sparkline Trend -->
+            <div class="pt-1">
+              <svg class="sparkline-svg" viewBox="0 0 100 28" fill="none">
+                <path d="M 0 18 Q 30 10 50 16 T 100 14" stroke="#B45309" stroke-width="2.5" stroke-linecap="round" fill="none" />
+                <path d="M 0 18 Q 30 10 50 16 T 100 14 L 100 28 L 0 28 Z" fill="rgba(180, 83, 9, 0.08)" />
+              </svg>
+            </div>
+
+            <div class="pt-2 border-t border-amber-800/15 dark:border-amber-700/30 flex items-center justify-between text-[11px]">
+              <span class="text-amber-900/70 dark:text-amber-300/70">AI Horizon:</span>
+              <span id="leadFIR3" class="font-mono font-bold text-amber-950 dark:text-amber-300">+50m SAFE</span>
+            </div>
+          </div>
+
+          <!-- Card 4: Industrial Hub (POL4) - Soft Sky Blue Swatch -->
+          <div id="cardPOL4" class="relative overflow-hidden p-5 rounded-2xl bg-[#BEE1FD] dark:bg-[#0C2D4A] text-slate-900 dark:text-slate-100 shadow-sm border border-blue-300/40 dark:border-blue-800/50 flex flex-col justify-between space-y-3 transition-transform hover:-translate-y-0.5">
+            <div class="flex items-start justify-between">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-blue-900/10 dark:bg-blue-400/20 flex items-center justify-center text-blue-900 dark:text-blue-300 text-sm">
+                  <i class="fa-solid fa-smog"></i>
+                </div>
+                <div>
+                  <h3 class="font-bold text-xs text-blue-950 dark:text-blue-100">POL4 · Industrial Hub</h3>
+                  <span class="text-[10px] text-blue-900/70 dark:text-blue-300/70 font-mono">Selaqui Basin A</span>
+                </div>
+              </div>
+              <span id="badgePOL4" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-blue-900/15 dark:bg-blue-500/20 text-blue-950 dark:text-blue-300 uppercase">SAFE</span>
+            </div>
+
+            <div>
+              <span class="text-[10px] text-blue-900/80 dark:text-blue-300/80 font-medium block">PM2.5 Dust Particulate</span>
+              <div class="flex items-baseline gap-1 mt-0.5">
+                <span id="valPOL4" class="text-2xl font-black font-mono tabular-nums text-blue-950 dark:text-white">11.5</span>
+                <span class="text-xs font-mono text-blue-900/80 dark:text-blue-200">&micro;g/m&sup3;</span>
+              </div>
+            </div>
+
+            <!-- Mini Live Sparkline Trend -->
+            <div class="pt-1">
+              <svg class="sparkline-svg" viewBox="0 0 100 28" fill="none">
+                <path d="M 0 16 Q 20 22 55 12 T 100 10" stroke="#0284C7" stroke-width="2.5" stroke-linecap="round" fill="none" />
+                <path d="M 0 16 Q 20 22 55 12 T 100 10 L 100 28 L 0 28 Z" fill="rgba(2, 132, 199, 0.08)" />
+              </svg>
+            </div>
+
+            <div class="pt-2 border-t border-blue-800/15 dark:border-blue-700/30 flex items-center justify-between text-[11px]">
+              <span class="text-blue-900/70 dark:text-blue-300/70">AI Horizon:</span>
+              <span id="leadPOL4" class="font-mono font-bold text-blue-950 dark:text-blue-300">+50m SAFE</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ======================================================================= -->
+      <!-- 4. MIDDLE SECTION: 3-COLUMN SPLIT (HERO BALANCE + MAIN CHART + SNAPSHOT) -->
+      <!-- ======================================================================= -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+        <!-- LEFT COLUMN: Posture Hero Cards + Top Sectors List (lg:col-span-3) -->
+        <div class="lg:col-span-3 space-y-4">
+          
+          <!-- Vivid Primary Balance Card (#6425FE in reference) -->
+          <div class="p-5 rounded-2xl bg-[#6425FE] text-white shadow-sm space-y-3 relative overflow-hidden">
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-purple-200 font-medium">Global Threat Level</span>
+              <span id="heroThreatBadge" class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-400 text-emerald-950 uppercase">+50m SAFE</span>
+            </div>
+            <div>
+              <h2 id="heroThreatText" class="text-2xl font-black tracking-tight font-mono">NORMAL</h2>
+              <p class="text-[11px] text-purple-200 mt-0.5">0 critical threshold breaches</p>
+            </div>
+          </div>
+
+          <!-- Secondary Charcoal Card (#25282A in reference) -->
+          <div class="p-5 rounded-2xl bg-[#1E2024] dark:bg-[#1A2234] text-white shadow-sm flex items-center justify-between">
+            <div>
+              <span class="text-xs text-slate-400 font-medium block">Edge LoRa Stations</span>
+              <span class="text-xl font-bold font-mono tracking-tight text-white mt-0.5 block">4 / 4 ONLINE</span>
+              <span class="text-[10px] text-slate-400 font-mono">SX1278 @ 433.0 MHz</span>
+            </div>
+            <a href="/monitoring" class="w-10 h-10 rounded-xl bg-[#6425FE] hover:bg-[#5219E0] text-white flex items-center justify-center transition shadow-sm cursor-pointer">
+              <i class="fa-solid fa-arrow-right text-xs"></i>
+            </a>
+          </div>
+
+          <!-- Top Stations Mini List (matching "Top Stock" in reference) -->
+          <div class="p-5 rounded-2xl bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800 space-y-3 shadow-xs">
+            <h3 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider block">Real-time Readings</h3>
+            
+            <div class="space-y-2.5 text-xs">
+              <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500 beacon-active"></span>
+                  <span class="font-semibold text-slate-800 dark:text-slate-200">Ganga Basin</span>
+                </div>
+                <span id="miniValFLD1" class="font-mono font-bold tabular-nums text-slate-900 dark:text-white">2.10 m</span>
+              </div>
+
+              <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-purple-500 beacon-active"></span>
+                  <span class="font-semibold text-slate-800 dark:text-slate-200">Chamoli Incline</span>
+                </div>
+                <span id="miniValSLD2" class="font-mono font-bold tabular-nums text-slate-900 dark:text-white">12.0 °</span>
+              </div>
+
+              <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-amber-500 beacon-active"></span>
+                  <span class="font-semibold text-slate-800 dark:text-slate-200">Almora TVOC</span>
+                </div>
+                <span id="miniValFIR3" class="font-mono font-bold tabular-nums text-slate-900 dark:text-white">818 ppb</span>
+              </div>
+
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-blue-500 beacon-active"></span>
+                  <span class="font-semibold text-slate-800 dark:text-slate-200">Selaqui PM2.5</span>
+                </div>
+                <span id="miniValPOL4" class="font-mono font-bold tabular-nums text-slate-900 dark:text-white">11.5 µg</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- CENTER COLUMN: Trajectory Chart & Live Horizon (lg:col-span-5) -->
+        <div class="lg:col-span-5 p-5 sm:p-6 rounded-2xl bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800 space-y-4 shadow-xs">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900 dark:text-white">Predictive Trajectory Forecaster</h3>
+              <p class="text-[11px] text-slate-400">Jetson Orin PyTorch GRU Recurrent Horizon</p>
+            </div>
+            
+            <!-- Filter Pills (1D, 5D, 1M... matching reference) -->
+            <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-[11px] font-medium self-start sm:self-auto">
+              <button onclick="setHorizonFilter(10)" class="hz-btn px-2.5 py-1 rounded-lg bg-white dark:bg-slate-700 text-[#6425FE] dark:text-purple-300 font-bold shadow-xs">10m</button>
+              <button onclick="setHorizonFilter(20)" class="hz-btn px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white">20m</button>
+              <button onclick="setHorizonFilter(30)" class="hz-btn px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white">30m</button>
+              <button onclick="setHorizonFilter(50)" class="hz-btn px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white">50m</button>
+            </div>
+          </div>
+
+          <!-- Chart.js Container -->
+          <div class="relative w-full h-56 sm:h-64">
+            <canvas id="centerTrajectoryChart"></canvas>
+          </div>
+
+          <!-- Summary Metric Footer (High / Low in reference) -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px]">
+            <div>
+              <span class="text-slate-400 block">Forecast Model:</span>
+              <span class="font-mono font-bold text-slate-800 dark:text-slate-200">PyTorch GRU</span>
+            </div>
+            <div>
+              <span class="text-slate-400 block">Confidence:</span>
+              <span class="font-mono font-bold text-emerald-600 dark:text-emerald-400">98.4%</span>
+            </div>
+            <div>
+              <span class="text-slate-400 block">Lead Time:</span>
+              <span id="statLeadTime" class="font-mono font-bold text-slate-800 dark:text-slate-200">50+ MIN</span>
+            </div>
+            <div>
+              <span class="text-slate-400 block">Hardware:</span>
+              <span class="font-mono font-bold text-slate-800 dark:text-slate-200">Jetson Orin</span>
+            </div>
           </div>
         </div>
+
+        <!-- RIGHT COLUMN: Snapshot & Range Sliders (lg:col-span-4) -->
+        <div class="lg:col-span-4 p-5 sm:p-6 rounded-2xl bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800 space-y-4 shadow-xs">
+          <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+            <h3 class="text-sm font-bold text-slate-900 dark:text-white">Safety Threshold Snapshot</h3>
+            <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 uppercase">Live SPI</span>
+          </div>
+
+          <!-- Threshold Range Gauge 1: River Flood -->
+          <div class="space-y-1.5 text-xs">
+            <div class="flex justify-between items-baseline">
+              <span class="font-medium text-slate-700 dark:text-slate-300">FLD1 River Depth</span>
+              <span id="rangeValFLD1" class="font-mono font-bold text-slate-900 dark:text-white">2.10 m</span>
+            </div>
+            <div class="threshold-track">
+              <div id="needleFLD1" class="threshold-needle" style="left: 21%;"></div>
+            </div>
+            <div class="flex justify-between text-[10px] text-slate-400 font-mono">
+              <span>0.0m Low</span>
+              <span class="text-rose-500 font-bold">10.0m Breach</span>
+            </div>
+          </div>
+
+          <!-- Threshold Range Gauge 2: Mountain Slope -->
+          <div class="space-y-1.5 text-xs pt-1">
+            <div class="flex justify-between items-baseline">
+              <span class="font-medium text-slate-700 dark:text-slate-300">SLD2 Slope Incline</span>
+              <span id="rangeValSLD2" class="font-mono font-bold text-slate-900 dark:text-white">12.0 °</span>
+            </div>
+            <div class="threshold-track">
+              <div id="needleSLD2" class="threshold-needle" style="left: 26%;"></div>
+            </div>
+            <div class="flex justify-between text-[10px] text-slate-400 font-mono">
+              <span>0° Nominal</span>
+              <span class="text-amber-500 font-bold">45° Landslide</span>
+            </div>
+          </div>
+
+          <!-- Threshold Range Gauge 3: Fire TVOC -->
+          <div class="space-y-1.5 text-xs pt-1">
+            <div class="flex justify-between items-baseline">
+              <span class="font-medium text-slate-700 dark:text-slate-300">FIR3 Combustion Gas</span>
+              <span id="rangeValFIR3" class="font-mono font-bold text-slate-900 dark:text-white">818 ppb</span>
+            </div>
+            <div class="threshold-track">
+              <div id="needleFIR3" class="threshold-needle" style="left: 16%;"></div>
+            </div>
+            <div class="flex justify-between text-[10px] text-slate-400 font-mono">
+              <span>0 Baseline</span>
+              <span class="text-rose-500 font-bold">5000 ppb Fire</span>
+            </div>
+          </div>
+
+          <!-- Bottom Snapshot Metadata (Trade Time / Date in reference) -->
+          <div class="pt-3 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-3 text-xs">
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase tracking-wider block">Satellite Link</span>
+              <span class="font-mono font-bold text-slate-900 dark:text-white">SIM800L UART</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase tracking-wider block">RSSI Reception</span>
+              <span class="font-mono font-bold text-emerald-600 dark:text-emerald-400">28 / 31 (90%)</span>
+            </div>
+          </div>
+        </div>
+
       </div>
-    </div>
 
-    <!-- Right 1 Col: Jetson Hub Hardware Telemetry -->
-    <div class="glass-card rounded-2xl p-5 space-y-4">
-      <div class="border-b border-dark-750 pb-3 flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <i class="fa-solid fa-microchip text-emerald-400 text-sm"></i>
-          <h3 class="text-sm font-bold text-white">Jetson Orin Nano Hub</h3>
+      <!-- ======================================================================= -->
+      <!-- 5. BOTTOM SECTION: RECURRENT AI HORIZON + SENTINEL WATCHLIST -->
+      <!-- ======================================================================= -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- Left: Long-Horizon Predictive Analysis Area Chart (lg:col-span-8) -->
+        <div class="lg:col-span-8 p-5 sm:p-6 rounded-2xl bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800 space-y-4 shadow-xs">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900 dark:text-white">Orin Nano Jetson GRU 50-Minute Lead-Time Horizon</h3>
+              <p class="text-[11px] text-slate-400">Autonomous edge early warning trajectory forecasting across all time steps</p>
+            </div>
+            
+            <a href="/analytics" class="text-xs text-[#6425FE] dark:text-[#A78BFA] font-semibold hover:underline flex items-center gap-1">
+              <span>Full Analytics Suite</span>
+              <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+            </a>
+          </div>
+
+          <!-- Large Predictive Chart Canvas -->
+          <div class="relative w-full h-64 sm:h-72">
+            <canvas id="largeForecastChart"></canvas>
+          </div>
         </div>
-        <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-semibold">ONLINE</span>
+
+        <!-- Right: Active Monitored Stations Watchlist (lg:col-span-4) -->
+        <div class="lg:col-span-4 p-5 sm:p-6 rounded-2xl bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800 space-y-4 shadow-xs">
+          <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+            <h3 class="text-sm font-bold text-slate-900 dark:text-white">Active Stations Watchlist</h3>
+            <span class="w-6 h-6 rounded-lg bg-[#6425FE] text-white flex items-center justify-center text-xs">
+              <i class="fa-solid fa-plus text-[10px]"></i>
+            </span>
+          </div>
+
+          <!-- Watchlist Items (styled like Amazon, Tesla, Apple stock items) -->
+          <div class="space-y-3">
+            
+            <!-- Station 1: Ganga Catchment -->
+            <a href="/monitoring#flood" class="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/60 transition group">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-700 dark:text-emerald-300 text-sm">
+                  <i class="fa-solid fa-water"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold text-xs text-slate-900 dark:text-white group-hover:text-[#6425FE] transition">Ganga Catchment #4</h4>
+                  <span class="text-[10px] text-slate-400 font-mono">FLD1 · Ultrasonic</span>
+                </div>
+              </div>
+              <div class="text-right">
+                <span id="watchValFLD1" class="font-mono font-bold text-xs text-slate-900 dark:text-white block">2.10 m</span>
+                <span class="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">NORMAL</span>
+              </div>
+            </a>
+
+            <!-- Station 2: Chamoli Slope -->
+            <a href="/monitoring#landslide" class="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/60 transition group">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-700 dark:text-purple-300 text-sm">
+                  <i class="fa-solid fa-mountain"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold text-xs text-slate-900 dark:text-white group-hover:text-[#6425FE] transition">Chamoli Garhwal 2B</h4>
+                  <span class="text-[10px] text-slate-400 font-mono">SLD2 · Gyro/Pore</span>
+                </div>
+              </div>
+              <div class="text-right">
+                <span id="watchValSLD2" class="font-mono font-bold text-xs text-slate-900 dark:text-white block">12.0 °</span>
+                <span class="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">STABLE</span>
+              </div>
+            </a>
+
+            <!-- Station 3: Pine Forest -->
+            <a href="/monitoring#fire" class="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/60 transition group">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-700 dark:text-amber-300 text-sm">
+                  <i class="fa-solid fa-fire-flame-curved"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold text-xs text-slate-900 dark:text-white group-hover:text-[#6425FE] transition">Almora Perimeter</h4>
+                  <span class="text-[10px] text-slate-400 font-mono">FIR3 · Gas/Flame</span>
+                </div>
+              </div>
+              <div class="text-right">
+                <span id="watchValFIR3" class="font-mono font-bold text-xs text-slate-900 dark:text-white block">818 ppb</span>
+                <span class="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">CLEAR</span>
+              </div>
+            </a>
+
+            <!-- Station 4: Selaqui Basin -->
+            <a href="/monitoring#pollution" class="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/60 transition group">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-700 dark:text-blue-300 text-sm">
+                  <i class="fa-solid fa-smog"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold text-xs text-slate-900 dark:text-white group-hover:text-[#6425FE] transition">Selaqui Industrial</h4>
+                  <span class="text-[10px] text-slate-400 font-mono">POL4 · PM2.5/NO2</span>
+                </div>
+              </div>
+              <div class="text-right">
+                <span id="watchValPOL4" class="font-mono font-bold text-xs text-slate-900 dark:text-white block">11.5 µg</span>
+                <span class="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">GOOD</span>
+              </div>
+            </a>
+
+          </div>
+        </div>
+
       </div>
-
-      <div class="space-y-2.5 text-xs">
-        <div class="flex justify-between py-1 border-b border-dark-800">
-          <span class="text-slate-400">Processor:</span>
-          <span class="font-mono text-slate-200 text-right">6-core ARM v8.2 64-bit</span>
-        </div>
-        <div class="flex justify-between py-1 border-b border-dark-800">
-          <span class="text-slate-400">AI Accelerator:</span>
-          <span class="font-mono text-purple-300 text-right">1024-core Ampere GPU</span>
-        </div>
-        <div class="flex justify-between py-1 border-b border-dark-800">
-          <span class="text-slate-400">LoRa Link:</span>
-          <span class="font-mono text-cyan-300">SX1278 SPI0 @ 433.0 MHz</span>
-        </div>
-        <div class="flex justify-between py-1 border-b border-dark-800">
-          <span class="text-slate-400">GSM Satellite Link:</span>
-          <span class="font-mono text-slate-200">SIM800L UART (RSSI: 28/31)</span>
-        </div>
-        <div class="flex justify-between py-1 border-b border-dark-800">
-          <span class="text-slate-400">GPIO18 Piezo Buzzer:</span>
-          <span id="hubBuzzer" class="font-mono text-slate-400">STANDBY (OFF)</span>
-        </div>
-        <div class="flex justify-between py-1">
-          <span class="text-slate-400">GPIO23 Strobe Relay:</span>
-          <span id="hubStrobe" class="font-mono text-slate-400">STANDBY (OFF)</span>
-        </div>
-      </div>
-
-      <div class="pt-3 border-t border-dark-750">
-        <a href="/forecast" class="w-full py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-lg shadow-cyan-600/30 transition">
-          <i class="fa-solid fa-brain"></i>
-          <span>Inspect Jetson GRU Engine</span>
-        </a>
-      </div>
-    </div>
-
-  </div>
-
-</div>
-{% endblock %}
+{% endblock content %}
 
 {% block scripts %}
 <script>
+  // Mobile Sidebar Toggle
+  function toggleSidebar() {
+    const sb = document.getElementById('dashboardSidebar');
+    const bd = document.getElementById('sidebarBackdrop');
+    sb.classList.toggle('open');
+    bd.classList.toggle('hidden');
+  }
+
+  // Active Chart References
+  let centerChartInstance = null;
+  let largeForecastChartInstance = null;
+  let selectedHorizon = 10;
+
+  function initCharts() {
+    const isDark = document.documentElement.classList.contains('dark');
+    const gridColor = isDark ? 'rgba(51, 65, 85, 0.3)' : 'rgba(226, 232, 240, 0.8)';
+    const textColor = isDark ? '#94A3B8' : '#64748B';
+
+    // 1. Center Trajectory Chart
+    const ctxCenter = document.getElementById('centerTrajectoryChart').getContext('2d');
+    const gradCenter = ctxCenter.createLinearGradient(0, 0, 0, 200);
+    gradCenter.addColorStop(0, 'rgba(100, 37, 254, 0.28)');
+    gradCenter.addColorStop(1, 'rgba(100, 37, 254, 0.00)');
+
+    centerChartInstance = new Chart(ctxCenter, {
+      type: 'line',
+      data: {
+        labels: ['t-4', 't-3', 't-2', 't-1', 'Now (t)', '+10m', '+20m', '+30m', '+40m', '+50m'],
+        datasets: [{
+          label: 'River Depth (m)',
+          data: [1.85, 1.90, 1.98, 2.05, 2.10, 2.12, 2.18, 2.22, 2.25, 2.28],
+          borderColor: '#6425FE',
+          backgroundColor: gradCenter,
+          borderWidth: 2.5,
+          tension: 0.38,
+          fill: true,
+          pointRadius: [0, 0, 0, 0, 4, 3, 3, 3, 3, 4],
+          pointBackgroundColor: '#6425FE',
+          pointBorderColor: '#FFFFFF',
+          pointBorderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: isDark ? '#1E293B' : '#0F172A',
+            titleColor: '#FFFFFF',
+            bodyColor: '#E2E8F0',
+            cornerRadius: 8
+          }
+        },
+        scales: {
+          x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10 } } },
+          y: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10 } }, min: 1.0, max: 4.0 }
+        }
+      }
+    });
+
+    // 2. Large Long-Horizon Forecast Chart (Bottom)
+    const ctxLarge = document.getElementById('largeForecastChart').getContext('2d');
+    const gradLarge = ctxLarge.createLinearGradient(0, 0, 0, 260);
+    gradLarge.addColorStop(0, 'rgba(109, 40, 217, 0.32)');
+    gradLarge.addColorStop(1, 'rgba(109, 40, 217, 0.00)');
+
+    largeForecastChartInstance = new Chart(ctxLarge, {
+      type: 'line',
+      data: {
+        labels: ['t-50m', 't-40m', 't-30m', 't-20m', 't-10m', 'Current', '+10m', '+20m', '+30m', '+40m', '+50m'],
+        datasets: [
+          {
+            label: 'Telemetry Projection',
+            data: [1.60, 1.72, 1.80, 1.95, 2.04, 2.10, 2.14, 2.20, 2.24, 2.30, 2.35],
+            borderColor: '#7C3AED',
+            backgroundColor: gradLarge,
+            borderWidth: 3,
+            tension: 0.35,
+            fill: true,
+            pointRadius: 3,
+            pointBackgroundColor: '#7C3AED'
+          },
+          {
+            label: 'Critical Threshold Limit',
+            data: [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10],
+            borderColor: 'rgba(239, 68, 68, 0.5)',
+            borderDash: [6, 4],
+            borderWidth: 1.5,
+            fill: false,
+            pointRadius: 0
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+            labels: { color: textColor, font: { size: 11 }, boxWidth: 12 }
+          },
+          tooltip: {
+            backgroundColor: isDark ? '#1E293B' : '#0F172A',
+            titleColor: '#FFFFFF',
+            bodyColor: '#E2E8F0',
+            cornerRadius: 8
+          }
+        },
+        scales: {
+          x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10 } } },
+          y: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10 } }, min: 0, max: 12 }
+        }
+      }
+    });
+  }
+
+  function setHorizonFilter(min) {
+    selectedHorizon = min;
+    document.querySelectorAll('.hz-btn').forEach(btn => {
+      btn.className = 'hz-btn px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white';
+    });
+    event.target.className = 'hz-btn px-2.5 py-1 rounded-lg bg-white dark:bg-slate-700 text-[#6425FE] dark:text-purple-300 font-bold shadow-xs';
+  }
+
+  // Update theme icons and charts on toggle
+  const origToggle = window.toggleTheme;
+  window.toggleTheme = function() {
+    origToggle();
+    const isDark = document.documentElement.classList.contains('dark');
+    const hIcon = document.getElementById('headerThemeIcon');
+    if (hIcon) hIcon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+    
+    if (centerChartInstance && largeForecastChartInstance) {
+      centerChartInstance.destroy();
+      largeForecastChartInstance.destroy();
+      initCharts();
+    }
+  };
+
+  // Real-time Event Listener bound to base.html polling stream
   window.addEventListener('sentinel_data', (event) => {
     const { hub, nodes, forecasts, incidents } = event.detail;
 
-    // 1. Update Hero Threat Banner
-    const banner = document.getElementById('heroThreatBanner');
-    const iconContainer = document.getElementById('heroIconContainer');
-    const icon = document.getElementById('heroIcon');
-    const title = document.getElementById('heroTitle');
-    const badge = document.getElementById('heroBadge');
-    const desc = document.getElementById('heroDesc');
-    const kpiThreat = document.getElementById('kpiThreatLevel');
-    const kpiLead = document.getElementById('kpiLeadTime');
-    const kpiGsm = document.getElementById('kpiGsmStatus');
+    // 1. Update Top Status Pill
+    const pill = document.getElementById('topStatusPill');
+    const pillText = document.getElementById('topStatusText');
+    const bellBadge = document.getElementById('bellBadge');
+    const sideBadge = document.getElementById('sideAlertBadge');
 
     if (hub.active_alerts_count > 0) {
-      banner.className = 'p-5 rounded-2xl border transition-all duration-300 bg-rose-950/30 border-rose-500/40 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 animate-pulse-slow';
-      iconContainer.className = 'w-12 h-12 rounded-xl bg-rose-500/20 border border-rose-500/50 flex items-center justify-center text-rose-400 text-2xl flex-shrink-0 animate-bounce';
-      icon.className = 'fa-solid fa-triangle-exclamation';
-      title.className = 'text-base sm:text-lg font-bold text-rose-300';
-      title.textContent = `CRITICAL DISASTER SURGE · ${hub.active_alerts_count} SECTOR ALERT ACTIVE`;
-      badge.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 uppercase';
-      badge.textContent = 'BREACH ACTIVE';
-      desc.textContent = 'Emergency threshold exceeded! Hardware GPIO actuators engaged. Autonomous early warning lead-time active.';
-      
-      kpiThreat.textContent = 'CRITICAL';
-      kpiThreat.className = 'text-xl font-extrabold text-rose-400 font-mono';
-      kpiLead.textContent = '10 MIN MARGIN';
-      kpiLead.className = 'text-xl font-extrabold text-rose-400 font-mono';
-      kpiGsm.textContent = 'DISPATCH READY';
-      kpiGsm.className = 'text-xl font-extrabold text-rose-400 font-mono';
+      pill.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200 dark:border-rose-800';
+      pillText.textContent = `${hub.active_alerts_count} ALERT ACTIVE`;
+      bellBadge.classList.remove('hidden');
+      sideBadge.classList.remove('hidden');
+      sideBadge.textContent = hub.active_alerts_count;
+
+      document.getElementById('heroThreatBadge').className = 'px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-rose-400 text-rose-950 uppercase';
+      document.getElementById('heroThreatBadge').textContent = 'BREACH';
+      document.getElementById('heroThreatText').textContent = 'CRITICAL';
     } else {
-      banner.className = 'p-5 rounded-2xl border transition-all duration-300 bg-emerald-950/20 border-emerald-500/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-4';
-      iconContainer.className = 'w-12 h-12 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 text-2xl flex-shrink-0';
-      icon.className = 'fa-solid fa-circle-check';
-      title.className = 'text-base sm:text-lg font-bold text-emerald-300';
-      title.textContent = 'NORMAL OPERATIONAL POSTURE · ALL CLEAR';
-      badge.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 uppercase';
-      badge.textContent = 'SAFE';
-      desc.textContent = 'All 4 LoRa edge field stations are transmitting nominal readings. Brain 2 PyTorch GRU recurrent forecasters project a safe baseline over the next 50 minutes.';
-      
-      kpiThreat.textContent = 'NORMAL';
-      kpiThreat.className = 'text-xl font-extrabold text-emerald-400 font-mono';
-      kpiLead.textContent = '50+ MIN SAFE';
-      kpiLead.className = 'text-xl font-extrabold text-emerald-400 font-mono';
-      kpiGsm.textContent = 'STANDBY';
-      kpiGsm.className = 'text-xl font-extrabold text-slate-200 font-mono';
+      pill.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800';
+      pillText.textContent = 'ALL CLEAR';
+      bellBadge.classList.add('hidden');
+      sideBadge.classList.add('hidden');
+
+      document.getElementById('heroThreatBadge').className = 'px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-400 text-emerald-950 uppercase';
+      document.getElementById('heroThreatBadge').textContent = '+50m SAFE';
+      document.getElementById('heroThreatText').textContent = 'NORMAL';
     }
 
-    // 2. Update Sector Cards
+    // 2. Update Sector Cards & Range Gauges
     // FLD1
     if (nodes.FLD1) {
-      document.getElementById('valFLD1').textContent = nodes.FLD1.sensors.River_Water_Level_m;
+      const val = parseFloat(nodes.FLD1.sensors.River_Water_Level_m);
+      document.getElementById('valFLD1').textContent = val.toFixed(2);
+      document.getElementById('watchValFLD1').textContent = `${val.toFixed(2)} m`;
+      document.getElementById('rangeValFLD1').textContent = `${val.toFixed(2)} m`;
+      const miniFLD1 = document.getElementById('miniValFLD1');
+      if (miniFLD1) miniFLD1.textContent = `${val.toFixed(2)} m`;
+      
+      const pct = Math.min(Math.max((val / 10.0) * 100, 4), 96);
+      document.getElementById('needleFLD1').style.left = `${pct}%`;
+
       const b = document.getElementById('badgeFLD1');
       if (nodes.FLD1.status === 'Hazardous') {
-        b.className = 'px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-500/20 text-rose-300';
+        b.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-rose-800/20 text-rose-950 dark:text-rose-300 uppercase';
         b.textContent = 'CRITICAL';
       } else {
-        b.className = 'px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300';
+        b.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-800/15 dark:bg-emerald-500/20 text-emerald-950 dark:text-emerald-300 uppercase';
         b.textContent = 'SAFE';
       }
-    }
-    if (forecasts.FLD1) {
-      const l = document.getElementById('leadFLD1');
-      l.textContent = forecasts.FLD1.lead_time_label.includes('BREACH') ? 'BREACH IN 10m' : '50+m SAFE';
-      l.className = forecasts.FLD1.threat_level === 'CRITICAL' ? 'font-mono text-rose-400 font-bold' : 'font-mono text-emerald-400 font-semibold';
     }
 
     // SLD2
     if (nodes.SLD2) {
-      document.getElementById('valSLD2').textContent = nodes.SLD2.sensors.Slope_Angle;
+      const val = parseFloat(nodes.SLD2.sensors.Slope_Angle);
+      document.getElementById('valSLD2').textContent = val.toFixed(1);
+      document.getElementById('watchValSLD2').textContent = `${val.toFixed(1)} °`;
+      document.getElementById('rangeValSLD2').textContent = `${val.toFixed(1)} °`;
+      const miniSLD2 = document.getElementById('miniValSLD2');
+      if (miniSLD2) miniSLD2.textContent = `${val.toFixed(1)} °`;
+
+      const pct = Math.min(Math.max((val / 45.0) * 100, 4), 96);
+      document.getElementById('needleSLD2').style.left = `${pct}%`;
+
       const b = document.getElementById('badgeSLD2');
       if (nodes.SLD2.status === 'Hazardous') {
-        b.className = 'px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-500/20 text-rose-300';
+        b.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-rose-800/20 text-rose-950 dark:text-rose-300 uppercase';
         b.textContent = 'CRITICAL';
       } else {
-        b.className = 'px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300';
+        b.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-purple-900/15 dark:bg-purple-500/20 text-purple-950 dark:text-purple-300 uppercase';
         b.textContent = 'SAFE';
       }
-    }
-    if (forecasts.SLD2) {
-      const l = document.getElementById('leadSLD2');
-      l.textContent = forecasts.SLD2.lead_time_label.includes('BREACH') ? 'BREACH IN 10m' : '50+m SAFE';
-      l.className = forecasts.SLD2.threat_level === 'CRITICAL' ? 'font-mono text-rose-400 font-bold' : 'font-mono text-emerald-400 font-semibold';
     }
 
     // FIR3
     if (nodes.FIR3) {
-      document.getElementById('valFIR3').textContent = nodes.FIR3.sensors['TVOC[ppb]'];
+      const val = parseFloat(nodes.FIR3.sensors['TVOC[ppb]']);
+      document.getElementById('valFIR3').textContent = Math.round(val);
+      document.getElementById('watchValFIR3').textContent = `${Math.round(val)} ppb`;
+      document.getElementById('rangeValFIR3').textContent = `${Math.round(val)} ppb`;
+      const miniFIR3 = document.getElementById('miniValFIR3');
+      if (miniFIR3) miniFIR3.textContent = `${Math.round(val)} ppb`;
+
+      const pct = Math.min(Math.max((val / 5000.0) * 100, 4), 96);
+      document.getElementById('needleFIR3').style.left = `${pct}%`;
+
       const b = document.getElementById('badgeFIR3');
       if (nodes.FIR3.status === 'Hazardous') {
-        b.className = 'px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-500/20 text-rose-300';
+        b.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-rose-800/20 text-rose-950 dark:text-rose-300 uppercase';
         b.textContent = 'CRITICAL';
       } else {
-        b.className = 'px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300';
+        b.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-900/15 dark:bg-amber-500/20 text-amber-950 dark:text-amber-300 uppercase';
         b.textContent = 'SAFE';
       }
-    }
-    if (forecasts.FIR3) {
-      const l = document.getElementById('leadFIR3');
-      l.textContent = forecasts.FIR3.lead_time_label.includes('BREACH') ? 'BREACH IN 10m' : '50+m SAFE';
-      l.className = forecasts.FIR3.threat_level === 'CRITICAL' ? 'font-mono text-rose-400 font-bold' : 'font-mono text-emerald-400 font-semibold';
     }
 
     // POL4
     if (nodes.POL4) {
-      document.getElementById('valPOL4').textContent = nodes.POL4.sensors.pm25;
+      const val = parseFloat(nodes.POL4.sensors.pm25);
+      document.getElementById('valPOL4').textContent = val.toFixed(1);
+      document.getElementById('watchValPOL4').textContent = `${val.toFixed(1)} µg`;
+      const miniPOL4 = document.getElementById('miniValPOL4');
+      if (miniPOL4) miniPOL4.textContent = `${val.toFixed(1)} µg`;
+
       const b = document.getElementById('badgePOL4');
       if (nodes.POL4.status === 'Hazardous') {
-        b.className = 'px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-500/20 text-rose-300';
+        b.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-rose-800/20 text-rose-950 dark:text-rose-300 uppercase';
         b.textContent = 'CRITICAL';
       } else {
-        b.className = 'px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300';
+        b.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-blue-900/15 dark:bg-blue-500/20 text-blue-950 dark:text-blue-300 uppercase';
         b.textContent = 'SAFE';
       }
     }
-    if (forecasts.POL4) {
-      const l = document.getElementById('leadPOL4');
-      l.textContent = forecasts.POL4.lead_time_label.includes('BREACH') ? 'BREACH IN 10m' : '50+m SAFE';
-      l.className = forecasts.POL4.threat_level === 'CRITICAL' ? 'font-mono text-rose-400 font-bold' : 'font-mono text-emerald-400 font-semibold';
-    }
 
-    // 3. Hub Actuators
-    const bz = document.getElementById('hubBuzzer');
-    const st = document.getElementById('hubStrobe');
-    if (hub.buzzer_gpio18) {
-      bz.className = 'font-mono text-rose-400 font-bold animate-pulse';
-      bz.textContent = 'ENGAGED (ACTIVE)';
-    } else {
-      bz.className = 'font-mono text-slate-400';
-      bz.textContent = 'STANDBY (OFF)';
-    }
-    if (hub.strobe_gpio23) {
-      st.className = 'font-mono text-rose-400 font-bold animate-pulse';
-      st.textContent = 'ENGAGED (ACTIVE)';
-    } else {
-      st.className = 'font-mono text-slate-400';
-      st.textContent = 'STANDBY (OFF)';
-    }
+    // 3. Dynamic Chart Updates
+    if (forecasts.FLD1 && centerChartInstance) {
+      const futureVals = forecasts.FLD1.future_steps.map(s => s.predicted_value);
+      const hist = forecasts.FLD1.history_values || [1.85, 1.90, 1.98, 2.05, 2.10];
+      centerChartInstance.data.datasets[0].data = [...hist.slice(-5), ...futureVals];
+      centerChartInstance.update('none');
 
-    // 4. Update Incident Feed (Latest 4 items)
-    const feed = document.getElementById('recentIncidentFeed');
-    if (incidents && incidents.length > 0) {
-      feed.innerHTML = incidents.slice(0, 4).map(inc => {
-        const isCrit = inc.severity === 'CRITICAL';
-        return `
-          <div class="p-3 rounded-xl bg-dark-850/70 border border-dark-750 flex items-start gap-3 text-xs">
-            <span class="w-2 h-2 rounded-full ${isCrit ? 'bg-rose-400 animate-pulse' : 'bg-emerald-400'} mt-1.5 flex-shrink-0"></span>
-            <div class="flex-1">
-              <div class="flex items-center justify-between">
-                <span class="font-semibold ${isCrit ? 'text-rose-300' : 'text-slate-200'}">${inc.title}</span>
-                <span class="text-[10px] font-mono text-slate-400">${inc.timestamp.split(' ')[1] || inc.timestamp}</span>
-              </div>
-              <p class="text-slate-400 text-[11px] mt-0.5">${inc.details}</p>
-            </div>
-          </div>
-        `;
-      }).join('');
+      document.getElementById('statLeadTime').textContent = forecasts.FLD1.lead_time_label.includes('BREACH') ? '10 MIN MARGIN' : '50+ MIN SAFE';
     }
   });
-</script>
-{% endblock %}
 
+  document.addEventListener('DOMContentLoaded', () => {
+    initCharts();
+  });
+</script>
+{% endblock scripts %}

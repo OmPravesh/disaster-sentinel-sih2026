@@ -5,19 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{% block title %}Disaster Sentinel · Autonomous Disaster Intelligence Platform{% endblock %}</title>
 
-  <!-- Google Fonts: Inter (UI) & JetBrains Mono (Telemetry/Data) -->
+  <!-- Google Fonts: IBM Plex Sans (UI) & JetBrains Mono (Telemetry/Data) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
+      darkMode: 'class',
       theme: {
         extend: {
           fontFamily: {
-            sans: ['Inter', 'sans-serif'],
+            sans: ['IBM Plex Sans', 'sans-serif'],
             mono: ['JetBrains Mono', 'monospace'],
           },
           colors: {
@@ -56,23 +57,29 @@
 
   <!-- Chart.js 4 -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    if (window.Chart) {
+      Chart.defaults.color = '#F8FAFC';
+      Chart.defaults.borderColor = 'rgba(148, 163, 184, 0.15)';
+      Chart.defaults.font.family = "'JetBrains Mono', 'IBM Plex Sans', monospace";
+    }
+  </script>
 
   <style>
     body {
       background-color: #F9FAFB;
       color: #0F172A;
-      font-family: 'Inter', sans-serif;
+      font-family: 'IBM Plex Sans', sans-serif;
     }
     .card-base {
       background: #FFFFFF;
       border: 1px solid #E5E7EB;
-      border-radius: 1rem;
-      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
-      transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease, background-color 0.2s ease;
+      border-radius: 0.5rem;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+      transition: border-color 0.15s ease, background-color 0.15s ease;
     }
     .card-base:hover {
       border-color: #CBD5E1;
-      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05), 0 8px 10px -6px rgba(15, 23, 42, 0.03);
     }
     .nav-link-active {
       background-color: #EFF6FF !important;
@@ -87,49 +94,171 @@
     ::-webkit-scrollbar-track { background: #F1F5F9; }
     ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+    html.dark ::-webkit-scrollbar-track { background: #0B0F19; }
+    html.dark ::-webkit-scrollbar-thumb { background: #24314C; border-radius: 3px; }
+    html.dark ::-webkit-scrollbar-thumb:hover { background: #3B4D73; }
+
+    /* Impeccable Craft Floor: Browser surfaces & tabular typography */
+    ::selection {
+      background-color: #155DFC;
+      color: #FFFFFF;
+    }
+    :focus-visible {
+      outline: 2px solid #155DFC;
+      outline-offset: 2px;
+    }
+    .font-mono, [data-telemetry] {
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Purposeful Motion: Rhythmic Beacon Pulse */
+    @keyframes sentinel-beacon {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.6); }
+      70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(22, 163, 74, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
+    }
+    @keyframes sentinel-hazard-pulse {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(251, 44, 54, 0.75); }
+      70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(251, 44, 54, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(251, 44, 54, 0); }
+    }
+    .beacon-active {
+      display: inline-block;
+      border-radius: 9999px;
+      animation: sentinel-beacon 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+    .beacon-hazard {
+      display: inline-block;
+      border-radius: 9999px;
+      animation: sentinel-hazard-pulse 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
 
     /* ========================================================================= */
-    /* DARK MODE GLOBAL OVERRIDES                                                */
+    /* FOXSTOCKS DESIGN SYSTEM & HIGH-CONTRAST DARK MODE                         */
     /* ========================================================================= */
-    html.dark body { background-color: #0F172A; color: #F1F5F9; }
-    html.dark .bg-page { background-color: #0F172A !important; }
-    html.dark .bg-white { background-color: #1E293B !important; }
-    html.dark .bg-slate-50 { background-color: #0F172A !important; }
-    html.dark .bg-slate-100 { background-color: #1E293B !important; }
+    .fox-sidebar {
+      width: 250px;
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    @media (max-width: 1024px) {
+      .fox-sidebar {
+        transform: translateX(-100%);
+        position: fixed;
+        z-index: 50;
+        height: 100vh;
+      }
+      .fox-sidebar.open {
+        transform: translateX(0);
+      }
+    }
+    .sidebar-link-active {
+      background-color: #EDE8FE !important;
+      color: #6425FE !important;
+      font-weight: 700 !important;
+    }
+    .sidebar-link-active i {
+      color: #6425FE !important;
+    }
+    .sidebar-link:hover {
+      background-color: #F1F5F9;
+      color: #0F172A;
+    }
+
+    /* Dark Mode Global Overrides with High Contrast (WCAG AAA) */
+    html.dark {
+      color-scheme: dark;
+    }
+    html.dark body { 
+      background-color: #0B0F19 !important; 
+      color: #F8FAFC !important; 
+    }
+    html.dark .bg-page { 
+      background-color: #0B0F19 !important; 
+    }
+    html.dark .fox-sidebar,
+    html.dark .fox-header {
+      background-color: #111827 !important;
+      border-color: #1F2937 !important;
+    }
+    html.dark .card-base,
+    html.dark .bg-white { 
+      background-color: #131B2E !important; 
+      border-color: #24314C !important; 
+    }
+    html.dark .bg-slate-50,
+    html.dark .bg-slate-100,
+    html.dark [class*="bg-slate-50"]:not([class*="dark:"]),
+    html.dark [class*="bg-slate-100"]:not([class*="dark:"]) { 
+      background-color: #1A253D !important; 
+    }
     html.dark .border-slate-border, 
     html.dark .border-slate-200, 
-    html.dark .border-slate-100 { border-color: #334155 !important; }
+    html.dark .border-slate-100,
+    html.dark [class*="border-slate-200"]:not([class*="dark:"]),
+    html.dark [class*="border-slate-100"]:not([class*="dark:"]) { 
+      border-color: #24314C !important; 
+    }
+
+    /* Crystal-Clear White & Silver Text in Dark Mode (No Black-on-Dark!) */
+    html.dark .text-navy-900,
     html.dark .text-slate-900, 
-    html.dark .text-slate-800 { color: #F8FAFC !important; }
-    html.dark .text-slate-700 { color: #E2E8F0 !important; }
+    html.dark .text-slate-800,
+    html.dark h1, html.dark h2, html.dark h3, html.dark h4 { 
+      color: #FFFFFF !important; 
+    }
+    html.dark .text-navy-800,
+    html.dark .text-slate-700 { 
+      color: #F1F5F9 !important; 
+    }
     html.dark .text-slate-600, 
     html.dark .text-slate-muted, 
-    html.dark .text-slate-500 { color: #94A3B8 !important; }
-    html.dark .text-slate-400 { color: #64748B !important; }
-    html.dark .card-base { background: #1E293B; border-color: #334155; }
-    html.dark .card-base:hover { border-color: #475569; }
-    html.dark header.bg-white\/95 { background-color: rgba(30, 41, 59, 0.95) !important; border-bottom-color: #334155 !important; }
-    html.dark .nav-link-active { background-color: rgba(21, 93, 252, 0.2) !important; color: #60A5FA !important; }
-    html.dark .nav-link-active i { color: #60A5FA !important; }
-    html.dark ::-webkit-scrollbar-track { background: #0F172A; }
-    html.dark ::-webkit-scrollbar-thumb { background: #334155; }
-    html.dark ::-webkit-scrollbar-thumb:hover { background: #475569; }
-    html.dark th.bg-slate-50 { background-color: #1E293B !important; color: #E2E8F0 !important; border-bottom-color: #334155 !important; }
-    html.dark td { border-bottom-color: #334155 !important; }
+    html.dark .text-slate-500 { 
+      color: #CBD5E1 !important; 
+    }
+    html.dark .text-slate-400 { 
+      color: #94A3B8 !important; 
+    }
+    html.dark .font-mono:not([class*="text-"]) {
+      color: #FFFFFF;
+    }
+    html.dark .font-mono.text-slate-muted {
+      color: #CBD5E1 !important;
+    }
+    html.dark .sidebar-link-active {
+      background-color: rgba(100, 37, 254, 0.3) !important;
+      color: #C4B5FD !important;
+    }
+    html.dark .sidebar-link-active i {
+      color: #C4B5FD !important;
+    }
+    html.dark .sidebar-link:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+      color: #FFFFFF;
+    }
+    html.dark .card-base:hover { 
+      border-color: #3B4E75 !important; 
+    }
+    html.dark ::-webkit-scrollbar-track { background: #0B0F19; }
+    html.dark ::-webkit-scrollbar-thumb { background: #23304B; }
+    html.dark ::-webkit-scrollbar-thumb:hover { background: #3B4E75; }
+    html.dark th.bg-slate-50 { background-color: #151E32 !important; color: #FFFFFF !important; border-bottom-color: #24314C !important; }
+    html.dark td { border-bottom-color: #24314C !important; }
   </style>
 
   <!-- Theme Toggling Logic -->
   <script>
     function applyTheme(theme) {
+      const headerIcon = document.getElementById('headerThemeIcon');
       const icon = document.getElementById('themeIcon');
       const btn = document.getElementById('themeToggleBtn');
       if (theme === 'dark') {
         document.documentElement.classList.add('dark');
+        if(headerIcon) headerIcon.className = 'fa-solid fa-sun text-amber-400';
         if(icon) icon.className = 'fa-solid fa-sun text-lg group-hover:rotate-45 transition-transform';
         if(btn) { btn.classList.remove('bg-white', 'border-slate-200', 'text-slate-600'); btn.classList.add('bg-slate-800', 'border-slate-700', 'text-amber-400'); }
         localStorage.setItem('theme', 'dark');
         if (window.Chart) {
-           Chart.defaults.color = "#94A3B8";
+           Chart.defaults.color = "#CBD5E1";
            Chart.defaults.plugins.tooltip.backgroundColor = "#FFFFFF";
            Chart.defaults.plugins.tooltip.titleColor = "#0F172A";
            Chart.defaults.plugins.tooltip.bodyColor = "#1E293B";
@@ -137,6 +266,7 @@
         }
       } else {
         document.documentElement.classList.remove('dark');
+        if(headerIcon) headerIcon.className = 'fa-solid fa-moon text-slate-600';
         if(icon) icon.className = 'fa-solid fa-moon text-lg group-hover:-rotate-12 transition-transform';
         if(btn) { btn.classList.add('bg-white', 'border-slate-200', 'text-slate-600'); btn.classList.remove('bg-slate-800', 'border-slate-700', 'text-amber-400'); }
         localStorage.setItem('theme', 'light');
@@ -155,7 +285,14 @@
       applyTheme(isDark ? 'light' : 'dark');
     }
 
-    // Auto-apply theme early to prevent flash
+    function toggleSidebar() {
+      const sb = document.getElementById('dashboardSidebar');
+      const backdrop = document.getElementById('sidebarBackdrop');
+      if (sb) sb.classList.toggle('open');
+      if (backdrop) backdrop.classList.toggle('hidden');
+    }
+
+    // Default theme is Foxstocks Light Theme
     const savedTheme = localStorage.getItem('theme') || 'light';
     if(savedTheme === 'dark') document.documentElement.classList.add('dark');
     
@@ -167,7 +304,7 @@
   <script>
     // Global Chart.js Light-Mode Styling Configuration
     if (window.Chart) {
-      Chart.defaults.font.family = "'Inter', sans-serif";
+      Chart.defaults.font.family = "'IBM Plex Sans', sans-serif";
       Chart.defaults.color = "#64748B";
       Chart.defaults.plugins.tooltip.backgroundColor = "#0F172A";
       Chart.defaults.plugins.tooltip.titleColor = "#FFFFFF";
@@ -183,8 +320,8 @@
 <body class="min-h-screen flex flex-col bg-page text-navy-900 antialiased selection:bg-brand-light selection:text-brand-action">
 
   <!-- Floating Movable Day/Night Theme Toggle -->
-  <button onclick="toggleTheme()" id="themeToggleBtn" title="Toggle Light/Dark Mode" class="fixed bottom-6 right-6 z-[999] w-12 h-12 rounded-full bg-white shadow-xl border border-slate-200 flex items-center justify-center text-slate-600 hover:scale-110 hover:shadow-2xl transition-all cursor-pointer group">
-    <i id="themeIcon" class="fa-solid fa-moon text-lg group-hover:-rotate-12 transition-transform"></i>
+  <button onclick="toggleTheme()" id="themeToggleBtn" title="Toggle Light/Dark Mode" class="fixed bottom-6 right-6 z-[999] w-11 h-11 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-600 transition-colors cursor-pointer group">
+    <i id="themeIcon" class="fa-solid fa-moon text-base"></i>
   </button>
   <!-- ========================================================================= -->
   <!-- 0. DYNAMIC CONDITIONAL EMERGENCY ALERT BAR (HIDDEN WHEN ALL SYSTEMS SAFE) -->
@@ -195,7 +332,7 @@
         <span class="w-2.5 h-2.5 rounded-full bg-white animate-ping flex-shrink-0"></span>
         <span id="emergencyBarTitle" class="font-extrabold tracking-wide uppercase flex items-center gap-1.5">
           <i class="fa-solid fa-triangle-exclamation"></i>
-          <span>CRITICAL &mdash; DISASTER DETECTED</span>
+          <span>CRITICAL - DISASTER DETECTED</span>
         </span>
         <span class="text-rose-200 hidden sm:inline">&bull;</span>
         <span id="emergencyBarSubtitle" class="text-rose-100 truncate">Regional safety threshold exceeded. Immediate response advised.</span>
@@ -207,154 +344,204 @@
     </div>
   </div>
 
-  <!-- ========================================================================= -->
-  <!-- 1. TOP GLOBAL NAVIGATION BAR (CLEAN SAAS HEADER) -->
-  <!-- ========================================================================= -->
-  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-border shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between min-h-[4rem] py-2">
+  {% block layout %}
+  <div class="min-h-screen flex bg-[#F5F6FA] dark:bg-[#0B0F19] text-slate-800 dark:text-slate-100 font-sans antialiased">
+
+    <!-- Mobile Sidebar Backdrop -->
+    <div id="sidebarBackdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-30 hidden lg:hidden"></div>
+
+    <!-- ========================================================================= -->
+    <!-- 1. UNIFIED LEFT SIDEBAR (FOXSTOCKS PANEL LAYOUT ACROSS ALL PAGES)        -->
+    <!-- ========================================================================= -->
+    <aside id="dashboardSidebar" class="fox-sidebar shrink-0 bg-white dark:bg-[#111827] border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between p-5 select-none shadow-sm z-40">
+      <div class="space-y-6">
         
-        <!-- Left: Brand Logo & Subtitle -->
-        <div class="flex items-center gap-3 shrink-0">
-          <a href="/" class="flex items-center gap-2.5 sm:gap-3 group shrink-0">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand to-brand-action flex items-center justify-center text-white shadow-sm shadow-blue-500/20 group-hover:scale-105 transition shrink-0">
+        <!-- Brand Logo & App Name -->
+        <div class="flex items-center justify-between">
+          <a href="/dashboard" class="flex items-center gap-3 group">
+            <div class="w-10 h-10 rounded-xl bg-[#6425FE] flex items-center justify-center text-white shadow-sm">
               <i class="fa-solid fa-shield-halved text-lg"></i>
             </div>
-            <div class="flex flex-col justify-center">
-              <div class="flex items-center gap-2">
-                <span class="font-extrabold tracking-tight text-navy-900 text-base sm:text-lg leading-snug whitespace-nowrap">DISASTER SENTINEL</span>
-              </div>
-              <p class="text-[11px] text-slate-muted hidden sm:block font-medium leading-none whitespace-nowrap mt-0.5">AI + IoT Disaster Intelligence Platform</p>
+            <div>
+              <span class="font-extrabold text-base tracking-tight text-slate-900 dark:text-white block leading-tight">Sentinel Hub</span>
+              <span class="text-[10px] text-slate-400 font-semibold tracking-wider uppercase block">Autonomous AI</span>
             </div>
+          </a>
+          <button onclick="toggleSidebar()" class="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <!-- Navigation Section -->
+        <div class="space-y-1">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-3 pb-2 block">Operations Panel</span>
+          
+          <a href="/dashboard" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold {% if active_page == 'dashboard' or active_page == 'overview' %}sidebar-link-active{% else %}sidebar-link text-slate-600 dark:text-slate-300{% endif %} transition">
+            <i class="fa-solid fa-table-cells-large text-sm w-4 text-center"></i>
+            <span>Dashboard</span>
+          </a>
+
+          <a href="/monitoring" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold {% if active_page == 'monitoring' %}sidebar-link-active{% else %}sidebar-link text-slate-600 dark:text-slate-300{% endif %} transition">
+            <i class="fa-solid fa-satellite-dish text-sm w-4 text-center"></i>
+            <span>Live Telemetry</span>
+          </a>
+
+          <a href="/map" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold {% if active_page == 'map' %}sidebar-link-active{% else %}sidebar-link text-slate-600 dark:text-slate-300{% endif %} transition">
+            <i class="fa-solid fa-map-location-dot text-sm w-4 text-center"></i>
+            <span>Tactical Map</span>
+          </a>
+
+          <a href="/alerts" class="flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold {% if active_page == 'alerts' %}sidebar-link-active{% else %}sidebar-link text-slate-600 dark:text-slate-300{% endif %} transition">
+            <div class="flex items-center gap-3">
+              <i class="fa-solid fa-triangle-exclamation text-sm w-4 text-center text-amber-500"></i>
+              <span>Alerts &amp; Incidents</span>
+            </div>
+            <span id="sideAlertBadge" class="hidden text-[9px] font-mono font-bold px-1.5 py-0.2 rounded-full bg-rose-600 text-white">0</span>
+          </a>
+
+          <a href="/analytics" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold {% if active_page == 'analytics' %}sidebar-link-active{% else %}sidebar-link text-slate-600 dark:text-slate-300{% endif %} transition">
+            <i class="fa-solid fa-brain text-sm w-4 text-center"></i>
+            <span>AI Forecast Engine</span>
+          </a>
+
+          <a href="/hardware" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold {% if active_page == 'hardware' %}sidebar-link-active{% else %}sidebar-link text-slate-600 dark:text-slate-300{% endif %} transition">
+            <i class="fa-solid fa-microchip text-sm w-4 text-center"></i>
+            <span>Jetson &amp; LoRa Hub</span>
+          </a>
+
+          <a href="/about" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold {% if active_page == 'about' %}sidebar-link-active{% else %}sidebar-link text-slate-600 dark:text-slate-300{% endif %} transition">
+            <i class="fa-solid fa-circle-info text-sm w-4 text-center"></i>
+            <span>System Specs</span>
           </a>
         </div>
 
-        <!-- Center: 7 Major Navigation Links -->
-        <nav class="hidden lg:flex items-center gap-1">
-          <a href="/" class="px-3 py-2 rounded-xl text-xs font-medium text-slate-muted hover:text-navy-900 hover:bg-slate-subtle transition flex items-center gap-1.5 {% if active_page == 'overview' %}nav-link-active{% endif %}">
-            <i class="fa-solid fa-gauge-high text-xs text-slate-400"></i>
-            <span>Overview</span>
-          </a>
-          <a href="/monitoring" class="px-3 py-2 rounded-xl text-xs font-medium text-slate-muted hover:text-navy-900 hover:bg-slate-subtle transition flex items-center gap-1.5 {% if active_page == 'monitoring' %}nav-link-active{% endif %}">
-            <i class="fa-solid fa-satellite-dish text-xs text-slate-400"></i>
-            <span>Live Monitoring</span>
-          </a>
-          <a href="/map" class="px-3 py-2 rounded-xl text-xs font-medium text-slate-muted hover:text-navy-900 hover:bg-slate-subtle transition flex items-center gap-1.5 {% if active_page == 'map' %}nav-link-active{% endif %}">
-            <i class="fa-solid fa-map-location-dot text-xs text-slate-400"></i>
-            <span>Disaster Map</span>
-          </a>
-          <a href="/alerts" class="px-3 py-2 rounded-xl text-xs font-medium text-slate-muted hover:text-navy-900 hover:bg-slate-subtle transition flex items-center gap-1.5 relative {% if active_page == 'alerts' %}nav-link-active{% endif %}">
-            <i class="fa-solid fa-triangle-exclamation text-xs text-amber-500"></i>
-            <span>Alerts</span>
-            <span id="navAlertBadge" class="hidden text-[9px] font-mono font-bold px-1.5 py-0.2 rounded-full bg-rose-600 text-white">0</span>
-          </a>
-          <a href="/analytics" class="px-3 py-2 rounded-xl text-xs font-medium text-slate-muted hover:text-navy-900 hover:bg-slate-subtle transition flex items-center gap-1.5 {% if active_page == 'analytics' %}nav-link-active{% endif %}">
-            <i class="fa-solid fa-chart-line text-xs text-slate-400"></i>
-            <span>Analytics &amp; ML</span>
-          </a>
-          <a href="/hardware" class="px-3 py-2 rounded-xl text-xs font-medium text-slate-muted hover:text-navy-900 hover:bg-slate-subtle transition flex items-center gap-1.5 {% if active_page == 'hardware' %}nav-link-active{% endif %}">
-            <i class="fa-solid fa-microchip text-xs text-slate-400"></i>
-            <span>IoT Hardware</span>
-          </a>
-          <a href="/about" class="px-3 py-2 rounded-xl text-xs font-medium text-slate-muted hover:text-navy-900 hover:bg-slate-subtle transition flex items-center gap-1.5 {% if active_page == 'about' %}nav-link-active{% endif %}">
-            <i class="fa-solid fa-circle-info text-xs text-slate-400"></i>
-            <span>About</span>
-          </a>
-        </nav>
+        <!-- Situational Posture Callout (Thoughts Time in Reference) -->
+        <div class="p-4 rounded-xl bg-emerald-50 dark:bg-[#0D241E] border border-emerald-200 dark:border-emerald-800/80 space-y-2">
+          <div class="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-bold">
+            <div class="w-6 h-6 rounded-lg bg-emerald-200/80 dark:bg-emerald-900/60 flex items-center justify-center text-xs text-emerald-900 dark:text-emerald-200">
+              <i class="fa-solid fa-tower-broadcast"></i>
+            </div>
+            <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-900 dark:text-emerald-300">Edge Posture</span>
+          </div>
+          <p class="text-xs text-slate-700 dark:text-slate-200 leading-relaxed font-medium">
+            Jetson Orin recurrent GRU forecasters are projecting nominal baseline safety across all 4 field stations with 50m lead time.
+          </p>
+        </div>
 
-        <!-- Right: Status Pill & Emergency Actions -->
-        <div class="flex items-center gap-2 sm:gap-3">
+      </div>
+
+      <!-- Bottom Drawer / Emergency Actions -->
+      <div class="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-2">
+        <button onclick="openSimDrawer()" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 dark:hover:bg-slate-700 transition">
+          <span class="flex items-center gap-2">
+            <i class="fa-solid fa-flask text-purple-600 dark:text-purple-400"></i>
+            <span>Test Surges</span>
+          </span>
+          <i class="fa-solid fa-chevron-right text-[10px] text-slate-400"></i>
+        </button>
+
+        <button onclick="openSosModal()" class="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 transition shadow-sm">
+          <i class="fa-solid fa-satellite-dish"></i>
+          <span>SEND EMERGENCY SOS</span>
+        </button>
+      </div>
+
+    </aside>
+
+    <!-- ========================================================================= -->
+    <!-- 2. MAIN RIGHT VIEWPORT (HEADER + CONTENT + FOOTER)                        -->
+    <!-- ========================================================================= -->
+    <div class="flex-1 flex flex-col min-w-0 min-h-screen">
+      
+      <!-- TOP FOXSTOCKS HEADER -->
+      <header class="fox-header sticky top-0 z-30 bg-white dark:bg-[#111827] border-b border-slate-200 dark:border-slate-800 px-5 sm:px-7 py-3 flex items-center justify-between gap-4">
+        
+        <!-- Left: Mobile Toggle & Page Greeting -->
+        <div class="flex items-center gap-3">
+          <button onclick="toggleSidebar()" class="lg:hidden p-2 rounded-xl text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800">
+            <i class="fa-solid fa-bars text-sm"></i>
+          </button>
+          <div>
+            <h1 class="font-extrabold text-lg sm:text-xl text-slate-900 dark:text-white tracking-tight leading-tight">
+              {% block page_title %}Hello Commander,{% endblock %}
+            </h1>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium hidden sm:block">
+              {% block page_subtitle %}Uttarakhand Multi-Hazard Autonomous Surveillance Network{% endblock %}
+            </p>
+          </div>
+        </div>
+
+        <!-- Center: Search Input Bar -->
+        <div class="hidden md:flex items-center flex-1 max-w-md mx-4">
+          <div class="relative w-full">
+            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+            <input type="text" placeholder="Search sensor nodes, telemetry metrics, sectors..." class="w-full pl-9 pr-4 py-2 bg-slate-100 dark:bg-slate-800/80 border border-transparent dark:border-slate-700/60 rounded-xl text-xs text-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:border-[#6425FE] transition" />
+          </div>
+        </div>
+
+        <!-- Right: Action Icons & Profile Badge -->
+        <div class="flex items-center gap-2.5 sm:gap-3 shrink-0">
           
-          <!-- Live Global Status Pill -->
-          <div id="globalStatusPill" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-            <span id="globalStatusDot" class="w-2 h-2 rounded-full bg-emerald-500"></span>
-            <span id="globalStatusText">ALL SYSTEMS SAFE</span>
+          <!-- Live System Status Tag -->
+          <div id="topStatusPill" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span id="topStatusText">ALL CLEAR</span>
           </div>
 
-          <!-- Quick Simulation Lab Trigger Button (For SIH Evaluator Demos) -->
-          <button onclick="openSimDrawer()" title="Open SIH Simulation Lab" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white hover:bg-gray-50 text-brand-action border border-slate-border hover:border-blue-300 shadow-sm transition">
-            <i class="fa-solid fa-flask text-xs"></i>
-            <span>Sim Lab</span>
-          </button>
-
-          <!-- Audio Siren Mute Toggle -->
-          <button id="audioToggleBtn" onclick="toggleGlobalAudio()" title="Mute/Unmute Emergency Siren Audio" class="w-9 h-9 rounded-xl bg-white hover:bg-gray-50 text-slate-muted hover:text-navy-900 flex items-center justify-center border border-slate-border shadow-sm transition text-xs">
+          <!-- Audio Siren Toggle -->
+          <button id="audioToggleBtn" onclick="toggleGlobalAudio()" title="Toggle Audio Alarm" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center transition cursor-pointer text-xs">
             <i id="audioIcon" class="fa-solid fa-volume-high"></i>
           </button>
 
-          <!-- Emergency SOS Trigger Button -->
-          <button onclick="openSosModal()" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-sm transition">
-            <i class="fa-solid fa-satellite-dish text-xs"></i>
-            <span>SEND SOS</span>
+          <!-- Notification Bell -->
+          <a href="/alerts" title="Active Alerts" class="relative w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center transition text-xs">
+            <i class="fa-regular fa-bell"></i>
+            <span id="bellBadge" class="hidden absolute top-2 right-2 w-2 h-2 rounded-full bg-rose-500"></span>
+          </a>
+
+          <!-- Dark/Light Theme Toggle -->
+          <button id="dashboardThemeBtn" onclick="toggleTheme()" title="Toggle Theme" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center transition cursor-pointer text-xs">
+            <i id="headerThemeIcon" class="fa-solid fa-moon"></i>
           </button>
 
-          <!-- Mobile Hamburger Toggle -->
-          <button onclick="toggleMobileMenu()" class="lg:hidden w-9 h-9 rounded-xl bg-white text-slate-700 flex items-center justify-center border border-slate-border shadow-sm">
-            <i class="fa-solid fa-bars text-sm"></i>
-          </button>
+          <!-- Commander Avatar -->
+          <div class="flex items-center gap-2 pl-2 border-l border-slate-200 dark:border-slate-800">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#6425FE] to-[#8C65FE] flex items-center justify-center text-white font-bold text-xs shadow-sm">
+              <span>ND</span>
+            </div>
+          </div>
         </div>
 
-      </div>
+      </header>
+
+      <!-- MAIN PAGE CONTENT BLOCK -->
+      <main class="flex-1 p-5 sm:p-7 space-y-6 overflow-y-auto">
+        {% block content %}{% endblock %}
+      </main>
+
+      <!-- UNIFIED FOOTER -->
+      <footer class="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827] px-7 py-4 text-xs text-slate-500 dark:text-slate-400">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span class="font-bold text-slate-900 dark:text-white">Disaster Sentinel</span>
+            <span class="text-slate-300 dark:text-slate-600">|</span>
+            <span>SIH 2026 Qualcomm · Autonomous Jetson Orin Nano Edge Hub</span>
+          </div>
+          <div class="flex items-center gap-4 text-slate-500 dark:text-slate-400">
+            <a href="/monitoring" class="hover:text-[#6425FE] dark:hover:text-[#A78BFA] transition">Monitoring</a>
+            <a href="/map" class="hover:text-[#6425FE] dark:hover:text-[#A78BFA] transition">Tactical Map</a>
+            <a href="/alerts" class="hover:text-[#6425FE] dark:hover:text-[#A78BFA] transition">Alerts</a>
+            <a href="/hardware" class="hover:text-[#6425FE] dark:hover:text-[#A78BFA] transition">Hardware</a>
+            <a href="/about" class="hover:text-[#6425FE] dark:hover:text-[#A78BFA] transition">Specs</a>
+          </div>
+        </div>
+      </footer>
+
     </div>
 
-    <!-- Mobile Drawer Menu (7 Pages) -->
-    <div id="mobileMenu" class="hidden lg:hidden border-t border-slate-border bg-white px-4 py-3 space-y-1 shadow-md">
-      <a href="/" class="block px-3 py-2 rounded-xl text-sm font-medium text-navy-900 hover:bg-slate-subtle {% if active_page == 'overview' %}nav-link-active{% endif %}">
-        <i class="fa-solid fa-gauge-high mr-2 text-brand-action"></i> Overview
-      </a>
-      <a href="/monitoring" class="block px-3 py-2 rounded-xl text-sm font-medium text-navy-900 hover:bg-slate-subtle {% if active_page == 'monitoring' %}nav-link-active{% endif %}">
-        <i class="fa-solid fa-satellite-dish mr-2 text-brand-action"></i> Live Monitoring
-      </a>
-      <a href="/map" class="block px-3 py-2 rounded-xl text-sm font-medium text-navy-900 hover:bg-slate-subtle {% if active_page == 'map' %}nav-link-active{% endif %}">
-        <i class="fa-solid fa-map-location-dot mr-2 text-brand-action"></i> Disaster Map
-      </a>
-      <a href="/alerts" class="block px-3 py-2 rounded-xl text-sm font-medium text-navy-900 hover:bg-slate-subtle {% if active_page == 'alerts' %}nav-link-active{% endif %}">
-        <i class="fa-solid fa-triangle-exclamation mr-2 text-amber-500"></i> Alerts &amp; Emergency
-      </a>
-      <a href="/analytics" class="block px-3 py-2 rounded-xl text-sm font-medium text-navy-900 hover:bg-slate-subtle {% if active_page == 'analytics' %}nav-link-active{% endif %}">
-        <i class="fa-solid fa-chart-line mr-2 text-emerald-600"></i> Analytics &amp; ML
-      </a>
-      <a href="/hardware" class="block px-3 py-2 rounded-xl text-sm font-medium text-navy-900 hover:bg-slate-subtle {% if active_page == 'hardware' %}nav-link-active{% endif %}">
-        <i class="fa-solid fa-microchip mr-2 text-blue-600"></i> IoT Hardware
-      </a>
-      <a href="/about" class="block px-3 py-2 rounded-xl text-sm font-medium text-navy-900 hover:bg-slate-subtle {% if active_page == 'about' %}nav-link-active{% endif %}">
-        <i class="fa-solid fa-circle-info mr-2 text-indigo-600"></i> About System
-      </a>
-      <div class="pt-2 border-t border-slate-border">
-        <button onclick="openSimDrawer()" class="w-full px-3 py-2 rounded-xl text-sm font-semibold text-brand-action bg-brand-light flex items-center justify-center gap-2">
-          <i class="fa-solid fa-flask"></i> Open Simulation Lab
-        </button>
-      </div>
-    </div>
-  </header>
-
-  <!-- ========================================================================= -->
-  <!-- 2. MAIN CONTENT CONTAINER -->
-  <!-- ========================================================================= -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-7">
-    {% block content %}{% endblock %}
-  </main>
-
-  <!-- ========================================================================= -->
-  <!-- 3. FOOTER -->
-  <!-- ========================================================================= -->
-  <footer class="mt-auto border-t border-slate-border bg-white py-6 text-xs text-slate-muted">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
-      <div class="flex flex-wrap items-center gap-2">
-        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-        <span class="font-bold text-navy-900">Disaster Sentinel</span>
-        <span class="text-slate-300">|</span>
-        <span>Smart India Hackathon (SIH) 2026 &middot; Problem Statement SIH26178 (Qualcomm)</span>
-      </div>
-      <div class="flex items-center gap-4 text-slate-muted">
-        <a href="/monitoring" class="hover:text-brand-action transition">Monitoring</a>
-        <a href="/map" class="hover:text-brand-action transition">Map</a>
-        <a href="/alerts" class="hover:text-brand-action transition">Alerts</a>
-        <a href="/hardware" class="hover:text-brand-action transition">Hardware Diagnostics</a>
-        <a href="/about" class="hover:text-brand-action transition">System Architecture</a>
-      </div>
-    </div>
-  </footer>
+  </div>
+  {% endblock layout %}
 
   <!-- ========================================================================= -->
   <!-- 4. SLIDE-OVER PRESENTATION SIMULATION DRAWER (LIGHT SAAS PANEL) -->
@@ -365,7 +552,7 @@
     <!-- Header -->
     <div class="px-5 py-4 border-b border-slate-border flex items-center justify-between bg-slate-subtle">
       <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-brand-action">
+        <div class="w-9 h-9 rounded-lg bg-blue-50 border border-blue-200 flex items-center justify-center text-brand-action">
           <i class="fa-solid fa-flask text-sm"></i>
         </div>
         <div>
@@ -380,7 +567,7 @@
 
     <!-- Content -->
     <div class="flex-1 overflow-y-auto p-5 space-y-4">
-      <div class="p-3.5 rounded-xl bg-blue-50/70 border border-blue-200/80 text-xs text-navy-800 leading-relaxed">
+      <div class="p-3.5 rounded-lg bg-blue-50/70 border border-blue-200/80 text-xs text-navy-800 leading-relaxed">
         <p class="font-bold text-brand-action mb-1 flex items-center gap-1.5">
           <i class="fa-solid fa-circle-info"></i> SIH Evaluator Testing
         </p>
@@ -389,7 +576,7 @@
 
       <div class="space-y-3">
         <!-- Flood -->
-        <button onclick="triggerSimulation('flash_flood')" class="w-full p-4 rounded-xl card-base hover:border-blue-400 text-left border-l-4 border-l-blue-600 group transition">
+        <button onclick="triggerSimulation('flash_flood')" class="w-full p-4 rounded-lg card-base hover:border-blue-400 text-left group transition">
           <div class="flex items-center justify-between">
             <span class="font-bold text-sm text-navy-900 group-hover:text-brand-action flex items-center gap-2">
               <i class="fa-solid fa-water text-blue-600"></i>
@@ -401,7 +588,7 @@
         </button>
 
         <!-- Landslide -->
-        <button onclick="triggerSimulation('landslide_collapse')" class="w-full p-4 rounded-xl card-base hover:border-amber-400 text-left border-l-4 border-l-amber-500 group transition">
+        <button onclick="triggerSimulation('landslide_collapse')" class="w-full p-4 rounded-lg card-base hover:border-amber-400 text-left group transition">
           <div class="flex items-center justify-between">
             <span class="font-bold text-sm text-navy-900 group-hover:text-amber-600 flex items-center gap-2">
               <i class="fa-solid fa-mountain text-amber-500"></i>
@@ -413,7 +600,7 @@
         </button>
 
         <!-- Fire -->
-        <button onclick="triggerSimulation('forest_fire')" class="w-full p-4 rounded-xl card-base hover:border-rose-400 text-left border-l-4 border-l-rose-500 group transition">
+        <button onclick="triggerSimulation('forest_fire')" class="w-full p-4 rounded-lg card-base hover:border-rose-400 text-left group transition">
           <div class="flex items-center justify-between">
             <span class="font-bold text-sm text-navy-900 group-hover:text-rose-600 flex items-center gap-2">
               <i class="fa-solid fa-fire-flame-curved text-rose-500"></i>
@@ -425,7 +612,7 @@
         </button>
 
         <!-- Smog -->
-        <button onclick="triggerSimulation('toxic_smog')" class="w-full p-4 rounded-xl card-base hover:border-purple-400 text-left border-l-4 border-l-purple-500 group transition">
+        <button onclick="triggerSimulation('toxic_smog')" class="w-full p-4 rounded-lg card-base hover:border-slate-400 text-left group transition">
           <div class="flex items-center justify-between">
             <span class="font-bold text-sm text-navy-900 group-hover:text-purple-600 flex items-center gap-2">
               <i class="fa-solid fa-smog text-purple-500"></i>
@@ -437,7 +624,7 @@
         </button>
 
         <!-- Reset All Clear -->
-        <button onclick="triggerSimulation('all_clear')" class="w-full p-4 rounded-xl card-base hover:border-emerald-400 text-left border-l-4 border-l-emerald-500 group transition mt-4 bg-emerald-50/30">
+        <button onclick="triggerSimulation('all_clear')" class="w-full p-4 rounded-lg card-base hover:border-emerald-400 text-left group transition mt-4 bg-emerald-50/30">
           <div class="flex items-center justify-between">
             <span class="font-bold text-sm text-emerald-800 group-hover:text-emerald-700 flex items-center gap-2">
               <i class="fa-solid fa-circle-check text-emerald-600"></i>
@@ -449,13 +636,13 @@
         </button>
       </div>
 
-      <div id="simFeedback" class="hidden p-3.5 rounded-xl bg-slate-subtle border border-slate-border text-xs text-center font-medium"></div>
+      <div id="simFeedback" class="hidden p-3.5 rounded-lg bg-slate-subtle border border-slate-border text-xs text-center font-medium"></div>
     </div>
 
     <!-- Footer -->
     <div class="p-4 border-t border-slate-border bg-slate-subtle flex justify-between items-center text-xs text-slate-muted">
       <span>NVIDIA Jetson Edge Hub</span>
-      <button onclick="closeSimDrawer()" class="px-4 py-2 rounded-xl bg-white hover:bg-gray-100 text-navy-900 font-semibold border border-slate-border shadow-sm">Close</button>
+      <button onclick="closeSimDrawer()" class="px-4 py-2 rounded-lg bg-white hover:bg-gray-100 text-navy-900 font-semibold border border-slate-border shadow-sm">Close</button>
     </div>
   </div>
 
@@ -463,10 +650,10 @@
   <!-- 5. NDRF EMERGENCY SOS BROADCAST MODAL (CLEAN SAAS MODAL) -->
   <!-- ========================================================================= -->
   <div id="sosModalBackdrop" onclick="closeSosModal()" class="fixed inset-0 bg-navy-900/50 backdrop-blur-sm z-50 hidden transition-opacity"></div>
-  <div id="sosModal" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-white border border-rose-300 rounded-2xl shadow-2xl z-50 hidden p-6 space-y-4">
+  <div id="sosModal" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-white border border-rose-300 rounded-lg shadow-xl z-50 hidden p-6 space-y-4">
     <div class="flex items-center justify-between border-b border-slate-border pb-3">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 text-lg">
+        <div class="w-10 h-10 rounded-lg bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 text-lg">
           <i class="fa-solid fa-satellite-dish"></i>
         </div>
         <div>
@@ -478,7 +665,7 @@
     </div>
 
     <div class="space-y-3 text-xs">
-      <div class="p-3.5 rounded-xl bg-slate-subtle border border-slate-border space-y-1.5 font-mono">
+      <div class="p-3.5 rounded-lg bg-slate-subtle border border-slate-border space-y-1.5 font-mono">
         <div class="flex justify-between text-slate-muted">
           <span>Target Recipient:</span>
           <span class="text-navy-900 font-bold">+91-11-24363260 (NDRF Command)</span>
@@ -495,17 +682,17 @@
 
       <div>
         <label class="block text-navy-800 font-semibold mb-1">Pre-Formatted Distress Payload:</label>
-        <textarea id="sosPayloadText" rows="3" readonly class="w-full bg-slate-subtle border border-slate-border rounded-xl p-3 font-mono text-[11px] text-rose-700 focus:outline-none resize-none">CRITICAL DISASTER SOS: Active emergency alert triggered across monitored sectors. Deploy rapid response units to GPS coordinates immediately.</textarea>
+        <textarea id="sosPayloadText" rows="3" readonly class="w-full bg-slate-subtle border border-slate-border rounded-lg p-3 font-mono text-[11px] text-rose-700 focus:outline-none resize-none">CRITICAL DISASTER SOS: Active emergency alert triggered across monitored sectors. Deploy rapid response units to GPS coordinates immediately.</textarea>
       </div>
 
-      <div id="sosResultBanner" class="hidden p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 font-mono text-[11px]">
+      <div id="sosResultBanner" class="hidden p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 font-mono text-[11px]">
         <i class="fa-solid fa-circle-check mr-1.5 text-emerald-600"></i> SMS Broadcast Packet dispatched successfully to NDRF HQ via SIM800L GSM!
       </div>
     </div>
 
     <div class="flex justify-end gap-2.5 pt-2">
-      <button onclick="closeSosModal()" class="px-4 py-2 rounded-xl bg-white hover:bg-gray-100 text-slate-muted hover:text-navy-900 font-medium text-xs border border-slate-border">Cancel</button>
-      <button id="sendSosBtn" onclick="dispatchSosBroadcast()" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs flex items-center gap-2 shadow-sm">
+      <button onclick="closeSosModal()" class="px-4 py-2 rounded-lg bg-white hover:bg-gray-100 text-slate-muted hover:text-navy-900 font-medium text-xs border border-slate-border">Cancel</button>
+      <button id="sendSosBtn" onclick="dispatchSosBroadcast()" class="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs flex items-center gap-2 shadow-sm">
         <i class="fa-solid fa-paper-plane"></i>
         <span>Broadcast Emergency SOS</span>
       </button>
@@ -572,19 +759,19 @@
     // Trigger Simulation Scenario
     async function triggerSimulation(scenario) {
       const fb = document.getElementById('simFeedback');
-      fb.className = 'p-3.5 rounded-xl bg-blue-50 border border-blue-200 text-xs text-blue-700 block';
+      fb.className = 'p-3.5 rounded-lg bg-blue-50 border border-blue-200 text-xs text-blue-700 block';
       fb.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> Injecting ${scenario} surge telemetry...`;
 
       try {
         const res = await fetch(`${API_BASE}/api/simulate/${scenario}`, { method: 'POST' });
         const data = await res.json();
         if (data.success) {
-          fb.className = 'p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 block';
+          fb.className = 'p-3.5 rounded-lg bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 block';
           fb.innerHTML = `<i class="fa-solid fa-check mr-1.5"></i> Injected ${scenario.replace('_', ' ').toUpperCase()}! Network state updated.`;
           pollTelemetryOnce();
         }
       } catch (err) {
-        fb.className = 'p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 block';
+        fb.className = 'p-3.5 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700 block';
         fb.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1.5"></i> Error simulating scenario: ${err.message}`;
       }
     }
@@ -652,13 +839,13 @@
 
             if (emergencyBar) {
               emergencyBar.classList.remove('hidden');
-              emergencyTitle.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1.5"></i> CRITICAL &mdash; ${hazardTitle}`;
+              emergencyTitle.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1.5"></i> CRITICAL - ${hazardTitle}`;
               emergencySub.textContent = hazardSub;
             }
 
-            pill.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200 animate-pulse';
+            if (pill) pill.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200 animate-pulse';
             if (pillDot) pillDot.className = 'w-2 h-2 rounded-full bg-rose-600 animate-ping';
-            pillText.textContent = `ACTIVE ALERT (${hub.active_alerts_count})`;
+            if (pillText) pillText.textContent = `ACTIVE ALERT (${hub.active_alerts_count})`;
 
             if (navAlertBadge) {
               navAlertBadge.classList.remove('hidden');
@@ -669,9 +856,9 @@
             }
           } else {
             if (emergencyBar) emergencyBar.classList.add('hidden');
-            pill.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200';
+            if (pill) pill.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200';
             if (pillDot) pillDot.className = 'w-2 h-2 rounded-full bg-emerald-500';
-            pillText.textContent = 'ALL SYSTEMS SAFE';
+            if (pillText) pillText.textContent = 'ALL SYSTEMS SAFE';
             if (navAlertBadge) {
               navAlertBadge.classList.add('hidden');
             }

@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-26T14:04:00Z",
+  "title": "Design System: Disaster Sentinel",
+  "extensions": {
+    "colorMeta": {
+      "primary": { "role": "primary", "displayName": "Command Blue", "canonical": "#1340B4", "tonalRamp": ["#081A4D", "#0D2B7A", "#1340B4", "#1E58E2", "#4778F5", "#80A3FA", "#BED0FC", "#EFF4FE"] },
+      "primary-action": { "role": "primary", "displayName": "Action Cobalt", "canonical": "#155DFC", "tonalRamp": ["#0A2E80", "#0F46C4", "#155DFC", "#3C79FD", "#6DA0FE", "#9EC1FE", "#CFE2FF", "#F0F6FF"] },
+      "primary-command": { "role": "secondary", "displayName": "Sentinel Violet", "canonical": "#6425FE", "tonalRamp": ["#250570", "#3E0EB3", "#6425FE", "#814CFF", "#A278FF", "#C4A7FF", "#E4D6FF", "#F6F1FF"] },
+      "neutral-bg": { "role": "neutral", "displayName": "Canvas Light", "canonical": "#F9FAFB", "tonalRamp": ["#111827", "#1F2937", "#374151", "#4B5563", "#9CA3AF", "#D1D5DB", "#E5E7EB", "#F9FAFB"] },
+      "neutral-dark-surface": { "role": "neutral", "displayName": "Alpine Slate Dark", "canonical": "#131B2E", "tonalRamp": ["#070B14", "#0C121F", "#131B2E", "#1E2A47", "#2D3E66", "#445A8F", "#6B82B8", "#A4B4DB"] },
+      "hazard-critical": { "role": "error", "displayName": "Ruby Critical", "canonical": "#FB2C36", "tonalRamp": ["#68080C", "#9E0E14", "#D11721", "#FB2C36", "#FC5C64", "#FD8E94", "#FEC2C5", "#FEEAEB"] },
+      "hazard-warning": { "role": "warning", "displayName": "Amber Warning", "canonical": "#FF6900", "tonalRamp": ["#6B2B00", "#9E4000", "#D15400", "#FF6900", "#FF8733", "#FFA966", "#FFCB99", "#FFF0E6"] },
+      "hazard-safe": { "role": "success", "displayName": "Emerald Safe", "canonical": "#16A34A", "tonalRamp": ["#0B4720", "#0E6930", "#12873E", "#16A34A", "#26C861", "#55D884", "#8DE6AD", "#E5F8EC"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display Command", "purpose": "Executive summary greeting and top-level posture title." },
+      "headline": { "displayName": "Section Headline", "purpose": "Telemetry card headings and forecaster graph titles." },
+      "title": { "displayName": "Sub-Panel Title", "purpose": "Sector node identifiers and station labels." },
+      "body": { "displayName": "Operational Body", "purpose": "Model inferences, incident summaries, and alert copy." },
+      "label": { "displayName": "Tabular Telemetry", "purpose": "Real-time live sensor metrics, RSSI, and thresholds." }
+    },
+    "shadows": [
+      { "name": "subtle-surface", "value": "0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05)", "purpose": "Rest state for cards and monitoring grids." },
+      { "name": "lifted-interactive", "value": "0 4px 12px -2px rgba(0, 0, 0, 0.08), 0 2px 6px -2px rgba(0, 0, 0, 0.04)", "purpose": "Hover elevation on telemetry cards." },
+      { "name": "hazard-beacon", "value": "0 0 16px -2px rgba(251, 44, 54, 0.35)", "purpose": "Ambient glow pulse for active anomaly breaches." }
+    ],
+    "motion": [
+      { "name": "ease-out-standard", "value": "cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Standard deceleration for charts and drawer animations." },
+      { "name": "beacon-pulse", "value": "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite", "purpose": "Live heartbeat indicator for active sensor telemetry." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Action Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Interactive command button for simulator and critical actions.",
+      "html": "<button class=\"ds-btn-primary\">SIMULATE BREACH</button>",
+      "css": ".ds-btn-primary { background: #155DFC; color: #FFFFFF; font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; font-weight: 600; padding: 8px 16px; border-radius: 10px; border: none; cursor: pointer; transition: background 0.2s ease, transform 0.15s ease; } .ds-btn-primary:hover { background: #1340B4; transform: translateY(-1px); }"
+    },
+    {
+      "name": "Telemetry Node Card",
+      "kind": "card",
+      "refersTo": "card-telemetry",
+      "description": "Real-time edge sensor metric container with status pill and sparkline trend.",
+      "html": "<div class=\"ds-card-telemetry\"><div class=\"ds-telemetry-header\"><span>FLD1 · River Catchment</span><span class=\"ds-badge-safe\">SAFE</span></div><div class=\"ds-telemetry-val\">2.10 <span class=\"ds-telemetry-unit\">m</span></div></div>",
+      "css": ".ds-card-telemetry { background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 16px; padding: 20px; font-family: 'IBM Plex Sans', sans-serif; transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease; } .ds-card-telemetry:hover { border-color: #CBD5E1; transform: translateY(-2px); box-shadow: 0 4px 12px -2px rgba(0,0,0,0.06); } .ds-telemetry-header { display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 8px; } .ds-badge-safe { background: #DCFCE7; color: #166534; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 9999px; } .ds-telemetry-val { font-family: 'JetBrains Mono', monospace; font-size: 24px; font-weight: 800; color: #0F172A; font-variant-numeric: tabular-nums; } .ds-telemetry-unit { font-size: 12px; color: #64748B; font-weight: 500; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Alpine Sentinel",
+    "overview": "Disaster Sentinel operates in high-stakes emergency environments across Uttarakhand's river basins, unstable slope terrains, and pine perimeter forests. The visual system balances the rapid scanability of a mission-critical command console with the restraint, clarity, and ergonomic comfort required for long monitoring shifts.",
+    "keyCharacteristics": [
+      "High-clarity typography with IBM Plex Sans and JetBrains Mono.",
+      "High-contrast hazard semantics strictly reserved for life safety.",
+      "Deep slate and midnight naval surfaces in dark mode.",
+      "Tabular numeric rhythm preventing layout jitter.",
+      "Soft elevation with calibrated offsets."
+    ],
+    "rules": [
+      { "name": "The Hazard Exclusivity Rule", "body": "Bright red and crimson are strictly forbidden as general decorative colors. Ruby is reserved exclusively for unacknowledged active alarms and threshold breaches.", "section": "colors" },
+      { "name": "The Tabular Telemetry Rule", "body": "All live numerical readouts must declare font-variant-numeric: tabular-nums and monospace styling to prevent layout shifts as values fluctuate.", "section": "typography" },
+      { "name": "The Calm Surface Rule", "body": "Surfaces are quiet and flat at rest; lift and glow appear only in response to operator hover or urgent sensor anomalies.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do format all sensor readings and numerical coordinates with tabular-nums.",
+      "Do test both light and dark mode for WCAG 2.1 AA text contrast (minimum 4.5:1).",
+      "Do reserve crimson accents exclusively for real-time hazard breaches.",
+      "Do provide clear units of measurement next to all live values."
+    ],
+    "donts": [
+      "Don't use decorative gradient text or low-contrast pastel backgrounds.",
+      "Don't use colored left borders or heavy 4px card borders.",
+      "Don't use emoji or unstyled characters as telemetry icons.",
+      "Don't trigger disruptive full-screen modal takeovers for nominal background events."
+    ]
+  }
+}

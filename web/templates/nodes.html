@@ -20,7 +20,7 @@
     </div>
 
     <!-- Hazard Filter Buttons -->
-    <div class="flex items-center gap-1.5 p-1 rounded-xl bg-dark-850 border border-dark-750 text-xs">
+    <div class="flex items-center gap-1.5 p-1 rounded-lg bg-dark-850 border border-dark-750 text-xs">
       <button onclick="filterStations('all')" id="btnFilterAll" class="px-3 py-1.5 rounded-lg font-medium transition bg-dark-750 text-white shadow-sm">All</button>
       <button onclick="filterStations('Flood')" id="btnFilterFlood" class="px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-cyan-300 transition">Flood</button>
       <button onclick="filterStations('Landslide')" id="btnFilterLandslide" class="px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-amber-300 transition">Landslide</button>
@@ -35,7 +35,7 @@
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" id="stationCardsContainer">
 
     <!-- Station 1: FLD1 (Flood) -->
-    <div id="cardFLD1" data-hazard="Flood" class="glass-card rounded-2xl p-5 sm:p-6 space-y-4 border-l-4 border-l-cyan-500">
+    <div id="cardFLD1" data-hazard="Flood" class="glass-card rounded-lg p-5 sm:p-6 space-y-4">
       <div class="flex items-start justify-between border-b border-dark-750 pb-3">
         <div>
           <div class="flex items-center gap-2">
@@ -53,7 +53,7 @@
       </div>
 
       <!-- Primary Gauge Bar: River Water Level -->
-      <div class="p-3.5 rounded-xl bg-dark-850/80 border border-dark-750 space-y-2">
+      <div class="p-3.5 rounded-lg bg-dark-850/80 border border-dark-750 space-y-2">
         <div class="flex justify-between items-baseline text-xs">
           <span class="text-slate-300 font-medium">Primary Metric: River Water Level</span>
           <div class="font-mono">
@@ -73,27 +73,27 @@
 
       <!-- Sensor Telemetry Grid -->
       <div class="grid grid-cols-3 gap-2.5 text-xs">
-        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+        <div class="p-2.5 rounded-lg bg-dark-900/60 border border-dark-800">
           <span class="text-[10px] text-slate-400 block">Rainfall</span>
           <span id="rainValFLD1" class="font-mono font-bold text-slate-200 text-sm">12.24</span> <span class="text-[10px] text-slate-400">mm</span>
         </div>
-        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+        <div class="p-2.5 rounded-lg bg-dark-900/60 border border-dark-800">
           <span class="text-[10px] text-slate-400 block">Intensity</span>
           <span id="intensValFLD1" class="font-mono font-bold text-slate-200 text-sm">1.54</span> <span class="text-[10px] text-slate-400">mm/h</span>
         </div>
-        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+        <div class="p-2.5 rounded-lg bg-dark-900/60 border border-dark-800">
           <span class="text-[10px] text-slate-400 block">Pressure</span>
           <span id="pressValFLD1" class="font-mono font-bold text-slate-200 text-sm">1005.4</span> <span class="text-[10px] text-slate-400">hPa</span>
         </div>
-        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+        <div class="p-2.5 rounded-lg bg-dark-900/60 border border-dark-800">
           <span class="text-[10px] text-slate-400 block">Temperature</span>
           <span id="tempValFLD1" class="font-mono font-bold text-slate-200 text-sm">31.5</span> <span class="text-[10px] text-slate-400">°C</span>
         </div>
-        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+        <div class="p-2.5 rounded-lg bg-dark-900/60 border border-dark-800">
           <span class="text-[10px] text-slate-400 block">Humidity</span>
           <span id="humValFLD1" class="font-mono font-bold text-slate-200 text-sm">78.0</span> <span class="text-[10px] text-slate-400">%</span>
         </div>
-        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+        <div class="p-2.5 rounded-lg bg-dark-900/60 border border-dark-800">
           <span class="text-[10px] text-slate-400 block">Battery</span>
           <span class="font-mono font-bold text-emerald-400 text-sm">95%</span> <span class="text-[10px] text-slate-400">3.98V</span>
         </div>
@@ -111,7 +111,7 @@
     </div>
 
     <!-- Station 2: SLD2 (Landslide) -->
-    <div id="cardSLD2" data-hazard="Landslide" class="glass-card rounded-2xl p-5 sm:p-6 space-y-4 border-l-4 border-l-amber-500">
+    <div id="cardSLD2" data-hazard="Landslide" class="glass-card rounded-lg p-5 sm:p-6 space-y-4">
       <div class="flex items-start justify-between border-b border-dark-750 pb-3">
         <div>
           <div class="flex items-center gap-2">
@@ -129,7 +129,7 @@
       </div>
 
       <!-- Primary Gauge Bar: Slope Angle -->
-      <div class="p-3.5 rounded-xl bg-dark-850/80 border border-dark-750 space-y-2">
+      <div class="p-3.5 rounded-lg bg-dark-850/80 border border-dark-750 space-y-2">
         <div class="flex justify-between items-baseline text-xs">
           <span class="text-slate-300 font-medium">Primary Metric: Slope Incline Angle</span>
           <div class="font-mono">
@@ -149,27 +149,27 @@
 
       <!-- Sensor Telemetry Grid -->
       <div class="grid grid-cols-3 gap-2.5 text-xs">
-        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+        <div class="p-2.5 rounded-lg bg-dark-900/60 border border-dark-800">
           <span class="text-[10px] text-slate-400 block">Soil Saturation</span>
           <span id="satValSLD2" class="font-mono font-bold text-slate-200 text-sm">0.15</span> <span class="text-[10px] text-slate-400">ratio</span>
         </div>
-        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+        <div class="p-2.5 rounded-lg bg-dark-900/60 border border-dark-800">
           <span class="text-[10px] text-slate-400 block">Rainfall</span>
           <span id="rainValSLD2" class="font-mono font-bold text-slate-200 text-sm">10.0</span> <span class="text-[10px] text-slate-400">mm</span>
         </div>
-        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+        <div class="p-2.5 rounded-lg bg-dark-900/60 border border-dark-800">
           <span class="text-[10px] text-slate-400 block">Temperature</span>
           <span id="tempValSLD2" class="font-mono font-bold text-slate-200 text-sm">22.0</span> <span class="text-[10px] text-slate-400">°C</span>
         </div>
-        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+        <div class="p-2.5 rounded-lg bg-dark-900/60 border border-dark-800">
           <span class="text-[10px] text-slate-400 block">Humidity</span>
           <span id="humValSLD2" class="font-mono font-bold text-slate-200 text-sm">45.0</span> <span class="text-[10px] text-slate-400">%</span>
         </div>
-        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+        <div class="p-2.5 rounded-lg bg-dark-900/60 border border-dark-800">
           <span class="text-[10px] text-slate-400 block">Pore Pressure</span>
           <span class="font-mono font-bold text-slate-200 text-sm">18.4</span> <span class="text-[10px] text-slate-400">kPa</span>
         </div>
-        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+        <div class="p-2.5 rounded-lg bg-dark-900/60 border border-dark-800">
           <span class="text-[10px] text-slate-400 block">Battery</span>
           <span class="font-mono font-bold text-emerald-400 text-sm">89%</span> <span class="text-[10px] text-slate-400">3.88V</span>
         </div>
@@ -187,7 +187,7 @@
     </div>
 
     <!-- Station 3: FIR3 (Wildfire) -->
-    <div id="cardFIR3" data-hazard="Fire" class="glass-card rounded-2xl p-5 sm:p-6 space-y-4 border-l-4 border-l-rose-500">
+    <div id="cardFIR3" data-hazard="Fire" class="glass-card rounded-lg p-5 sm:p-6 space-y-4">
       <div class="flex items-start justify-between border-b border-dark-750 pb-3">
         <div>
           <div class="flex items-center gap-2">
@@ -205,7 +205,7 @@
       </div>
 
       <!-- Primary Gauge Bar: TVOC Combustion Gas -->
-      <div class="p-3.5 rounded-xl bg-dark-850/80 border border-dark-750 space-y-2">
+      <div class="p-3.5 rounded-lg bg-dark-850/80 border border-dark-750 space-y-2">
         <div class="flex justify-between items-baseline text-xs">
           <span class="text-slate-300 font-medium">Primary Metric: Combustion Gas (TVOC)</span>
           <div class="font-mono">
@@ -225,27 +225,27 @@
 
       <!-- Sensor Telemetry Grid -->
       <div class="grid grid-cols-3 gap-2.5 text-xs">
-        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+        <div class="p-2.5 rounded-lg bg-dark-900/60 border border-dark-800">
           <span class="text-[10px] text-slate-400 block">Temperature</span>
           <span id="tempValFIR3" class="font-mono font-bold text-slate-200 text-sm">24.9</span> <span class="text-[10px] text-slate-400">°C</span>
         </div>
-        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+        <div class="p-2.5 rounded-lg bg-dark-900/60 border border-dark-800">
           <span class="text-[10px] text-slate-400 block">Humidity</span>
           <span id="humValFIR3" class="font-mono font-bold text-slate-200 text-sm">50.8</span> <span class="text-[10px] text-slate-400">%</span>
         </div>
-        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+        <div class="p-2.5 rounded-lg bg-dark-900/60 border border-dark-800">
           <span class="text-[10px] text-slate-400 block">eCO2 Gas</span>
           <span id="eco2ValFIR3" class="font-mono font-bold text-slate-200 text-sm">717</span> <span class="text-[10px] text-slate-400">ppm</span>
         </div>
-        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+        <div class="p-2.5 rounded-lg bg-dark-900/60 border border-dark-800">
           <span class="text-[10px] text-slate-400 block">Baro Pressure</span>
           <span id="pressValFIR3" class="font-mono font-bold text-slate-200 text-sm">939.1</span> <span class="text-[10px] text-slate-400">hPa</span>
         </div>
-        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+        <div class="p-2.5 rounded-lg bg-dark-900/60 border border-dark-800">
           <span class="text-[10px] text-slate-400 block">Smoke PM2.5</span>
           <span id="pmValFIR3" class="font-mono font-bold text-slate-200 text-sm">2.5</span> <span class="text-[10px] text-slate-400">&micro;g/m&sup3;</span>
         </div>
-        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+        <div class="p-2.5 rounded-lg bg-dark-900/60 border border-dark-800">
           <span class="text-[10px] text-slate-400 block">Battery</span>
           <span class="font-mono font-bold text-emerald-400 text-sm">92%</span> <span class="text-[10px] text-slate-400">3.92V</span>
         </div>
@@ -263,7 +263,7 @@
     </div>
 
     <!-- Station 4: POL4 (Pollution) -->
-    <div id="cardPOL4" data-hazard="Pollution" class="glass-card rounded-2xl p-5 sm:p-6 space-y-4 border-l-4 border-l-purple-500">
+    <div id="cardPOL4" data-hazard="Pollution" class="glass-card rounded-lg p-5 sm:p-6 space-y-4">
       <div class="flex items-start justify-between border-b border-dark-750 pb-3">
         <div>
           <div class="flex items-center gap-2">
@@ -281,7 +281,7 @@
       </div>
 
       <!-- Primary Gauge Bar: PM2.5 -->
-      <div class="p-3.5 rounded-xl bg-dark-850/80 border border-dark-750 space-y-2">
+      <div class="p-3.5 rounded-lg bg-dark-850/80 border border-dark-750 space-y-2">
         <div class="flex justify-between items-baseline text-xs">
           <span class="text-slate-300 font-medium">Primary Metric: Fine Particulate PM2.5</span>
           <div class="font-mono">
@@ -301,27 +301,27 @@
 
       <!-- Sensor Telemetry Grid -->
       <div class="grid grid-cols-3 gap-2.5 text-xs">
-        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+        <div class="p-2.5 rounded-lg bg-dark-900/60 border border-dark-800">
           <span class="text-[10px] text-slate-400 block">Dust PM10</span>
           <span id="pm10ValPOL4" class="font-mono font-bold text-slate-200 text-sm">42.0</span> <span class="text-[10px] text-slate-400">&micro;g/m&sup3;</span>
         </div>
-        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+        <div class="p-2.5 rounded-lg bg-dark-900/60 border border-dark-800">
           <span class="text-[10px] text-slate-400 block">NO2 Gas</span>
           <span id="no2ValPOL4" class="font-mono font-bold text-slate-200 text-sm">14.5</span> <span class="text-[10px] text-slate-400">ppm</span>
         </div>
-        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+        <div class="p-2.5 rounded-lg bg-dark-900/60 border border-dark-800">
           <span class="text-[10px] text-slate-400 block">Carbon Monoxide</span>
           <span id="coValPOL4" class="font-mono font-bold text-slate-200 text-sm">2.1</span> <span class="text-[10px] text-slate-400">ppm</span>
         </div>
-        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+        <div class="p-2.5 rounded-lg bg-dark-900/60 border border-dark-800">
           <span class="text-[10px] text-slate-400 block">AQI Equivalent</span>
           <span class="font-mono font-bold text-emerald-400 text-sm">38</span> <span class="text-[10px] text-slate-400">(Good)</span>
         </div>
-        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+        <div class="p-2.5 rounded-lg bg-dark-900/60 border border-dark-800">
           <span class="text-[10px] text-slate-400 block">Inversion Layer</span>
           <span class="font-mono font-bold text-slate-200 text-sm">None</span> <span class="text-[10px] text-slate-400">Stable</span>
         </div>
-        <div class="p-2.5 rounded-xl bg-dark-900/60 border border-dark-800">
+        <div class="p-2.5 rounded-lg bg-dark-900/60 border border-dark-800">
           <span class="text-[10px] text-slate-400 block">Battery</span>
           <span class="font-mono font-bold text-emerald-400 text-sm">87%</span> <span class="text-[10px] text-slate-400">3.84V</span>
         </div>

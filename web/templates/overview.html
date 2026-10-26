@@ -1,4 +1,12 @@
 {% extends "base.html" %}
+{% block extra_head %}
+<script>
+  // Ensure user always lands on the Foxstocks executive dashboard
+  if (window.location.pathname === '/overview' || window.location.pathname === '/') {
+    window.location.replace('/dashboard');
+  }
+</script>
+{% endblock %}
 
 {% block title %}Overview · Disaster Sentinel{% endblock %}
 
@@ -13,14 +21,14 @@
   <!-- 1. SYSTEM STATUS: 5-SECOND SITUATIONAL AWARENESS -->
   <!-- STATUS → ACTIVE THREAT → LOCATION → SEVERITY → RECOMMENDED ACTION -->
   <!-- ========================================================================= -->
-  <section id="mainStatusSection" class="relative overflow-hidden rounded-2xl bg-white border border-slate-border p-6 sm:p-8 shadow-sm transition-all duration-300">
+  <section id="mainStatusSection" class="relative overflow-hidden rounded-lg bg-white border border-slate-border p-6 sm:p-8 shadow-sm transition-all duration-300">
     <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
       
       <!-- Left: Status Badge, Headline & Context -->
       <div class="flex items-start gap-5 flex-1">
         
         <!-- Status Icon Container (FontAwesome icon, no emoji) -->
-        <div id="statusIconContainer" class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 text-2xl sm:text-3xl flex-shrink-0 shadow-sm">
+        <div id="statusIconContainer" class="w-14 h-14 sm:w-16 sm:h-16 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 text-2xl sm:text-3xl flex-shrink-0 shadow-sm">
           <i id="statusIcon" class="fa-solid fa-circle-check"></i>
         </div>
 
@@ -58,17 +66,17 @@
 
       <!-- Right: Direct Recommended Actions -->
       <div class="flex flex-col sm:flex-row lg:flex-col items-stretch gap-2.5 w-full lg:w-auto flex-shrink-0 pt-2 lg:pt-0">
-        <a id="heroPrimaryAction" href="/monitoring" class="px-4 py-2.5 rounded-xl bg-white hover:bg-gray-50 text-navy-900 font-semibold text-xs border border-slate-border flex items-center justify-center gap-2 transition shadow-sm">
+        <a id="heroPrimaryAction" href="/monitoring" class="px-4 py-2.5 rounded-lg bg-white hover:bg-gray-50 text-navy-900 font-semibold text-xs border border-slate-border flex items-center justify-center gap-2 transition shadow-sm">
           <i class="fa-solid fa-chart-line text-brand-action text-xs"></i>
           <span>View Live Monitoring</span>
           <i class="fa-solid fa-chevron-right text-[10px] text-slate-400"></i>
         </a>
-        <a href="/map" class="px-4 py-2.5 rounded-xl bg-white hover:bg-gray-50 text-navy-900 font-semibold text-xs border border-slate-border flex items-center justify-center gap-2 transition shadow-sm">
+        <a href="/map" class="px-4 py-2.5 rounded-lg bg-white hover:bg-gray-50 text-navy-900 font-semibold text-xs border border-slate-border flex items-center justify-center gap-2 transition shadow-sm">
           <i class="fa-solid fa-map-location-dot text-brand-action text-xs"></i>
           <span>Open Disaster Map</span>
           <i class="fa-solid fa-chevron-right text-[10px] text-slate-400"></i>
         </a>
-        <button onclick="openSosModal()" class="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs flex items-center justify-center gap-2 transition shadow-sm">
+        <button onclick="openSosModal()" class="px-4 py-2.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs flex items-center justify-center gap-2 transition shadow-sm">
           <i class="fa-solid fa-bullhorn text-xs"></i>
           <span>Emergency Response</span>
         </button>
@@ -96,7 +104,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
 
       <!-- Card 1: FLOOD -->
-      <div id="cardFlood" class="card-base p-5 flex flex-col justify-between space-y-4 bg-white border border-slate-border hover:border-blue-300 transition-all rounded-2xl shadow-sm">
+      <div id="cardFlood" class="card-base p-5 flex flex-col justify-between space-y-4 bg-white border border-slate-border hover:border-blue-300 transition-all rounded-lg shadow-sm">
         <div>
           <!-- Header: Professional Icon & Risk Badge -->
           <div class="flex items-center justify-between">
@@ -115,7 +123,7 @@
           </div>
 
           <!-- ONE Important Metric -->
-          <div class="mt-4 p-3.5 rounded-xl bg-slate-subtle border border-slate-border/80">
+          <div class="mt-4 p-3.5 rounded-lg bg-slate-subtle border border-slate-border/80">
             <span class="text-[11px] text-slate-muted font-medium block">River Water Level</span>
             <div class="flex items-baseline gap-1.5 mt-0.5">
               <span id="metricFlood" class="text-2xl font-bold text-navy-900 font-mono">2.10</span>
@@ -125,14 +133,14 @@
           </div>
         </div>
 
-        <a href="/monitoring#flood" class="w-full py-2 rounded-xl bg-white hover:bg-brand-light text-brand-action text-xs font-semibold flex items-center justify-center gap-1.5 border border-slate-border transition shadow-sm">
+        <a href="/monitoring#flood" class="w-full py-2 rounded-lg bg-white hover:bg-brand-light text-brand-action text-xs font-semibold flex items-center justify-center gap-1.5 border border-slate-border transition shadow-sm">
           <span>View Details</span>
           <i class="fa-solid fa-arrow-right text-[10px]"></i>
         </a>
       </div>
 
       <!-- Card 2: LANDSLIDE -->
-      <div id="cardLandslide" class="card-base p-5 flex flex-col justify-between space-y-4 bg-white border border-slate-border hover:border-amber-300 transition-all rounded-2xl shadow-sm">
+      <div id="cardLandslide" class="card-base p-5 flex flex-col justify-between space-y-4 bg-white border border-slate-border hover:border-amber-300 transition-all rounded-lg shadow-sm">
         <div>
           <!-- Header: Professional Icon & Risk Badge -->
           <div class="flex items-center justify-between">
@@ -151,7 +159,7 @@
           </div>
 
           <!-- ONE Important Metric -->
-          <div class="mt-4 p-3.5 rounded-xl bg-slate-subtle border border-slate-border/80">
+          <div class="mt-4 p-3.5 rounded-lg bg-slate-subtle border border-slate-border/80">
             <span class="text-[11px] text-slate-muted font-medium block">Slope Incline Angle</span>
             <div class="flex items-baseline gap-1.5 mt-0.5">
               <span id="metricLandslide" class="text-2xl font-bold text-navy-900 font-mono">12.0</span>
@@ -161,14 +169,14 @@
           </div>
         </div>
 
-        <a href="/monitoring#landslide" class="w-full py-2 rounded-xl bg-white hover:bg-amber-50 text-amber-700 text-xs font-semibold flex items-center justify-center gap-1.5 border border-slate-border transition shadow-sm">
+        <a href="/monitoring#landslide" class="w-full py-2 rounded-lg bg-white hover:bg-amber-50 text-amber-700 text-xs font-semibold flex items-center justify-center gap-1.5 border border-slate-border transition shadow-sm">
           <span>View Details</span>
           <i class="fa-solid fa-arrow-right text-[10px]"></i>
         </a>
       </div>
 
       <!-- Card 3: WILDFIRE -->
-      <div id="cardFire" class="card-base p-5 flex flex-col justify-between space-y-4 bg-white border border-slate-border hover:border-rose-300 transition-all rounded-2xl shadow-sm">
+      <div id="cardFire" class="card-base p-5 flex flex-col justify-between space-y-4 bg-white border border-slate-border hover:border-rose-300 transition-all rounded-lg shadow-sm">
         <div>
           <!-- Header: Professional Icon & Risk Badge -->
           <div class="flex items-center justify-between">
@@ -187,7 +195,7 @@
           </div>
 
           <!-- ONE Important Metric -->
-          <div class="mt-4 p-3.5 rounded-xl bg-slate-subtle border border-slate-border/80">
+          <div class="mt-4 p-3.5 rounded-lg bg-slate-subtle border border-slate-border/80">
             <span class="text-[11px] text-slate-muted font-medium block">Combustion Gas (TVOC)</span>
             <div class="flex items-baseline gap-1.5 mt-0.5">
               <span id="metricFire" class="text-2xl font-bold text-navy-900 font-mono">818</span>
@@ -197,14 +205,14 @@
           </div>
         </div>
 
-        <a href="/monitoring#fire" class="w-full py-2 rounded-xl bg-white hover:bg-rose-50 text-rose-700 text-xs font-semibold flex items-center justify-center gap-1.5 border border-slate-border transition shadow-sm">
+        <a href="/monitoring#fire" class="w-full py-2 rounded-lg bg-white hover:bg-rose-50 text-rose-700 text-xs font-semibold flex items-center justify-center gap-1.5 border border-slate-border transition shadow-sm">
           <span>View Details</span>
           <i class="fa-solid fa-arrow-right text-[10px]"></i>
         </a>
       </div>
 
       <!-- Card 4: POLLUTION -->
-      <div id="cardPollution" class="card-base p-5 flex flex-col justify-between space-y-4 bg-white border border-slate-border hover:border-purple-300 transition-all rounded-2xl shadow-sm">
+      <div id="cardPollution" class="card-base p-5 flex flex-col justify-between space-y-4 bg-white border border-slate-border hover:border-purple-300 transition-all rounded-lg shadow-sm">
         <div>
           <!-- Header: Professional Icon & Risk Badge -->
           <div class="flex items-center justify-between">
@@ -223,7 +231,7 @@
           </div>
 
           <!-- ONE Important Metric -->
-          <div class="mt-4 p-3.5 rounded-xl bg-slate-subtle border border-slate-border/80">
+          <div class="mt-4 p-3.5 rounded-lg bg-slate-subtle border border-slate-border/80">
             <span class="text-[11px] text-slate-muted font-medium block">Fine Particulate (PM2.5)</span>
             <div class="flex items-baseline gap-1.5 mt-0.5">
               <span id="metricPollution" class="text-2xl font-bold text-navy-900 font-mono">11.5</span>
@@ -233,7 +241,7 @@
           </div>
         </div>
 
-        <a href="/monitoring#pollution" class="w-full py-2 rounded-xl bg-white hover:bg-purple-50 text-purple-700 text-xs font-semibold flex items-center justify-center gap-1.5 border border-slate-border transition shadow-sm">
+        <a href="/monitoring#pollution" class="w-full py-2 rounded-lg bg-white hover:bg-purple-50 text-purple-700 text-xs font-semibold flex items-center justify-center gap-1.5 border border-slate-border transition shadow-sm">
           <span>View Details</span>
           <i class="fa-solid fa-arrow-right text-[10px]"></i>
         </a>
@@ -245,7 +253,7 @@
   <!-- ========================================================================= -->
   <!-- 3. LIVE MAP PREVIEW: CLEAN GEOSPATIAL OVERVIEW -->
   <!-- ========================================================================= -->
-  <section class="card-base p-6 sm:p-7 space-y-5 bg-white border border-slate-border rounded-2xl shadow-sm">
+  <section class="card-base p-6 sm:p-7 space-y-5 bg-white border border-slate-border rounded-lg shadow-sm">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-border pb-4">
       <div>
         <h2 class="text-base font-bold text-navy-900 flex items-center gap-2">
@@ -257,18 +265,18 @@
         </p>
       </div>
 
-      <a href="/map" class="px-4 py-2 rounded-xl bg-white hover:bg-gray-50 text-navy-900 border border-slate-border text-xs font-semibold flex items-center gap-1.5 transition self-start sm:self-auto shadow-sm">
+      <a href="/map" class="px-4 py-2 rounded-lg bg-white hover:bg-gray-50 text-navy-900 border border-slate-border text-xs font-semibold flex items-center gap-1.5 transition self-start sm:self-auto shadow-sm">
         <span>Open Full GIS Map</span>
         <i class="fa-solid fa-arrow-right text-[10px]"></i>
       </a>
     </div>
 
     <!-- Real Interactive Leaflet GIS Map Container -->
-    <div class="relative w-full h-[460px] sm:h-[500px] rounded-2xl border border-slate-border overflow-hidden shadow-inner bg-[#F1F5F9] z-0">
+    <div class="relative w-full h-[460px] sm:h-[500px] rounded-lg border border-slate-border overflow-hidden shadow-inner bg-[#F1F5F9] z-0">
       <div id="overviewMap" class="w-full h-full z-0"></div>
 
       <!-- Floating Map Style Switcher (Top-Right) -->
-      <div class="absolute top-3 right-3 flex items-center gap-1.5 z-[1000] bg-white/95 backdrop-blur p-1 rounded-xl border border-slate-200 shadow-md text-[11px] font-medium pointer-events-auto">
+      <div class="absolute top-3 right-3 flex items-center gap-1.5 z-[1000] bg-white/95 backdrop-blur p-1 rounded-lg border border-slate-200 shadow-md text-[11px] font-medium pointer-events-auto">
         <button type="button" onclick="switchOverviewMap('osm')" id="btnOvOsm" class="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 font-bold transition shadow-xs">
           Street
         </button>
@@ -284,7 +292,7 @@
       </div>
 
       <!-- Floating Map Legend & Coverage Indicator (Bottom-Left) -->
-      <div class="absolute bottom-3 left-3 z-[1000] bg-white/95 backdrop-blur px-3 py-2 rounded-xl border border-slate-border text-[11px] text-slate-700 flex flex-wrap items-center gap-3 shadow-md pointer-events-auto">
+      <div class="absolute bottom-3 left-3 z-[1000] bg-white/95 backdrop-blur px-3 py-2 rounded-lg border border-slate-border text-[11px] text-slate-700 flex flex-wrap items-center gap-3 shadow-md pointer-events-auto">
         <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm"></span> Safe Baseline</span>
         <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-sm"></span> Warning</span>
         <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span> Threat Active</span>
@@ -299,7 +307,7 @@
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
     <!-- Active Alerts (Left 2 Cols) -->
-    <section class="lg:col-span-2 card-base p-6 space-y-4 bg-white border border-slate-border rounded-2xl shadow-sm">
+    <section class="lg:col-span-2 card-base p-6 space-y-4 bg-white border border-slate-border rounded-lg shadow-sm">
       <div class="flex items-center justify-between border-b border-slate-border pb-3">
         <div class="flex items-center gap-2">
           <i class="fa-solid fa-triangle-exclamation text-amber-500 text-sm"></i>
@@ -313,7 +321,7 @@
       <!-- Feed Container -->
       <div id="overviewAlertsFeed" class="space-y-3">
         <!-- Default Safe State -->
-        <div class="p-4 rounded-xl bg-slate-subtle border border-slate-border flex items-center justify-between text-xs">
+        <div class="p-4 rounded-lg bg-slate-subtle border border-slate-border flex items-center justify-between text-xs">
           <div class="flex items-center gap-3">
             <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
             <div>
@@ -329,10 +337,10 @@
     </section>
 
     <!-- Emergency Actions Section (Right 1 Col) -->
-    <section class="card-base p-6 flex flex-col justify-between space-y-5 bg-white border border-slate-border rounded-2xl shadow-sm">
+    <section class="card-base p-6 flex flex-col justify-between space-y-5 bg-white border border-slate-border rounded-lg shadow-sm">
       <div class="space-y-2.5">
         <div class="flex items-center gap-2.5">
-          <div class="w-9 h-9 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 text-sm shadow-sm">
+          <div class="w-9 h-9 rounded-lg bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 text-sm shadow-sm">
             <i class="fa-solid fa-shield-halved"></i>
           </div>
           <div>
@@ -347,15 +355,15 @@
       </div>
 
       <div class="space-y-2.5 pt-2 border-t border-slate-border">
-        <a href="/alerts" class="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-gray-50 text-navy-900 text-xs font-semibold flex items-center justify-between border border-slate-border transition shadow-sm">
+        <a href="/alerts" class="w-full py-2.5 px-4 rounded-lg bg-white hover:bg-gray-50 text-navy-900 text-xs font-semibold flex items-center justify-between border border-slate-border transition shadow-sm">
           <span>VIEW ACTIVE ALERTS</span>
           <i class="fa-solid fa-chevron-right text-[10px] text-slate-400"></i>
         </a>
-        <a href="/map" class="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-gray-50 text-navy-900 text-xs font-semibold flex items-center justify-between border border-slate-border transition shadow-sm">
+        <a href="/map" class="w-full py-2.5 px-4 rounded-lg bg-white hover:bg-gray-50 text-navy-900 text-xs font-semibold flex items-center justify-between border border-slate-border transition shadow-sm">
           <span>OPEN DISASTER MAP</span>
           <i class="fa-solid fa-chevron-right text-[10px] text-slate-400"></i>
         </a>
-        <button onclick="openSosModal()" class="w-full py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition">
+        <button onclick="openSosModal()" class="w-full py-2.5 px-4 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition">
           <i class="fa-solid fa-bullhorn text-xs"></i>
           <span>SEND EMERGENCY SOS</span>
         </button>
@@ -643,8 +651,8 @@
 
       const threatNames = activeList.length > 0 ? activeList.join(', ') : 'Multiple Sectors';
 
-      mainSection.className = 'relative overflow-hidden rounded-2xl bg-white border-2 border-rose-500 p-6 sm:p-8 shadow-md transition-all duration-300';
-      statusIconContainer.className = 'w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 text-2xl sm:text-3xl flex-shrink-0 shadow-sm';
+      mainSection.className = 'relative overflow-hidden rounded-lg bg-white border-2 border-rose-500 p-6 sm:p-8 shadow-md transition-all duration-300';
+      statusIconContainer.className = 'w-14 h-14 sm:w-16 sm:h-16 rounded-lg bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 text-2xl sm:text-3xl flex-shrink-0 shadow-sm';
       statusIcon.className = 'fa-solid fa-triangle-exclamation';
       
       severityBadge.className = 'text-[11px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200';
@@ -660,8 +668,8 @@
       
       emergencyText.innerHTML = `<span class="text-rose-600 font-bold block mb-1">CRITICAL ALERT ACTIVE</span> Threat detected in monitored zones. Mobilize response units and initiate civil defense protocols.`;
     } else {
-      mainSection.className = 'relative overflow-hidden rounded-2xl bg-white border border-slate-border p-6 sm:p-8 shadow-sm transition-all duration-300';
-      statusIconContainer.className = 'w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 text-2xl sm:text-3xl flex-shrink-0 shadow-sm';
+      mainSection.className = 'relative overflow-hidden rounded-lg bg-white border border-slate-border p-6 sm:p-8 shadow-sm transition-all duration-300';
+      statusIconContainer.className = 'w-14 h-14 sm:w-16 sm:h-16 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 text-2xl sm:text-3xl flex-shrink-0 shadow-sm';
       statusIcon.className = 'fa-solid fa-circle-check';
 
       severityBadge.className = 'text-[11px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200';
@@ -788,9 +796,9 @@
         const iconClass = friendlyIcons[inc.node_id] || 'fa-triangle-exclamation text-amber-500';
 
         return `
-          <div class="p-4 rounded-xl bg-slate-subtle border border-slate-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs hover:border-blue-200 transition">
+          <div class="p-4 rounded-lg bg-slate-subtle border border-slate-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs hover:border-blue-200 transition">
             <div class="flex items-start gap-3">
-              <div class="w-9 h-9 rounded-xl ${iconBg} border border-slate-border flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm">
+              <div class="w-9 h-9 rounded-lg ${iconBg} border border-slate-border flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm">
                 <i class="fa-solid ${iconClass} text-xs"></i>
               </div>
               <div>
@@ -814,7 +822,7 @@
       }).join('');
     } else {
       feed.innerHTML = `
-        <div class="p-4 rounded-xl bg-slate-subtle border border-slate-border flex items-center justify-between text-xs">
+        <div class="p-4 rounded-lg bg-slate-subtle border border-slate-border flex items-center justify-between text-xs">
           <div class="flex items-center gap-3">
             <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
             <div>

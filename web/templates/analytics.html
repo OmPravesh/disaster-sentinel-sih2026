@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}Analytics & ML · Disaster Sentinel{% endblock %}
+{% block title %}AI Forecast Engine &amp; ML · Disaster Sentinel{% endblock %}
+
+{% block page_title %}AI Forecast Engine &amp; ML{% endblock %}
+{% block page_subtitle %}Multi-step PyTorch GRU recurrent projections &amp; Random Forest tripwires{% endblock %}
 
 {% block content %}
 <div class="space-y-8">
@@ -40,7 +43,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       
       <!-- Model 1: Flood RF + GRU -->
-      <div class="card-base p-4 space-y-2.5 border-t-2 border-t-blue-500 bg-white border border-slate-border rounded-2xl shadow-sm">
+      <div class="card-base p-4 space-y-2.5 border-t-2 border-t-blue-500 bg-white border border-slate-border rounded-lg shadow-sm">
         <div class="flex items-center justify-between">
           <span class="font-bold text-slate-900 text-xs">River Flood Model</span>
           <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 font-semibold">FLD1</span>
@@ -66,7 +69,7 @@
       </div>
 
       <!-- Model 2: Landslide RF + GRU -->
-      <div class="card-base p-4 space-y-2.5 border-t-2 border-t-amber-500 bg-white border border-slate-border rounded-2xl shadow-sm">
+      <div class="card-base p-4 space-y-2.5 border-t-2 border-t-amber-500 bg-white border border-slate-border rounded-lg shadow-sm">
         <div class="flex items-center justify-between">
           <span class="font-bold text-slate-900 text-xs">Slope Landslide Model</span>
           <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-semibold">SLD2</span>
@@ -92,7 +95,7 @@
       </div>
 
       <!-- Model 3: Wildfire RF + GRU -->
-      <div class="card-base p-4 space-y-2.5 border-t-2 border-t-rose-500 bg-white border border-slate-border rounded-2xl shadow-sm">
+      <div class="card-base p-4 space-y-2.5 border-t-2 border-t-rose-500 bg-white border border-slate-border rounded-lg shadow-sm">
         <div class="flex items-center justify-between">
           <span class="font-bold text-slate-900 text-xs">Forest Wildfire Model</span>
           <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 font-semibold">FIR3</span>
@@ -118,7 +121,7 @@
       </div>
 
       <!-- Model 4: Pollution RF + GRU -->
-      <div class="card-base p-4 space-y-2.5 border-t-2 border-t-purple-500 bg-white border border-slate-border rounded-2xl shadow-sm">
+      <div class="card-base p-4 space-y-2.5 border-t-2 border-t-purple-500 bg-white border border-slate-border rounded-lg shadow-sm">
         <div class="flex items-center justify-between">
           <span class="font-bold text-slate-900 text-xs">Toxic Smog Model</span>
           <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200 font-semibold">POL4</span>
@@ -149,7 +152,7 @@
   <!-- ========================================================================= -->
   <!-- 3. LIVE MULTI-STEP PREDICTIVE TRAJECTORY CANVAS (+10m to +50m) -->
   <!-- ========================================================================= -->
-  <div class="card-base p-6 space-y-4 bg-white border border-slate-border rounded-2xl shadow-sm">
+  <div class="card-base p-6 space-y-4 bg-white border border-slate-border rounded-lg shadow-sm">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
       <div>
         <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
@@ -188,7 +191,7 @@
   <!-- ========================================================================= -->
   <!-- 4. ROLLING TELEMETRY STREAM & CSV EXPORT UTILITY -->
   <!-- ========================================================================= -->
-  <div class="card-base p-6 space-y-4 bg-white border border-slate-border rounded-2xl shadow-sm">
+  <div class="card-base p-6 space-y-4 bg-white border border-slate-border rounded-lg shadow-sm">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
       <div>
         <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
@@ -216,6 +219,7 @@
 <script>
   let selectedNode = 'FLD1';
   let forecastChart = null;
+  let currentForecastNode = null;
   let streamingChart = null;
   let cachedData = null;
   let historyLogs = [];
@@ -296,7 +300,9 @@
     }).join('');
 
     // Chart.js future curve
-    const ctx = document.getElementById('anForecastCanvas').getContext('2d');
+    const canvas = document.getElementById('anForecastCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
     const labels = [...f.history_values.map((_, i) => `t-${f.history_values.length - 1 - i}`), ...f.future_steps.map(s => s.step)];
     const histData = [...f.history_values, ...new Array(f.future_steps.length).fill(null)];
     const futData = new Array(f.history_values.length - 1).fill(null);
@@ -306,8 +312,37 @@
     const critLine = new Array(labels.length).fill(f.thresholds.critical);
     const warnLine = new Array(labels.length).fill(f.thresholds.warning);
 
-    if (forecastChart) forecastChart.destroy();
+    const nodeChanged = (currentForecastNode !== selectedNode);
 
+    if (forecastChart) {
+      forecastChart.data.labels = labels;
+      forecastChart.data.datasets[0].data = histData;
+      forecastChart.data.datasets[1].data = futData;
+      forecastChart.data.datasets[1].borderColor = cfg.color;
+      forecastChart.data.datasets[1].backgroundColor = cfg.bg;
+      forecastChart.data.datasets[2].data = critLine;
+      forecastChart.data.datasets[2].label = `Danger Breach Line (${f.thresholds.critical} ${f.unit})`;
+      forecastChart.data.datasets[3].data = warnLine;
+      forecastChart.data.datasets[3].label = `Warning Threshold (${f.thresholds.warning} ${f.unit})`;
+
+      if (forecastChart.options.scales && forecastChart.options.scales.y) {
+        forecastChart.options.scales.y.title.text = `${f.target_name} (${f.unit})`;
+        forecastChart.options.scales.y.ticks.callback = (val) => `${val} ${f.unit}`;
+      }
+      if (forecastChart.options.plugins && forecastChart.options.plugins.tooltip) {
+        forecastChart.options.plugins.tooltip.callbacks.label = (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y} ${f.unit}`;
+      }
+
+      currentForecastNode = selectedNode;
+      if (nodeChanged) {
+        forecastChart.update();
+      } else {
+        forecastChart.update('none'); // Real-time 1-sec stream update without canvas recreation or animation flicker
+      }
+      return;
+    }
+
+    currentForecastNode = selectedNode;
     forecastChart = new Chart(ctx, {
       type: 'line',
       data: {
@@ -316,35 +351,39 @@
           {
             label: 'Recorded History',
             data: histData,
-            borderColor: '#64748B',
-            borderWidth: 2,
+            borderColor: '#CBD5E1',
+            backgroundColor: 'rgba(203, 213, 225, 0.1)',
+            borderWidth: 2.5,
             tension: 0.25,
-            pointRadius: 2.5
+            pointRadius: 3.5,
+            pointBackgroundColor: '#CBD5E1'
           },
           {
             label: 'PyTorch GRU Projected Trajectory',
             data: futData,
             borderColor: cfg.color,
             backgroundColor: cfg.bg,
-            borderWidth: 2.5,
+            borderWidth: 2.8,
             borderDash: [5, 4],
             tension: 0.35,
             fill: true,
-            pointRadius: 4
+            pointRadius: 4.5,
+            pointHoverRadius: 6.5,
+            pointBackgroundColor: cfg.color
           },
           {
             label: `Danger Breach Line (${f.thresholds.critical} ${f.unit})`,
             data: critLine,
-            borderColor: '#E11D48',
-            borderWidth: 1.5,
+            borderColor: '#F43F5E',
+            borderWidth: 2,
             borderDash: [4, 4],
             pointRadius: 0
           },
           {
             label: `Warning Threshold (${f.thresholds.warning} ${f.unit})`,
             data: warnLine,
-            borderColor: '#D97706',
-            borderWidth: 1.2,
+            borderColor: '#F59E0B',
+            borderWidth: 1.8,
             borderDash: [4, 4],
             pointRadius: 0
           }
@@ -353,48 +392,175 @@
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        animation: { duration: 300 },
         interaction: { mode: 'index', intersect: false },
         plugins: {
-          legend: { labels: { color: '#475569', font: { family: 'JetBrains Mono', size: 10 } } },
-          tooltip: { backgroundColor: '#0F172A', titleColor: '#FFFFFF', bodyColor: '#CBD5E1', borderColor: '#334155', borderWidth: 1 }
+          legend: {
+            display: true,
+            position: 'top',
+            labels: {
+              color: '#F8FAFC',
+              font: { family: 'JetBrains Mono', size: 12, weight: '600' },
+              boxWidth: 16,
+              padding: 16,
+              usePointStyle: true,
+              pointStyle: 'circle'
+            }
+          },
+          tooltip: {
+            backgroundColor: '#0F172A',
+            titleColor: '#FFFFFF',
+            bodyColor: '#E2E8F0',
+            borderColor: '#334155',
+            borderWidth: 1,
+            titleFont: { family: 'JetBrains Mono', size: 12 },
+            bodyFont: { family: 'JetBrains Mono', size: 11 },
+            callbacks: {
+              label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y} ${f.unit}`
+            }
+          }
         },
         scales: {
-          x: { grid: { color: '#F1F5F9' }, ticks: { color: '#64748B', font: { family: 'JetBrains Mono', size: 10 } } },
-          y: { grid: { color: '#F1F5F9' }, ticks: { color: '#64748B', font: { family: 'JetBrains Mono', size: 10 } } }
+          x: {
+            grid: { color: 'rgba(148, 163, 184, 0.15)', drawBorder: false },
+            ticks: { color: '#E2E8F0', font: { family: 'JetBrains Mono', size: 11, weight: '600' } },
+            title: {
+              display: true,
+              text: 'Horizon Progression (Recorded Past Steps → +50m Projections)',
+              color: '#94A3B8',
+              font: { family: 'JetBrains Mono', size: 10, weight: '600' },
+              padding: { top: 6 }
+            }
+          },
+          y: {
+            grid: { color: 'rgba(148, 163, 184, 0.15)', drawBorder: false },
+            ticks: {
+              color: '#E2E8F0',
+              font: { family: 'JetBrains Mono', size: 11, weight: '600' },
+              padding: 8,
+              callback: (val) => `${val} ${f.unit}`
+            },
+            title: {
+              display: true,
+              text: `${f.target_name} (${f.unit})`,
+              color: '#94A3B8',
+              font: { family: 'JetBrains Mono', size: 11, weight: '600' },
+              padding: { bottom: 6 }
+            }
+          }
         }
       }
     });
   }
 
-  function initStreamingChart(history) {
-    const ctx = document.getElementById('anStreamingCanvas').getContext('2d');
-    if (streamingChart) streamingChart.destroy();
+  function updateStreamingChart(history) {
+    if (!history || history.length === 0) return;
+    const canvas = document.getElementById('anStreamingCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    const labels = history.map(h => h.time);
+    const riverData = history.map(h => h.fld1_water);
+    const tiltData = history.map(h => (h.sld2_slope !== undefined ? h.sld2_slope : h.sld2_angle));
+    const tvocData = history.map(h => (h.fir3_smoke / 100).toFixed(1));
+    const pmData = history.map(h => h.pol4_pm25 || 11.5);
+
+    if (streamingChart) {
+      streamingChart.data.labels = labels;
+      streamingChart.data.datasets[0].data = riverData;
+      streamingChart.data.datasets[1].data = tiltData;
+      streamingChart.data.datasets[2].data = tvocData;
+      streamingChart.data.datasets[3].data = pmData;
+
+      if (streamingChart.options.plugins && streamingChart.options.plugins.legend) {
+        streamingChart.options.plugins.legend.labels.color = '#F8FAFC';
+      }
+      if (streamingChart.options.scales) {
+        if (streamingChart.options.scales.x) streamingChart.options.scales.x.ticks.color = '#E2E8F0';
+        if (streamingChart.options.scales.y) streamingChart.options.scales.y.ticks.color = '#E2E8F0';
+      }
+      streamingChart.update('none'); // Real-time update without canvas wipe or jitter
+      return;
+    }
 
     streamingChart = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: history.map(h => h.time),
+        labels: labels,
         datasets: [
-          { label: 'FLD1 River (m)', data: history.map(h => h.fld1_water), borderColor: '#0284C7', borderWidth: 1.8, tension: 0.3, pointRadius: 1.5 },
-          { label: 'SLD2 Tilt (°)', data: history.map(h => (h.sld2_slope !== undefined ? h.sld2_slope : h.sld2_angle)), borderColor: '#D97706', borderWidth: 1.8, tension: 0.3, pointRadius: 1.5 },
-          { label: 'FIR3 TVOC (ppb/100)', data: history.map(h => (h.fir3_smoke / 100).toFixed(1)), borderColor: '#E11D48', borderWidth: 1.8, tension: 0.3, pointRadius: 1.5 },
-          { label: 'POL4 PM2.5 (µg/m³)', data: history.map(h => h.pol4_pm25 || 11.5), borderColor: '#7C3AED', borderWidth: 1.8, tension: 0.3, pointRadius: 1.5 }
+          { label: 'FLD1 River (m)', data: riverData, borderColor: '#38BDF8', backgroundColor: 'rgba(56, 189, 248, 0.15)', borderWidth: 2.2, tension: 0.3, pointRadius: 3, pointBackgroundColor: '#38BDF8' },
+          { label: 'SLD2 Tilt (°)', data: tiltData, borderColor: '#FBBF24', backgroundColor: 'rgba(251, 191, 36, 0.15)', borderWidth: 2.2, tension: 0.3, pointRadius: 3, pointBackgroundColor: '#FBBF24' },
+          { label: 'FIR3 TVOC (ppb/100)', data: tvocData, borderColor: '#FB7185', backgroundColor: 'rgba(251, 113, 133, 0.15)', borderWidth: 2.2, tension: 0.3, pointRadius: 3, pointBackgroundColor: '#FB7185' },
+          { label: 'POL4 PM2.5 (µg/m³)', data: pmData, borderColor: '#C084FC', backgroundColor: 'rgba(192, 132, 252, 0.15)', borderWidth: 2.2, tension: 0.3, pointRadius: 3, pointBackgroundColor: '#C084FC' }
         ]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        animation: { duration: 300 },
         plugins: {
-          legend: { labels: { color: '#475569', font: { family: 'JetBrains Mono', size: 10 } } },
-          tooltip: { backgroundColor: '#0F172A', titleColor: '#FFFFFF', bodyColor: '#CBD5E1', borderColor: '#334155', borderWidth: 1 }
+          legend: {
+            display: true,
+            position: 'top',
+            labels: {
+              color: '#F8FAFC',
+              font: { family: 'JetBrains Mono', size: 12, weight: '600' },
+              boxWidth: 16,
+              padding: 16,
+              usePointStyle: true,
+              pointStyle: 'circle'
+            }
+          },
+          tooltip: {
+            backgroundColor: '#0F172A',
+            titleColor: '#FFFFFF',
+            bodyColor: '#CBD5E1',
+            borderColor: '#334155',
+            borderWidth: 1,
+            titleFont: { family: 'JetBrains Mono', size: 12 },
+            bodyFont: { family: 'JetBrains Mono', size: 11 },
+            callbacks: {
+              label: (ctx) => {
+                if (ctx.datasetIndex === 0) return `FLD1 River Level: ${ctx.parsed.y} m`;
+                if (ctx.datasetIndex === 1) return `SLD2 Slope Incline: ${ctx.parsed.y} °`;
+                if (ctx.datasetIndex === 2) return `FIR3 Combustion Gas: ${(ctx.parsed.y * 100).toFixed(0)} ppb`;
+                if (ctx.datasetIndex === 3) return `POL4 Particulate Dust: ${ctx.parsed.y} µg/m³`;
+                return `${ctx.dataset.label}: ${ctx.parsed.y}`;
+              }
+            }
+          }
         },
         scales: {
-          x: { grid: { color: '#F1F5F9' }, ticks: { color: '#64748B', font: { family: 'JetBrains Mono', size: 9 } } },
-          y: { grid: { color: '#F1F5F9' }, ticks: { color: '#64748B', font: { family: 'JetBrains Mono', size: 9 } } }
+          x: {
+            grid: { color: 'rgba(148, 163, 184, 0.15)', drawBorder: false },
+            ticks: { color: '#E2E8F0', font: { family: 'JetBrains Mono', size: 10, weight: '500' } },
+            title: {
+              display: true,
+              text: 'Observation Timestamp (LoRa SX1278)',
+              color: '#94A3B8',
+              font: { family: 'JetBrains Mono', size: 10, weight: '600' }
+            }
+          },
+          y: {
+            grid: { color: 'rgba(148, 163, 184, 0.15)', drawBorder: false },
+            ticks: {
+              color: '#E2E8F0',
+              font: { family: 'JetBrains Mono', size: 11, weight: '600' },
+              padding: 6
+            },
+            title: {
+              display: true,
+              text: 'Sensor Values [FLD1: m · SLD2: ° · FIR3: ppb/100 · POL4: µg/m³]',
+              color: '#94A3B8',
+              font: { family: 'JetBrains Mono', size: 10, weight: '600' },
+              padding: { bottom: 6 }
+            }
+          }
         }
       }
     });
   }
+  const initStreamingChart = updateStreamingChart;
 
   function exportAnalyticsCSV() {
     if (!historyLogs || historyLogs.length === 0) {
@@ -417,7 +583,7 @@
       const data = await res.json();
       if (data.success && data.history) {
         historyLogs = data.history;
-        initStreamingChart(data.history);
+        updateStreamingChart(data.history);
       }
     } catch (e) {
       console.warn("History poll error:", e);

@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}About System · Disaster Sentinel{% endblock %}
+{% block title %}About System &amp; Architecture · Disaster Sentinel{% endblock %}
+
+{% block page_title %}System Architecture &amp; SIH Specifications{% endblock %}
+{% block page_subtitle %}Qualcomm SIH 2026 Problem Statement SIH26178 reference architecture{% endblock %}
 
 {% block content %}
 <div class="space-y-10 max-w-6xl mx-auto pb-16">
@@ -8,7 +11,7 @@
   <!-- ========================================================================= -->
   <!-- 1. HERO SECTION: BRANDING & PROJECT PURPOSE -->
   <!-- ========================================================================= -->
-  <div class="p-8 sm:p-10 bg-white border border-slate-border rounded-2xl space-y-5 shadow-sm relative overflow-hidden">
+  <div class="p-8 sm:p-10 bg-white border border-slate-border rounded-lg space-y-5 shadow-sm relative overflow-hidden">
     <!-- Subtle Background Ambient Tint -->
     <div class="absolute -top-24 -right-24 w-80 h-80 bg-blue-50/60 rounded-full blur-3xl pointer-events-none"></div>
 
@@ -52,7 +55,7 @@
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
     <!-- The Problem -->
-    <div class="p-6 sm:p-7 bg-white border border-rose-200 rounded-2xl space-y-4 shadow-sm">
+    <div class="p-6 sm:p-7 bg-white border border-rose-200 rounded-lg space-y-4 shadow-sm">
       <div class="flex items-center gap-3 border-b border-slate-100 pb-3">
         <div class="w-10 h-10 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 text-base">
           <i class="fa-solid fa-triangle-exclamation"></i>
@@ -92,7 +95,7 @@
     </div>
 
     <!-- Our Solution -->
-    <div class="p-6 sm:p-7 bg-white border border-emerald-200 rounded-2xl space-y-4 shadow-sm">
+    <div class="p-6 sm:p-7 bg-white border border-emerald-200 rounded-lg space-y-4 shadow-sm">
       <div class="flex items-center gap-3 border-b border-slate-100 pb-3">
         <div class="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 text-base">
           <i class="fa-solid fa-shield-check"></i>
@@ -136,7 +139,7 @@
   <!-- ========================================================================= -->
   <!-- 3. HOW IT WORKS: END-TO-END VISUAL FLOW -->
   <!-- ========================================================================= -->
-  <div class="p-6 sm:p-8 bg-white border border-slate-border rounded-2xl space-y-6 shadow-sm">
+  <div class="p-6 sm:p-8 bg-white border border-slate-border rounded-lg space-y-6 shadow-sm">
     <div class="border-b border-slate-100 pb-4">
       <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-[#155DFC] block">SYSTEM WORKFLOW</span>
       <h2 class="text-lg font-extrabold text-[#0F172A] mt-0.5">How It Works: End-to-End Operational Pipeline</h2>
@@ -262,7 +265,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
       <!-- FLOOD -->
-      <div class="p-5 bg-white border border-slate-border hover:border-blue-300 rounded-2xl space-y-3 shadow-sm transition group">
+      <div class="p-5 bg-white border border-slate-border hover:border-blue-300 rounded-lg space-y-3 shadow-sm transition group">
         <div class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 text-base">
           <i class="fa-solid fa-water"></i>
         </div>
@@ -273,7 +276,7 @@
       </div>
 
       <!-- LANDSLIDE -->
-      <div class="p-5 bg-white border border-slate-border hover:border-amber-300 rounded-2xl space-y-3 shadow-sm transition group">
+      <div class="p-5 bg-white border border-slate-border hover:border-amber-300 rounded-lg space-y-3 shadow-sm transition group">
         <div class="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 text-base">
           <i class="fa-solid fa-mountain"></i>
         </div>
@@ -284,7 +287,7 @@
       </div>
 
       <!-- FIRE -->
-      <div class="p-5 bg-white border border-slate-border hover:border-rose-300 rounded-2xl space-y-3 shadow-sm transition group">
+      <div class="p-5 bg-white border border-slate-border hover:border-rose-300 rounded-lg space-y-3 shadow-sm transition group">
         <div class="w-10 h-10 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 text-base">
           <i class="fa-solid fa-fire-flame-curved"></i>
         </div>
@@ -295,7 +298,7 @@
       </div>
 
       <!-- POLLUTION -->
-      <div class="p-5 bg-white border border-slate-border hover:border-purple-300 rounded-2xl space-y-3 shadow-sm transition group">
+      <div class="p-5 bg-white border border-slate-border hover:border-purple-300 rounded-lg space-y-3 shadow-sm transition group">
         <div class="w-10 h-10 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center text-purple-600 text-base">
           <i class="fa-solid fa-smog"></i>
         </div>
@@ -311,7 +314,7 @@
   <!-- ========================================================================= -->
   <!-- 5. INNOVATION: WHAT MAKES DISASTER SENTINEL DIFFERENT? -->
   <!-- ========================================================================= -->
-  <div class="p-6 sm:p-8 bg-white border border-slate-border rounded-2xl space-y-6 shadow-sm">
+  <div class="p-6 sm:p-8 bg-white border border-slate-border rounded-lg space-y-6 shadow-sm">
     <div class="border-b border-slate-100 pb-4">
       <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-[#155DFC] block">KEY INNOVATIONS</span>
       <h2 class="text-lg font-extrabold text-[#0F172A] mt-0.5">WHAT MAKES DISASTER SENTINEL DIFFERENT?</h2>
@@ -381,7 +384,7 @@
   <!-- ========================================================================= -->
   <!-- 6. WHY EDGE AI? (ARCHITECTURAL COMPARISON) -->
   <!-- ========================================================================= -->
-  <div class="p-6 sm:p-8 bg-white border border-slate-border rounded-2xl space-y-6 shadow-sm">
+  <div class="p-6 sm:p-8 bg-white border border-slate-border rounded-lg space-y-6 shadow-sm">
     <div class="border-b border-slate-100 pb-4">
       <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-purple-600 block">ARCHITECTURAL RATIONALE</span>
       <h2 class="text-lg font-extrabold text-[#0F172A] mt-0.5">WHY EDGE AI?</h2>
@@ -453,7 +456,7 @@
   <!-- ========================================================================= -->
   <!-- 7. TECHNOLOGY STACK -->
   <!-- ========================================================================= -->
-  <div class="p-6 sm:p-8 bg-white border border-slate-border rounded-2xl space-y-5 shadow-sm">
+  <div class="p-6 sm:p-8 bg-white border border-slate-border rounded-lg space-y-5 shadow-sm">
     <div class="border-b border-slate-100 pb-3 flex items-center justify-between">
       <div>
         <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-[#155DFC] block">IMPLEMENTATION STACK</span>
@@ -506,7 +509,7 @@
   <!-- ========================================================================= -->
   <!-- 8. TECHNICAL ARCHITECTURE: COLLAPSED ADVANCED INFORMATION (LEVEL 3) -->
   <!-- ========================================================================= -->
-  <div class="p-6 bg-white border border-slate-border rounded-2xl space-y-4 shadow-sm">
+  <div class="p-6 bg-white border border-slate-border rounded-lg space-y-4 shadow-sm">
     <div class="flex items-center justify-between">
       <div>
         <h3 class="text-sm font-bold text-[#0F172A] uppercase tracking-wider font-mono">TECHNICAL ARCHITECTURE</h3>
@@ -567,7 +570,7 @@
   <!-- ========================================================================= -->
   <!-- 9. SIH 2026 SUBTLE FOOTER INFORMATION -->
   <!-- ========================================================================= -->
-  <div class="p-5 rounded-2xl bg-white border border-slate-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-600 shadow-sm">
+  <div class="p-5 rounded-lg bg-white border border-slate-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-600 shadow-sm">
     <div class="flex items-center gap-3">
       <span class="w-2 h-2 rounded-full bg-[#155DFC]"></span>
       <span class="font-medium text-[#0F172A]">Smart India Hackathon 2026 &middot; Hardware Edition</span>
