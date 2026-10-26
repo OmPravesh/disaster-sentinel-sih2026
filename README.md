@@ -1,280 +1,309 @@
 # Disaster Sentinel
 
-> **Solar-Powered Distributed Early-Warning Network with Layered Validation & PyTorch GRU AI Predictive Engine**  
-> *Smart India Hackathon (SIH) 2026
+> **Solar-Powered Distributed Early-Warning Network with Layered Sensor Validation and PyTorch GRU AI Predictive Engine**
+> Smart India Hackathon (SIH) 2026
+
+---
+
+### Tech Stack
+
+![ESP32](https://img.shields.io/badge/ESP32-Microcontroller-blue?style=flat-square&logo=espressif&logoColor=white)
+![C++](https://img.shields.io/badge/C++-Firmware-00599C?style=flat-square&logo=cplusplus&logoColor=white)
+![PlatformIO](https://img.shields.io/badge/PlatformIO-Build%20System-orange?style=flat-square&logo=platformio&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)
+![PyTorch](https://img.shields.io/badge/PyTorch-GRU%20AI%20Engine-EE4C2C?style=flat-square&logo=pytorch&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-Web%20Dashboard-009688?style=flat-square&logo=fastapi&logoColor=white)
+![NVIDIA Jetson](https://img.shields.io/badge/NVIDIA-Jetson%20Orin%20Nano-76B900?style=flat-square&logo=nvidia&logoColor=white)
+![LoRa](https://img.shields.io/badge/LoRa-433%20MHz%20Radio-8B4513?style=flat-square)
+![GSM](https://img.shields.io/badge/SIM800L-GSM%20SMS%20Alerts-red?style=flat-square)
+![Solar Powered](https://img.shields.io/badge/Solar-Powered%20Nodes-FFD700?style=flat-square&logo=sun&logoColor=black)
+![SIH 2026](https://img.shields.io/badge/SIH-2026-purple?style=flat-square)
 
 ---
 
 ## Project Overview
 
-**Disaster Sentinel** addresses early warning and environmental monitoring in infrastructure-deficient regions.
+**Disaster Sentinel** is an early-warning and environmental monitoring system built for areas with limited infrastructure.
 
-Instead of relying on basic single-sensor thresholds or cloud dependency, Disaster Sentinel deploys **4 dedicated solar-powered ESP32 edge nodes** monitoring critical disaster hazards (Flood, Landslide, Fire, Pollution). Compact LoRa packets are transmitted over long range to an **NVIDIA Jetson Orin Nano** gateway located at the Disaster Relief Center. 
+The system uses **4 solar-powered ESP32 edge sensor nodes**, each dedicated to monitoring a specific disaster type: Flood, Landslide, Fire, and Air Pollution. Each node transmits compact LoRa packets to a central **NVIDIA Jetson Orin Nano** gateway at the Disaster Relief Center.
 
-The Jetson executes **layered sensor confirmation** and runs a **PyTorch GRU (Gated Recurrent Unit) time-series neural network** to predict future calamity probabilities at **T+15, T+30, and T+60 minutes**. Critical alerts trigger real-time updates on a modern FastAPI Single-Page Application (SPA) web dashboard, as well as redundant emergency alerts via GSM SMS (SIM800L), loud buzzer, and strobe warning lights.
+The Jetson runs **layered sensor confirmation** and a **PyTorch GRU neural network** that predicts disaster probabilities at **T+15, T+30, and T+60 minutes** ahead of time. Alerts are sent in real-time to a web dashboard, and also via GSM SMS, a buzzer, and strobe warning lights.
 
----
 
-## System Architecture
 
-```text
-                        DISASTER AREA (FIELD)
-    ┌────────────────────────────────────────────────────────────────────────┐
-    │                                                                        │
-    │  ┌─────────────────┐   ┌──────────────────┐   ┌────────────────────┐   │
-    │  │  NODE 1: FLOOD  │   │NODE 2: LANDSLIDE │   │   NODE 3: FIRE     │   │
-    │  │   (3-Layer)     │   │    (3-Layer)     │   │    (3-Layer)       │   │
-    │  │ L1: BME280      │   │ L1: BME280       │   │ L1: BME280         │   │
-    │  │ L2: Rain Gauge  │   │ L2: Soil Moisture│   │ L2: MQ-2 Gas/Smoke │   │
-    │  │ L3: Water Level │   │ L3: MPU6050 Tilt │   │ L3: Flame/IR       │   │
-    │  │ Node ID: FLD1   │   │ Node ID: SLD2    │   │ Node ID: FIR3      │   │
-    │  └────────┬────────┘   └────────┬─────────┘   └─────────┬──────────┘   │
-    │           │                 │                       │              │
-    │           │      ┌──────────┴───────────────────────┘              │
-    │           │      │                                                 │
-    │           │      │     ┌─────────────────────┐                     │
-    │           │      │     │  NODE 4: POLLUTION  │                     │
-    │           │      │     │    (2-Layer Mode)   │                     │
-    │           │      │     │ L1: N/A (Bypassed)  │                     │
-    │           │      │     │ L2: PM2.5 Dust      │                     │
-    │           │      │     │ L3: MQ-135 AQI      │                     │
-    │           │      │     │ Node ID: POL4       │                     │
-    │           │      │     └──────────┬──────────┘                     │
-    │           │      │                │                                │
-    └───────────┼──────┼────────────────┼────────────────────────────────┘
-                │      │                │
-                └──────┴───────┬────────┘   LoRa 433 MHz Star Network
-                               │
-    ═══════════════════════════╤═══════════════════════════════════════════
-               DISASTER RELIEF CENTER (NVIDIA JETSON)
-    ┌──────────────────────────┼──────────────────────────────────────────┐
-    │                          │                                          │
-    │                    LoRa RX (SX1278 SPI)                             │
-    │                          │                                          │
-    │                          ▼                                          │
-    │             ┌──────────────────────────┐                            │
-    │             │  NVIDIA JETSON ORIN NANO │                            │
-    │             │                          │                            │
-    │             │  Packet Decoder & CRC16  │                            │
-    │             │  Layered Validator       │                            │
-    │             │  PyTorch GRU AI Engine   │ ◄── T+15/30/60m Forecasts │
-    │             │  Risk & ETA Calculator   │                            │
-    │             │  FastAPI SPA Web Server  │                            │
-    │             └────────────┬─────────────┘                            │
-    │           ┌──────────────┼──────────────┐                           │
-    │           ▼              ▼              ▼                           │
-    │      Modern SPA      SIM800L        Buzzer & Strobe                 │
-    │      Dashboard      GSM SMS         Warning Lights                  │
-    │                                                                     │
-    └─────────────────────────────────────────────────────────────────────┘
-```
+
+## Project Images
+
+All hardware photos, circuit schematics, dashboard screenshots, and documentation images are stored in the [`project_images/`](project_images/) directory.
 
 ---
 
-## Photos & Hardware Schematics
+### [A] System Flowchart
 
-Physical prototype photos and hardware layout schematics are stored in the [`photos/`](photos/) directory and highlighted below:
+| System Flowchart |
+|:---:|
+| ![System Flowchart](project_images/Flowchart.jpg) |
+| *End-to-end disaster detection and alert flowchart* |
 
-### 1. Circuit & Wiring Layout Schematics
+---
+
+### [B] Circuit & Wiring Schematics
 
 | System Pinout & Wiring Diagram | Multi-Node Circuit Architecture |
-|---|---|
-| ![System Pinout Diagram](photos/Untitled-layout%20(1).png) | ![Circuit Architecture Schematic](photos/Untitled-layout%20(2).png) |
-| *System Pinout & Component Wiring Diagram* | *Multi-Node Circuit & Gateway Connections* |
-
-### 2. Physical Hardware Prototypes & Deployment Showcase
-
-| ESP32 Field Sensor Node Assembly | Jetson LoRa Receiver & Central Gateway |
-|---|---|
-| ![ESP32 Sensor Node Prototype](photos/WhatsApp%20Image%202026-09-15%20at%2019.50.13.jpeg) | ![LoRa Receiver & Gateway Circuit](photos/WhatsApp%20Image%202026-09-15%20at%2019.50.14.jpeg) |
-| *Solar ESP32 Edge Sensor Node Hardware* | *NVIDIA Jetson LoRa Gateway & Receiver Hub* |
-
-| Sensor Integration & Enclosure Wiring | Multi-Node Demonstration Setup |
-|---|---|
-| ![Sensor Module Integration](photos/WhatsApp%20Image%202026-09-15%20at%2019.50.16.jpeg) | ![Hardware Enclosure & Wiring](photos/WhatsApp%20Image%202026-09-15%20at%2019.50.17.jpeg) |
-| *3-Layer Sensor Array Integration* | *Field Enclosure & Power Circuit Wiring* |
-
-### 3. Additional Prototype Photos & Field Shots
-- [ESP32 Sensor Breadboard Assembly (Photo 1)](photos/WhatsApp%20Image%202026-09-15%20at%2019.50.13%20(1).jpeg)
-- [ESP32 Sensor Breadboard Assembly (Photo 2)](photos/WhatsApp%20Image%202026-09-15%20at%2019.50.13%20(2).jpeg)
-- [Sensor Module Array Wiring](photos/WhatsApp%20Image%202026-09-15%20at%2019.50.15.jpeg)
-- [Node Sensor Assembly Closeup](photos/WhatsApp%20Image%202026-09-15%20at%2019.50.16%20(1).jpeg)
-- [Node Hardware Enclosure (Side View 1)](photos/WhatsApp%20Image%202026-09-15%20at%2019.50.17%20(1).jpeg)
-- [Node Hardware Enclosure (Side View 2)](photos/WhatsApp%20Image%202026-09-15%20at%2019.50.17%20(2).jpeg)
-- [Power & Battery Charging Circuit](photos/WhatsApp%20Image%202026-09-15%20at%2019.50.18.jpeg)
-- [Completed Edge Node Unit](photos/WhatsApp%20Image%202026-09-15%20at%2019.50.19.jpeg)
-- [Full SIH Demonstration Network Setup](photos/WhatsApp%20Image%202026-09-15%20at%2019.50.20.jpeg)
+|:---:|:---:|
+| ![Circuit Pinout Schematic](project_images/circuit_pinout_schematic.png) | ![Multi-Node Circuit Architecture](project_images/multi_node_circuit_architecture.png) |
+| *System pinout & component wiring diagram* | *Multi-node circuit & gateway connections* |
 
 ---
 
-## Layered Sensor Confirmation Matrix
+### [C] Dashboard Screenshots
 
-To eliminate false alarms while supporting specialized node configurations, every disaster is validated across dedicated sensor layers:
+| Dashboard - Main View | Dashboard - Alert Panel |
+|:---:|:---:|
+| ![Dashboard Main View](project_images/Dashboard00.jpg) | ![Dashboard Alert Panel](project_images/Dashboard01.jpg) |
+| *Live sensor telemetry & risk status* | *Active alert & notification panel* |
 
-| Calamity | Node ID | Validation Mode | Layer 1 (Primary) | Layer 2 (Corroborating) | Layer 3 (Environmental Context) |
-|----------|---------|-----------------|-------------------|--------------------------|---------------------------------|
-| **FLOOD** | `FLD1` | **3-Layer** | BME280 (Pressure drop + High humidity) | Rain Sensor (YL-83) | Ultrasonic Water Level (HC-SR04) |
-| **LANDSLIDE** | `SLD2` | **3-Layer** | BME280 (Pressure & Rain storm context) | Capacitive Soil Moisture | MPU6050 (Tilt & Gyro Vibration) |
-| **FIRE** | `FIR3` | **3-Layer** | BME280 (Temp spike + Humidity drop) | MQ-2 Gas/Smoke Sensor | Flame/IR Sensor (KY-026) |
-| **POLLUTION** | `POL4` | **2-Layer** | *Bypassed in 2-Layer Mode* | PM2.5 Dust Sensor (GP2Y1010AU0F) | MQ-135 Air Quality Index (AQI) |
-
-### Confirmation Rules:
-- **3-Layer Mode (FLD1, SLD2, FIR3)**:
-  - **RED ALERT**: All 3 layers anomalous AND combined score >= 0.75 (Triggers Dashboard + SMS + Buzzer + Strobe).
-  - **ORANGE / YELLOW**: 1-2 layers anomalous (Warning alert on Dashboard).
-  - **GREEN**: Rejects single-layer sensor glitches as false alarms.
-- **2-Layer Mode (POL4)**:
-  - **RED ALERT**: Both 2 layers anomalous AND combined score >= 0.75.
-  - **ORANGE / YELLOW**: 1 layer anomalous AND combined score >= 0.55.
+| Dashboard - Sensor Details | Dashboard - AI Predictions |
+|:---:|:---:|
+| ![Dashboard Sensor Details](project_images/Dashboard02.jpg) | ![Dashboard AI Predictions](project_images/Dashboard03.jpg) |
+| *Individual sensor node data view* | *GRU AI prediction graphs (T+15/30/60m)* |
 
 ---
 
-## Hardware & Pin Connection Details
+### [D] Hardware Prototypes & Field Deployment
 
-Below is the clean, easy-to-read hardware pin mapping for all 4 ESP32 edge nodes and the NVIDIA Jetson Orin Nano central hub. For complete schematic diagrams, power rules, and battery charging circuits, see [hardware_pinout_guide.md](hardware_pinout_guide.md).
+| ESP32 Node Assembly - Photo 1 | ESP32 Node Assembly - Photo 2 |
+|:---:|:---:|
+| ![ESP32 Node Assembly 01](project_images/esp32_node_assembly_01.jpeg) | ![ESP32 Node Assembly 02](project_images/esp32_node_assembly_02.jpeg) |
+| *ESP32 field sensor node assembly (front)* | *ESP32 field sensor node (side view)* |
 
-### 1. Standard ESP32 SX1278 LoRa Connections (Common to Nodes 1–4)
+| ESP32 Node Assembly - Photo 3 | Jetson LoRa Gateway |
+|:---:|:---:|
+| ![ESP32 Node Assembly 03](project_images/esp32_node_assembly_03.jpeg) | ![Jetson LoRa Gateway](project_images/jetson_lora_gateway_01.jpeg) |
+| *ESP32 breadboard wiring detail* | *NVIDIA Jetson LoRa receiver & gateway hub* |
 
-| SX1278 Pin | ESP32 Pin | Interface / Notes |
+| Sensor Module Wiring | Sensor Integration - Photo 1 |
+|:---:|:---:|
+| ![Sensor Module Wiring](project_images/sensor_module_wiring_01.jpeg) | ![Sensor Integration 01](project_images/sensor_integration_01.jpeg) |
+| *3-layer sensor array wiring layout* | *Sensor module integration on node* |
+
+| Sensor Integration - Photo 2 | Node Enclosure Wiring - Photo 1 |
+|:---:|:---:|
+| ![Sensor Integration 02](project_images/sensor_integration_02.jpeg) | ![Node Enclosure Wiring 01](project_images/node_enclosure_wiring_01.jpeg) |
+| *Sensor module closeup & connections* | *Node field enclosure wiring (view 1)* |
+
+| Node Enclosure Wiring - Photo 2 | Node Enclosure Wiring - Photo 3 |
+|:---:|:---:|
+| ![Node Enclosure Wiring 02](project_images/node_enclosure_wiring_02.jpeg) | ![Node Enclosure Wiring 03](project_images/node_enclosure_wiring_03.jpeg) |
+| *Node field enclosure (view 2)* | *Node field enclosure (view 3)* |
+
+| Node Enclosure Wiring - Photo 4 | Power & Battery Circuit - Photo 1 |
+|:---:|:---:|
+| ![Node Enclosure Wiring 04](project_images/node_enclosure_wiring_04.jpeg) | ![Power Battery Circuit 01](project_images/power_battery_circuit_01.jpeg) |
+| *Node enclosure (view 4)* | *Solar power & battery charging circuit* |
+
+| Power & Battery Circuit - Photo 2 | Completed Edge Node - Photo 1 |
+|:---:|:---:|
+| ![Power Battery Circuit 02](project_images/power_battery_circuit_02.jpeg) | ![Completed Edge Node 01](project_images/completed_edge_node_01.jpeg) |
+| *Battery circuit wiring detail* | *Fully assembled edge sensor node* |
+
+| Completed Edge Node - Photo 2 | Full Demo Network Setup - Photo 1 |
+|:---:|:---:|
+| ![Completed Edge Node 02](project_images/completed_edge_node_02.jpeg) | ![Full Demo Network Setup 01](project_images/full_demo_network_setup_01.jpeg) |
+| *Completed node (side view)* | *Full SIH demonstration network setup* |
+
+| Full Demo Network Setup - Photo 2 | Hardware Overview 1 |
+|:---:|:---:|
+| ![Full Demo Network Setup 02](project_images/full_demo_network_setup_02.jpeg) | ![Hardware Overview 1](project_images/Hardware00.jpg) |
+| *Demo network (alternate view)* | *Hardware component overview* |
+
+| Hardware Overview 2 | Hardware Overview 3 |
+|:---:|:---:|
+| ![Hardware Overview 2](project_images/Hardware01.jpg) | ![Hardware Overview 3](project_images/Hardware02.jpg) |
+| *Hardware assembly detail* | *Node wiring and layout* |
+
+| Hardware Overview 4 | Hardware Overview 5 |
+|:---:|:---:|
+| ![Hardware Overview 4](project_images/Hardware03.jpg) | ![Hardware Overview 5](project_images/Hardware04.jpg) |
+| *Full node circuit view* | *Node deployment ready* |
+
+| Hardware Overview 6 | Hardware Overview 7 |
+|:---:|:---:|
+| ![Hardware Overview 6](project_images/Hardware05.jpg) | ![Hardware Overview 7](project_images/Hardware06.jpg) |
+| *Gateway hardware setup* | *Multi-node layout* |
+
+| Hardware Overview 8 |
+|:---:|
+| ![Hardware Overview 8](project_images/Hardware07.jpg) |
+| *Complete system hardware overview* |
+
+---
+
+### [E] Documentation & Reports
+
+| Documentation Page 1 | Documentation Page 2 |
+|:---:|:---:|
+| ![Documentation 01](project_images/Documentation00.jpg) | ![Documentation 02](project_images/Documentation01.jpg) |
+| *Project documentation (page 1)* | *Project documentation (page 2)* |
+
+| Documentation Page 3 |
+|:---:|
+| ![Documentation 03](project_images/Documentation02.jpg) |
+| *Project documentation (page 3)* |
+
+---
+
+## Layered Sensor Confirmation
+
+To eliminate false alarms, every disaster type is validated across multiple dedicated sensor layers:
+
+| Disaster | Node ID | Mode | Layer 1 (Primary) | Layer 2 (Corroborating) | Layer 3 (Context) |
+|----------|---------|------|-------------------|--------------------------|--------------------|
+| **Flood** | `FLD1` | 3-Layer | BME280 (Pressure drop + High humidity) | Rain Sensor (YL-83) | Ultrasonic Water Level (HC-SR04) |
+| **Landslide** | `SLD2` | 3-Layer | BME280 (Pressure & Rain storm context) | Capacitive Soil Moisture | MPU6050 (Tilt & Gyro Vibration) |
+| **Fire** | `FIR3` | 3-Layer | BME280 (Temp spike + Humidity drop) | MQ-2 Gas/Smoke Sensor | Flame/IR Sensor (KY-026) |
+| **Pollution** | `POL4` | 2-Layer | Bypassed in 2-Layer Mode | PM2.5 Dust Sensor (GP2Y1010AU0F) | MQ-135 Air Quality (AQI) |
+
+### Alert Rules
+
+**3-Layer Nodes (FLD1, SLD2, FIR3):**
+- [RED] All 3 layers triggered AND combined score >= 0.75 -> Full alert: Dashboard + SMS + Buzzer + Strobe
+- [ORANGE/YELLOW] 1 to 2 layers triggered -> Warning shown on dashboard
+- [GREEN] Single-layer trigger only -> Rejected as a false alarm
+
+**2-Layer Node (POL4):**
+- [RED] Both layers triggered AND combined score >= 0.75 -> Full alert
+- [ORANGE/YELLOW] 1 layer triggered AND combined score >= 0.55 -> Warning
+
+---
+
+## Hardware Pin Connections
+
+A summary of pin connections for all 4 ESP32 nodes and the Jetson gateway. For full schematic diagrams and power wiring, see [hardware_pinout_guide.md](hardware_pinout_guide.md).
+
+### LoRa Module (SX1278) -- Common to All 4 Nodes
+
+| SX1278 Pin | ESP32 Pin | Notes |
 |---|---|---|
 | SCK | GPIO 18 | SPI Clock |
 | MISO | GPIO 19 | SPI Master-In-Slave-Out |
 | MOSI | GPIO 23 | SPI Master-Out-Slave-In |
 | NSS / CS | GPIO 5 | SPI Chip Select |
 | RST | GPIO 14 | Hardware Reset |
-| DIO0 | GPIO 2 | Interrupt Request (IRQ) |
-| VCC | 3.3V | 3.3V Power Supply Only |
-| GND | GND | Shared Ground |
+| DIO0 | GPIO 2 | Interrupt (IRQ) |
+| VCC | 3.3V | 3.3V Power |
+| GND | GND | Ground |
 
-### 2. Field Node Sensor Pinouts
+### Node 1: Flood Monitoring (FLD1)
 
-#### Node 1: Flood Monitoring Node (FLD1)
-| Component | Component Pin | ESP32 Pin | Function / Description |
+| Component | Pin | ESP32 Pin | Function |
 |---|---|---|---|
-| **HC-SR04 / JSN-SR04T** | TRIG | GPIO 12 | Ultrasonic Trigger Pulse |
-| | ECHO | GPIO 13 | Ultrasonic Echo Pulse |
-| | VCC / GND | 5V / GND | Power & Ground |
-| **YL-83 Rain Sensor** | AO (Analog) | GPIO 34 (ADC1) | Rain Density Reading |
-| | DO (Digital) | GPIO 27 | Digital Rain Threshold |
-| | VCC / GND | 3.3V / GND | Power & Ground |
-| **BME280 Sensor** | SDA / SCL | GPIO 21 / GPIO 22 | I2C Data & Clock (Address: 0x76) |
-| | VCC / GND | 3.3V / GND | Power & Ground |
-| **Battery Monitor** | ADC Pin | GPIO 36 (ADC1) | 10k/10k Resistor Voltage Divider |
+| HC-SR04 Ultrasonic | TRIG / ECHO | GPIO 12 / GPIO 13 | Water level measurement |
+| YL-83 Rain Sensor | AO / DO | GPIO 34 / GPIO 27 | Rain density reading |
+| BME280 | SDA / SCL | GPIO 21 / GPIO 22 | Temperature, pressure, humidity |
+| Battery Monitor | ADC | GPIO 36 | Voltage divider (10k/10k) |
 
-#### Node 2: Landslide Monitoring Node (SLD2)
-| Component | Component Pin | ESP32 Pin | Function / Description |
+### Node 2: Landslide Monitoring (SLD2)
+
+| Component | Pin | ESP32 Pin | Function |
 |---|---|---|---|
-| **MPU6050 Gyro/Tilt** | SDA / SCL | GPIO 21 / GPIO 22 | Shared I2C Bus (Address: 0x68) |
-| | VCC / GND | 3.3V / GND | Power & Ground |
-| **Soil Moisture v1.2** | AOUT | GPIO 32 (ADC1) | Soil Water Saturation Level |
-| | VCC / GND | 3.3V / GND | Power & Ground |
-| **BME280 Sensor** | SDA / SCL | GPIO 21 / GPIO 22 | Shared I2C Bus (Address: 0x76) |
-| | VCC / GND | 3.3V / GND | Power & Ground |
-| **Battery Monitor** | ADC Pin | GPIO 36 (ADC1) | 10k/10k Resistor Voltage Divider |
+| MPU6050 Gyro/Tilt | SDA / SCL | GPIO 21 / GPIO 22 | Ground tilt & vibration |
+| Soil Moisture v1.2 | AOUT | GPIO 32 | Soil water saturation |
+| BME280 | SDA / SCL | GPIO 21 / GPIO 22 | Temperature, pressure, humidity |
+| Battery Monitor | ADC | GPIO 36 | Voltage divider (10k/10k) |
 
-#### Node 3: Fire Monitoring Node (FIR3)
-| Component | Component Pin | ESP32 Pin | Function / Description |
+### Node 3: Fire Monitoring (FIR3)
+
+| Component | Pin | ESP32 Pin | Function |
 |---|---|---|---|
-| **KY-026 Flame Sensor** | AO / DO | GPIO 34 (ADC1) / GPIO 27 | Infrared Flame Intensity & Digital Output |
-| | VCC / GND | 3.3V / GND | Power & Ground |
-| **MQ-2 Smoke/Gas** | AO / DO | GPIO 35 (ADC1) / GPIO 26 | Gas Concentration Analog & Digital Output |
-| | VCC / GND | 5V / GND | 5V Power Required for Internal Heater |
-| **BME280 Sensor** | SDA / SCL | GPIO 21 / GPIO 22 | I2C Data & Clock (Address: 0x76) |
-| | VCC / GND | 3.3V / GND | Power & Ground |
-| **Battery Monitor** | ADC Pin | GPIO 36 (ADC1) | 10k/10k Resistor Voltage Divider |
+| KY-026 Flame Sensor | AO / DO | GPIO 34 / GPIO 27 | Infrared flame detection |
+| MQ-2 Smoke/Gas | AO / DO | GPIO 35 / GPIO 26 | Gas concentration reading |
+| BME280 | SDA / SCL | GPIO 21 / GPIO 22 | Temperature, pressure, humidity |
+| Battery Monitor | ADC | GPIO 36 | Voltage divider (10k/10k) |
 
-#### Node 4: Air Pollution Monitoring Node (POL4 - 2-Layer Mode)
-| Component | Component Pin | ESP32 Pin | Function / Description |
+### Node 4: Air Pollution Monitoring (POL4 -- 2-Layer Mode)
+
+| Component | Pin | ESP32 Pin | Function |
 |---|---|---|---|
-| **MQ-135 Air Quality** | AO / DO | GPIO 34 (ADC1) / GPIO 27 | AQI Analog Reading & Digital Threshold |
-| | VCC / GND | 5V / GND | 5V Power Required for Internal Heater |
-| **GP2Y1010AU0F Dust** | Pin 3 (LED Drive) | GPIO 12 | Internal IR LED Trigger |
-| | Pin 5 (Vo Analog) | GPIO 35 (ADC1) | PM2.5 Dust Voltage Output |
-| | Pin 1 / 6 / Pins 2,4 | 5V (resistor) / 5V / GND | Sensor Power & Ground Circuit |
-| **Battery Monitor** | ADC Pin | GPIO 36 (ADC1) | 10k/10k Resistor Voltage Divider |
+| MQ-135 Air Quality | AO / DO | GPIO 34 / GPIO 27 | AQI reading |
+| GP2Y1010AU0F Dust | LED Drive / Vo | GPIO 12 / GPIO 35 | PM2.5 dust density |
+| Battery Monitor | ADC | GPIO 36 | Voltage divider (10k/10k) |
 
-### 3. NVIDIA Jetson Orin Nano Gateway & Alert System
+### Jetson Orin Nano -- Gateway & Alert System
 
-| Connected Device | Device Pin | Jetson 40-Pin Header | Header Pin Number | Function / Notes |
+| Device | Device Pin | Jetson 40-Pin Header | Pin No. | Notes |
 |---|---|---|---|---|
-| **SX1278 LoRa Receiver** | MOSI | SPI0_MOSI | Pin 19 | SPI Data Out |
-| | MISO | SPI0_MISO | Pin 21 | SPI Data In |
-| | SCK | SPI0_SCK | Pin 23 | SPI Clock |
-| | CS / NSS | SPI0_CS0 | Pin 24 | SPI Chip Select 0 |
-| | RST | GPIO25 | Pin 22 | Hardware Reset |
-| | DIO0 | GPIO04 | Pin 7 | Interrupt Request (IRQ) |
-| | VCC / GND | 3.3V / GND | Pin 1 / Pin 6 | Power & Common Ground |
-| **SIM800L GSM Module** | TXD | UART1_RXD | Pin 10 | Serial Receive |
-| | RXD | UART1_TXD | Pin 8 | Serial Transmit |
-| | VCC / GND | Ext 4.0V Supply / GND | Ext Power / Pin 6 | Dedicated External Power (2A Peak) |
-| **Piezo Alarm Buzzer** | Signal / GND | GPIO18 / GND | Pin 12 / Pin 14 | Transistor Driver Output |
-| **Strobe Light Relay** | IN / VCC / GND | GPIO23 / 5V / GND | Pin 16 / Pin 2 / Pin 6 | 5V Relay Trigger for Warning Strobe |
+| SX1278 LoRa | MOSI / MISO / SCK / CS | SPI0 pins | 19 / 21 / 23 / 24 | SPI LoRa interface |
+| SX1278 LoRa | RST / DIO0 | GPIO25 / GPIO04 | Pin 22 / Pin 7 | Reset & IRQ |
+| SIM800L GSM | TXD / RXD | UART1_RXD / TXD | Pin 10 / Pin 8 | SMS alerts |
+| Piezo Buzzer | Signal / GND | GPIO18 / GND | Pin 12 / Pin 14 | Audio alarm |
+| Strobe Relay | IN | GPIO23 | Pin 16 | 5V relay for warning light |
 
 ---
 
 ## PyTorch GRU AI Prediction Engine
 
-The system features a lightweight Gated Recurrent Unit (GRU) time-series model running locally on the Jetson GPU/CPU:
+The system includes a lightweight GRU (Gated Recurrent Unit) time-series model running locally on the Jetson:
 
-- **Input**: 30-timestep sliding window of sensor anomaly scores (5 features x 30 for 3-layer nodes; 3 features x 30 for 2-layer POL4).
-- **Outputs**: Future disaster probabilities for **T+15 minutes**, **T+30 minutes**, and **T+60 minutes**.
-- **Auto-Training**: If model weights (`gru_{hazard}.pt`) are missing at startup, the system automatically generates synthetic scenario data and trains the PyTorch model (~30s) before serving telemetry.
+- **Input**: 30-timestep sliding window of sensor anomaly scores.
+- **Output**: Disaster probability forecasts for **T+15**, **T+30**, and **T+60 minutes**.
+- **Auto-Training**: If model weights are missing at startup, the system automatically generates synthetic data and trains the model (~30 seconds) before serving alerts.
 
 ---
 
 ## Quick Start Guide
 
-### 1. Jetson Gateway & SPA Dashboard (Simulation Mode)
-Run the master orchestrator in simulation mode (no LoRa hardware required):
+### 1. Run the Gateway & Dashboard (Simulation Mode)
+
+No hardware required:
 
 ```bash
 cd jetson
 python main.py --simulate --port 8080
 ```
-Open the live dashboard in your browser: `http://localhost:8080`
 
-### 2. Train / Retrain PyTorch GRU AI Models
-Train the GRU time-series models for all 4 hazard types:
+Open in browser: `http://localhost:8080`
+
+### 2. Train or Retrain the AI Models
 
 ```bash
 python ai/jetson_model/train_gru_model.py --epochs 100
 ```
-Trained model weights are exported to `jetson/data/models/`.
 
-### 3. Run Scenario Simulations
-Test real-time disaster escalation scenarios in a separate terminal:
+Model weights are saved to `jetson/data/models/`.
+
+### 3. Run Disaster Scenarios
 
 ```bash
-# Run Pollution event scenario (AQI & PM2.5 escalation)
+# Pollution event (AQI & PM2.5 escalation)
 python simulation/pollution_scenario.py
 
-# Run Flood event scenario
+# Flood event
 python simulation/flood_scenario.py
 
-# Run Fire event scenario
+# Fire event
 python simulation/fire_scenario.py
 
-# Run Landslide event scenario
+# Landslide event
 python simulation/landslide_scenario.py
 
-# Run False Alarm Rejection test (glitch rejection)
+# False alarm rejection test
 python simulation/false_alarm_scenario.py
 ```
 
-### 4. Build & Flash ESP32 Firmware
-Build and upload node firmware using PlatformIO:
+### 4. Flash ESP32 Firmware
 
 ```bash
-# Node 1 (Flood — FLD1)
+# Node 1 (Flood - FLD1)
 cd firmware/node_flood && pio run -t upload
 
-# Node 2 (Landslide — SLD2)
+# Node 2 (Landslide - SLD2)
 cd firmware/node_landslide && pio run -t upload
 
-# Node 3 (Fire — FIR3)
+# Node 3 (Fire - FIR3)
 cd firmware/node_fire && pio run -t upload
 
-# Node 4 (Pollution — POL4, 2-Layer Mode)
+# Node 4 (Pollution - POL4)
 cd firmware/node_pollution && pio run -t upload
 ```
 
@@ -282,38 +311,30 @@ cd firmware/node_pollution && pio run -t upload
 
 ## Repository Structure
 
-```text
-.
-├── ai/
-│   └── jetson_model/
-│       └── train_gru_model.py           # PyTorch GRU model trainer for all 4 hazards
-├── firmware/
-│   ├── node_flood/                      # ESP32 Node FLD1 (Flood, 3-layer)
-│   ├── node_landslide/                  # ESP32 Node SLD2 (Landslide, 3-layer)
-│   ├── node_fire/                       # ESP32 Node FIR3 (Fire, 3-layer)
-│   └── node_pollution/                  # ESP32 Node POL4 (Pollution, 2-layer mode)
-├── jetson/
-│   ├── config.yaml                      # Central Jetson 4-node system configuration
-│   ├── main.py                          # Master orchestrator & startup manager
-│   ├── receiver/                        # SX1278 SPI LoRa receiver & binary decoder
-│   ├── data/
-│   │   └── models/                      # Trained PyTorch GRU model weights (.pt)
-│   ├── engine/
-│   │   ├── three_layer_validator.py     # 3-layer & 2-layer validation engine
-│   │   ├── ai_predictor.py              # PyTorch GRU neural net & predictor manager
-│   │   └── risk_predictor.py            # Risk, severity, ETA & GRU integration
-│   ├── alerts/                          # SIM800L SMS, Buzzer, & Strobe light drivers
-│   └── dashboard/
-│       ├── app.py                       # FastAPI REST API & WebSockets server
-│       ├── static/                      # Modern glassmorphism CSS & SPA JavaScript router
-│       └── templates/                   # Single-Page Application HTML shell
-├── photos/                              # Circuit schematics and hardware photos
-├── hardware_pinout_guide.md             # Complete hardware pinout & power wiring reference
-└── simulation/                          # Fake node generators & scenario runner scripts
-```
+| Folder / File | What it contains |
+|---|---|
+| `ai/jetson_model/train_gru_model.py` | PyTorch GRU model trainer for all 4 disaster types |
+| `firmware/node_flood/` | ESP32 firmware for Flood node (FLD1) — 3-layer mode |
+| `firmware/node_landslide/` | ESP32 firmware for Landslide node (SLD2) — 3-layer mode |
+| `firmware/node_fire/` | ESP32 firmware for Fire node (FIR3) — 3-layer mode |
+| `firmware/node_pollution/` | ESP32 firmware for Pollution node (POL4) — 2-layer mode |
+| `jetson/config.yaml` | Central configuration for all 4 nodes and Jetson settings |
+| `jetson/main.py` | Master startup script — launches all services on the Jetson |
+| `jetson/receiver/` | SX1278 SPI LoRa packet receiver and binary decoder |
+| `jetson/data/models/` | Trained PyTorch GRU model weight files (.pt) |
+| `jetson/engine/three_layer_validator.py` | 3-layer and 2-layer sensor confirmation logic |
+| `jetson/engine/ai_predictor.py` | PyTorch GRU neural network and prediction manager |
+| `jetson/engine/risk_predictor.py` | Risk scoring, severity levels, and ETA calculation |
+| `jetson/alerts/` | SMS (SIM800L), buzzer, and strobe light alert drivers |
+| `jetson/dashboard/app.py` | FastAPI web server with REST API and WebSocket support |
+| `jetson/dashboard/static/` | Frontend CSS and JavaScript for the web dashboard |
+| `jetson/dashboard/templates/` | HTML shell for the Single-Page Application |
+| `project_images/` | All hardware photos, circuit schematics, and dashboard screenshots |
+| `hardware_pinout_guide.md` | Full hardware pin wiring and power circuit reference |
+| `simulation/` | Scenario scripts to simulate disaster events for testing |
 
 ---
 
-## License & Credits
-Built for **Smart India Hackathon 2026** — Qualcomm Sponsored Problem Statement **SIH26178**.
+## License
 
+Built for **Smart India Hackathon (SIH) 2026**.
