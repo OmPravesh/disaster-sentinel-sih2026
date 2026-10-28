@@ -48,13 +48,6 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* Interactive Sparkline Waves */
-  .sparkline-svg {
-    width: 100%;
-    height: 38px;
-    overflow: visible;
-  }
-
   /* Active Nav Pill */
   .sidebar-link-active {
     background-color: #EFEBFD !important;
@@ -89,151 +82,131 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
-          <!-- Card 1: River Catchment (FLD1) - Mint Green Swatch -->
-          <div id="cardFLD1" class="relative overflow-hidden p-5 rounded-2xl bg-[#A6F7E2] dark:bg-[#0D382B] text-slate-900 dark:text-slate-100 shadow-sm border border-emerald-300/40 dark:border-emerald-800/50 flex flex-col justify-between space-y-3 transition-transform hover:-translate-y-0.5">
-            <div class="flex items-start justify-between">
-              <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-lg bg-emerald-800/10 dark:bg-emerald-400/20 flex items-center justify-center text-emerald-900 dark:text-emerald-300 text-sm">
+          <!-- Card 1: River Catchment (FLD1) -->
+          <div id="cardFLD1" class="relative overflow-hidden p-5 sm:p-6 rounded-2xl bg-[#A6F7E2] dark:bg-[#11141A] text-slate-900 dark:text-slate-100 shadow-sm border border-emerald-300/40 dark:border-white/[0.08] dark:border-l-4 dark:border-l-emerald-500 flex flex-col justify-between min-h-[160px] transition-transform hover:-translate-y-0.5">
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-9 h-9 rounded-xl bg-emerald-800/10 dark:bg-emerald-950/70 dark:border dark:border-emerald-500/40 flex items-center justify-center text-emerald-900 dark:text-emerald-400 text-base shrink-0">
                   <i class="fa-solid fa-water"></i>
                 </div>
-                <div>
-                  <h3 class="font-bold text-xs text-emerald-950 dark:text-emerald-100">FLD1 · River Basin</h3>
-                  <span class="text-[10px] text-emerald-900/70 dark:text-emerald-300/70 font-mono">Ganga #4</span>
+                <div class="min-w-0">
+                  <div class="flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-sm bg-emerald-500 shrink-0"></span>
+                    <h3 class="font-bold text-sm text-emerald-950 dark:text-white truncate">FLD1 · River Basin</h3>
+                  </div>
+                  <span class="text-xs text-emerald-900/80 dark:text-slate-300 font-mono block mt-0.5 font-medium">Ganga #4 · #STA-FLD1</span>
                 </div>
               </div>
-              <span id="badgeFLD1" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-800/15 dark:bg-emerald-500/20 text-emerald-950 dark:text-emerald-300 uppercase">SAFE</span>
+              <span id="badgeFLD1" class="text-xs font-mono font-bold px-2.5 py-1 rounded-md bg-emerald-800/15 dark:bg-emerald-950/80 dark:border dark:border-emerald-500/40 text-emerald-950 dark:text-emerald-300 uppercase shrink-0">SAFE</span>
             </div>
 
-            <div>
-              <span class="text-[10px] text-emerald-900/80 dark:text-emerald-300/80 font-medium block">River Water Level</span>
-              <div class="flex items-baseline gap-1 mt-0.5">
-                <span id="valFLD1" class="text-2xl font-black font-mono tabular-nums text-emerald-950 dark:text-white">2.10</span>
-                <span class="text-xs font-mono text-emerald-900/80 dark:text-emerald-200">meters</span>
+            <div class="my-auto py-2.5">
+              <span class="text-xs text-emerald-900/80 dark:text-slate-300 font-semibold block uppercase tracking-wide">River Water Level</span>
+              <div class="flex items-baseline gap-2 mt-0.5">
+                <span id="valFLD1" class="text-3xl sm:text-4xl font-extrabold font-mono tabular-nums text-emerald-950 dark:text-white tracking-tight">2.10</span>
+                <span class="text-xs font-mono font-bold text-emerald-900/80 dark:text-slate-300">meters</span>
               </div>
             </div>
 
-            <!-- Mini Live Sparkline Trend -->
-            <div class="pt-1">
-              <svg class="sparkline-svg" viewBox="0 0 100 28" fill="none">
-                <path d="M 0 20 Q 25 14 50 18 T 100 8" stroke="#047857" stroke-width="2.5" stroke-linecap="round" fill="none" />
-                <path d="M 0 20 Q 25 14 50 18 T 100 8 L 100 28 L 0 28 Z" fill="rgba(4, 120, 87, 0.08)" />
-              </svg>
-            </div>
-
-            <div class="pt-2 border-t border-emerald-800/15 dark:border-emerald-700/30 flex items-center justify-between text-[11px]">
-              <span class="text-emerald-900/70 dark:text-emerald-300/70">AI Horizon:</span>
-              <span id="leadFLD1" class="font-mono font-bold text-emerald-950 dark:text-emerald-300">+50m SAFE</span>
+            <div class="pt-3 border-t border-emerald-800/15 dark:border-white/[0.08] flex items-center justify-between text-xs">
+              <span class="text-emerald-900/80 dark:text-slate-300 font-medium">AI Horizon Forecast:</span>
+              <span id="leadFLD1" class="font-mono font-bold text-emerald-950 dark:text-emerald-400">+50m SAFE</span>
             </div>
           </div>
 
-          <!-- Card 2: Mountain Slope (SLD2) - Soft Lavender Swatch -->
-          <div id="cardSLD2" class="relative overflow-hidden p-5 rounded-2xl bg-[#D5C4FD] dark:bg-[#2A1E4F] text-slate-900 dark:text-slate-100 shadow-sm border border-purple-300/40 dark:border-purple-800/50 flex flex-col justify-between space-y-3 transition-transform hover:-translate-y-0.5">
-            <div class="flex items-start justify-between">
-              <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-lg bg-purple-900/10 dark:bg-purple-400/20 flex items-center justify-center text-purple-900 dark:text-purple-300 text-sm">
+          <!-- Card 2: Mountain Slope (SLD2) -->
+          <div id="cardSLD2" class="relative overflow-hidden p-5 sm:p-6 rounded-2xl bg-[#D5C4FD] dark:bg-[#11141A] text-slate-900 dark:text-slate-100 shadow-sm border border-purple-300/40 dark:border-white/[0.08] dark:border-l-4 dark:border-l-purple-500 flex flex-col justify-between min-h-[160px] transition-transform hover:-translate-y-0.5">
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-9 h-9 rounded-xl bg-purple-900/10 dark:bg-purple-950/70 dark:border dark:border-purple-500/40 flex items-center justify-center text-purple-900 dark:text-purple-300 text-base shrink-0">
                   <i class="fa-solid fa-mountain"></i>
                 </div>
-                <div>
-                  <h3 class="font-bold text-xs text-purple-950 dark:text-purple-100">SLD2 · Slope Incline</h3>
-                  <span class="text-[10px] text-purple-900/70 dark:text-purple-300/70 font-mono">Chamoli #2B</span>
+                <div class="min-w-0">
+                  <div class="flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-sm bg-purple-500 shrink-0"></span>
+                    <h3 class="font-bold text-sm text-purple-950 dark:text-white truncate">SLD2 · Slope Incline</h3>
+                  </div>
+                  <span class="text-xs text-purple-900/80 dark:text-slate-300 font-mono block mt-0.5 font-medium">Chamoli #2B · #STA-SLD2</span>
                 </div>
               </div>
-              <span id="badgeSLD2" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-purple-900/15 dark:bg-purple-500/20 text-purple-950 dark:text-purple-300 uppercase">SAFE</span>
+              <span id="badgeSLD2" class="text-xs font-mono font-bold px-2.5 py-1 rounded-md bg-purple-900/15 dark:bg-purple-950/80 dark:border dark:border-purple-500/40 text-purple-950 dark:text-purple-300 uppercase shrink-0">SAFE</span>
             </div>
 
-            <div>
-              <span class="text-[10px] text-purple-900/80 dark:text-purple-300/80 font-medium block">Tilt Incline Angle</span>
-              <div class="flex items-baseline gap-1 mt-0.5">
-                <span id="valSLD2" class="text-2xl font-black font-mono tabular-nums text-purple-950 dark:text-white">12.0</span>
-                <span class="text-xs font-mono text-purple-900/80 dark:text-purple-200">degrees (°)</span>
+            <div class="my-auto py-2.5">
+              <span class="text-xs text-purple-900/80 dark:text-slate-300 font-semibold block uppercase tracking-wide">Tilt Incline Angle</span>
+              <div class="flex items-baseline gap-2 mt-0.5">
+                <span id="valSLD2" class="text-3xl sm:text-4xl font-extrabold font-mono tabular-nums text-purple-950 dark:text-white tracking-tight">12.0</span>
+                <span class="text-xs font-mono font-bold text-purple-900/80 dark:text-slate-300">degrees (°)</span>
               </div>
             </div>
 
-            <!-- Mini Live Sparkline Trend -->
-            <div class="pt-1">
-              <svg class="sparkline-svg" viewBox="0 0 100 28" fill="none">
-                <path d="M 0 15 Q 25 18 50 14 T 100 12" stroke="#6D28D9" stroke-width="2.5" stroke-linecap="round" fill="none" />
-                <path d="M 0 15 Q 25 18 50 14 T 100 12 L 100 28 L 0 28 Z" fill="rgba(109, 40, 217, 0.08)" />
-              </svg>
-            </div>
-
-            <div class="pt-2 border-t border-purple-800/15 dark:border-purple-700/30 flex items-center justify-between text-[11px]">
-              <span class="text-purple-900/70 dark:text-purple-300/70">AI Horizon:</span>
+            <div class="pt-3 border-t border-purple-800/15 dark:border-white/[0.08] flex items-center justify-between text-xs">
+              <span class="text-purple-900/80 dark:text-slate-300 font-medium">AI Horizon Forecast:</span>
               <span id="leadSLD2" class="font-mono font-bold text-purple-950 dark:text-purple-300">+50m SAFE</span>
             </div>
           </div>
 
-          <!-- Card 3: Reserved Forest (FIR3) - Soft Butter Yellow Swatch -->
-          <div id="cardFIR3" class="relative overflow-hidden p-5 rounded-2xl bg-[#FFE5A5] dark:bg-[#3D2E0B] text-slate-900 dark:text-slate-100 shadow-sm border border-amber-300/40 dark:border-amber-800/50 flex flex-col justify-between space-y-3 transition-transform hover:-translate-y-0.5">
-            <div class="flex items-start justify-between">
-              <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-lg bg-amber-900/10 dark:bg-amber-400/20 flex items-center justify-center text-amber-900 dark:text-amber-300 text-sm">
+          <!-- Card 3: Reserved Forest (FIR3) -->
+          <div id="cardFIR3" class="relative overflow-hidden p-5 sm:p-6 rounded-2xl bg-[#FFE5A5] dark:bg-[#11141A] text-slate-900 dark:text-slate-100 shadow-sm border border-amber-300/40 dark:border-white/[0.08] dark:border-l-4 dark:border-l-amber-500 flex flex-col justify-between min-h-[160px] transition-transform hover:-translate-y-0.5">
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-9 h-9 rounded-xl bg-amber-900/10 dark:bg-amber-950/70 dark:border dark:border-amber-500/40 flex items-center justify-center text-amber-900 dark:text-amber-400 text-base shrink-0">
                   <i class="fa-solid fa-fire-flame-curved"></i>
                 </div>
-                <div>
-                  <h3 class="font-bold text-xs text-amber-950 dark:text-amber-100">FIR3 · Reserved Forest</h3>
-                  <span class="text-[10px] text-amber-900/70 dark:text-amber-300/70 font-mono">Pine Perimeter</span>
+                <div class="min-w-0">
+                  <div class="flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-sm bg-amber-500 shrink-0"></span>
+                    <h3 class="font-bold text-sm text-amber-950 dark:text-white truncate">FIR3 · Reserved Forest</h3>
+                  </div>
+                  <span class="text-xs text-amber-900/80 dark:text-slate-300 font-mono block mt-0.5 font-medium">Pine Perimeter · #STA-FIR3</span>
                 </div>
               </div>
-              <span id="badgeFIR3" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-900/15 dark:bg-amber-500/20 text-amber-950 dark:text-amber-300 uppercase">SAFE</span>
+              <span id="badgeFIR3" class="text-xs font-mono font-bold px-2.5 py-1 rounded-md bg-amber-900/15 dark:bg-amber-950/80 dark:border dark:border-amber-500/40 text-amber-950 dark:text-amber-300 uppercase shrink-0">SAFE</span>
             </div>
 
-            <div>
-              <span class="text-[10px] text-amber-900/80 dark:text-amber-300/80 font-medium block">Combustion Gas (TVOC)</span>
-              <div class="flex items-baseline gap-1 mt-0.5">
-                <span id="valFIR3" class="text-2xl font-black font-mono tabular-nums text-amber-950 dark:text-white">818</span>
-                <span class="text-xs font-mono text-amber-900/80 dark:text-amber-200">ppb</span>
+            <div class="my-auto py-2.5">
+              <span class="text-xs text-amber-900/80 dark:text-slate-300 font-semibold block uppercase tracking-wide">Combustion Gas (TVOC)</span>
+              <div class="flex items-baseline gap-2 mt-0.5">
+                <span id="valFIR3" class="text-3xl sm:text-4xl font-extrabold font-mono tabular-nums text-amber-950 dark:text-white tracking-tight">818</span>
+                <span class="text-xs font-mono font-bold text-amber-900/80 dark:text-slate-300">ppb</span>
               </div>
             </div>
 
-            <!-- Mini Live Sparkline Trend -->
-            <div class="pt-1">
-              <svg class="sparkline-svg" viewBox="0 0 100 28" fill="none">
-                <path d="M 0 18 Q 30 10 50 16 T 100 14" stroke="#B45309" stroke-width="2.5" stroke-linecap="round" fill="none" />
-                <path d="M 0 18 Q 30 10 50 16 T 100 14 L 100 28 L 0 28 Z" fill="rgba(180, 83, 9, 0.08)" />
-              </svg>
-            </div>
-
-            <div class="pt-2 border-t border-amber-800/15 dark:border-amber-700/30 flex items-center justify-between text-[11px]">
-              <span class="text-amber-900/70 dark:text-amber-300/70">AI Horizon:</span>
-              <span id="leadFIR3" class="font-mono font-bold text-amber-950 dark:text-amber-300">+50m SAFE</span>
+            <div class="pt-3 border-t border-amber-800/15 dark:border-white/[0.08] flex items-center justify-between text-xs">
+              <span class="text-amber-900/80 dark:text-slate-300 font-medium">AI Horizon Forecast:</span>
+              <span id="leadFIR3" class="font-mono font-bold text-amber-950 dark:text-amber-400">+50m SAFE</span>
             </div>
           </div>
 
-          <!-- Card 4: Industrial Hub (POL4) - Soft Sky Blue Swatch -->
-          <div id="cardPOL4" class="relative overflow-hidden p-5 rounded-2xl bg-[#BEE1FD] dark:bg-[#0C2D4A] text-slate-900 dark:text-slate-100 shadow-sm border border-blue-300/40 dark:border-blue-800/50 flex flex-col justify-between space-y-3 transition-transform hover:-translate-y-0.5">
-            <div class="flex items-start justify-between">
-              <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-lg bg-blue-900/10 dark:bg-blue-400/20 flex items-center justify-center text-blue-900 dark:text-blue-300 text-sm">
+          <!-- Card 4: Industrial Hub (POL4) -->
+          <div id="cardPOL4" class="relative overflow-hidden p-5 sm:p-6 rounded-2xl bg-[#BEE1FD] dark:bg-[#11141A] text-slate-900 dark:text-slate-100 shadow-sm border border-blue-300/40 dark:border-white/[0.08] dark:border-l-4 dark:border-l-sky-500 flex flex-col justify-between min-h-[160px] transition-transform hover:-translate-y-0.5">
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-9 h-9 rounded-xl bg-blue-900/10 dark:bg-sky-950/70 dark:border dark:border-sky-500/40 flex items-center justify-center text-blue-900 dark:text-sky-400 text-base shrink-0">
                   <i class="fa-solid fa-smog"></i>
                 </div>
-                <div>
-                  <h3 class="font-bold text-xs text-blue-950 dark:text-blue-100">POL4 · Industrial Hub</h3>
-                  <span class="text-[10px] text-blue-900/70 dark:text-blue-300/70 font-mono">Selaqui Basin A</span>
+                <div class="min-w-0">
+                  <div class="flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-sm bg-sky-500 shrink-0"></span>
+                    <h3 class="font-bold text-sm text-blue-950 dark:text-white truncate">POL4 · Industrial Hub</h3>
+                  </div>
+                  <span class="text-xs text-blue-900/80 dark:text-slate-300 font-mono block mt-0.5 font-medium">Selaqui Basin A · #STA-POL4</span>
                 </div>
               </div>
-              <span id="badgePOL4" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-blue-900/15 dark:bg-blue-500/20 text-blue-950 dark:text-blue-300 uppercase">SAFE</span>
+              <span id="badgePOL4" class="text-xs font-mono font-bold px-2.5 py-1 rounded-md bg-blue-900/15 dark:bg-sky-950/80 dark:border dark:border-sky-500/40 text-blue-950 dark:text-sky-300 uppercase shrink-0">SAFE</span>
             </div>
 
-            <div>
-              <span class="text-[10px] text-blue-900/80 dark:text-blue-300/80 font-medium block">PM2.5 Dust Particulate</span>
-              <div class="flex items-baseline gap-1 mt-0.5">
-                <span id="valPOL4" class="text-2xl font-black font-mono tabular-nums text-blue-950 dark:text-white">11.5</span>
-                <span class="text-xs font-mono text-blue-900/80 dark:text-blue-200">&micro;g/m&sup3;</span>
+            <div class="my-auto py-2.5">
+              <span class="text-xs text-blue-900/80 dark:text-slate-300 font-semibold block uppercase tracking-wide">PM2.5 Dust Particulate</span>
+              <div class="flex items-baseline gap-2 mt-0.5">
+                <span id="valPOL4" class="text-3xl sm:text-4xl font-extrabold font-mono tabular-nums text-blue-950 dark:text-white tracking-tight">11.5</span>
+                <span class="text-xs font-mono font-bold text-blue-900/80 dark:text-slate-300">&micro;g/m&sup3;</span>
               </div>
             </div>
 
-            <!-- Mini Live Sparkline Trend -->
-            <div class="pt-1">
-              <svg class="sparkline-svg" viewBox="0 0 100 28" fill="none">
-                <path d="M 0 16 Q 20 22 55 12 T 100 10" stroke="#0284C7" stroke-width="2.5" stroke-linecap="round" fill="none" />
-                <path d="M 0 16 Q 20 22 55 12 T 100 10 L 100 28 L 0 28 Z" fill="rgba(2, 132, 199, 0.08)" />
-              </svg>
-            </div>
-
-            <div class="pt-2 border-t border-blue-800/15 dark:border-blue-700/30 flex items-center justify-between text-[11px]">
-              <span class="text-blue-900/70 dark:text-blue-300/70">AI Horizon:</span>
-              <span id="leadPOL4" class="font-mono font-bold text-blue-950 dark:text-blue-300">+50m SAFE</span>
+            <div class="pt-3 border-t border-blue-800/15 dark:border-white/[0.08] flex items-center justify-between text-xs">
+              <span class="text-blue-900/80 dark:text-slate-300 font-medium">AI Horizon Forecast:</span>
+              <span id="leadPOL4" class="font-mono font-bold text-blue-950 dark:text-sky-400">+50m SAFE</span>
             </div>
           </div>
 
@@ -248,33 +221,33 @@
         <!-- LEFT COLUMN: Posture Hero Cards + Top Sectors List (lg:col-span-3) -->
         <div class="lg:col-span-3 space-y-4">
           
-          <!-- Vivid Primary Balance Card (#6425FE in reference) -->
-          <div class="p-5 rounded-2xl bg-[#6425FE] text-white shadow-sm space-y-3 relative overflow-hidden">
+          <!-- Vivid Primary Balance Card (#6425FE in light, stealth black in dark) -->
+          <div class="p-6 rounded-2xl bg-[#6425FE] dark:bg-[#11141A] dark:border dark:border-white/[0.08] dark:border-l-4 dark:border-l-purple-500 text-white shadow-sm space-y-3 relative overflow-hidden">
             <div class="flex items-center justify-between">
-              <span class="text-xs text-purple-200 font-medium">Global Threat Level</span>
-              <span id="heroThreatBadge" class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-400 text-emerald-950 uppercase">+50m SAFE</span>
+              <span class="text-xs text-purple-200 dark:text-purple-300 font-mono uppercase tracking-wider font-bold">Global Threat Level</span>
+              <span id="heroThreatBadge" class="px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-emerald-400 dark:bg-emerald-950/80 dark:border dark:border-emerald-500/40 text-emerald-950 dark:text-emerald-400 uppercase">+50m SAFE</span>
             </div>
             <div>
-              <h2 id="heroThreatText" class="text-2xl font-black tracking-tight font-mono">NORMAL</h2>
-              <p class="text-[11px] text-purple-200 mt-0.5">0 critical threshold breaches</p>
+              <h2 id="heroThreatText" class="text-3xl font-black tracking-tight font-mono text-white">NORMAL</h2>
+              <p id="heroThreatDesc" class="text-sm text-purple-100 dark:text-slate-200 mt-1 font-medium font-mono">0 critical threshold breaches</p>
             </div>
           </div>
 
-          <!-- Secondary Charcoal Card (#25282A in reference) -->
-          <div class="p-5 rounded-2xl bg-[#1E2024] dark:bg-[#1A2234] text-white shadow-sm flex items-center justify-between">
+          <!-- Secondary Charcoal Card (#25282A in light, stealth black in dark) -->
+          <div class="p-6 rounded-2xl bg-[#1E2024] dark:bg-[#11141A] dark:border dark:border-white/[0.08] text-white shadow-sm flex items-center justify-between">
             <div>
-              <span class="text-xs text-slate-400 font-medium block">Edge LoRa Stations</span>
-              <span class="text-xl font-bold font-mono tracking-tight text-white mt-0.5 block">4 / 4 ONLINE</span>
-              <span class="text-[10px] text-slate-400 font-mono">SX1278 @ 433.0 MHz</span>
+              <span class="text-xs text-slate-400 dark:text-slate-300 font-mono uppercase tracking-wider block font-bold">Edge LoRa Stations</span>
+              <span class="text-2xl font-bold font-mono tracking-tight text-white mt-1 block">4 / 4 ONLINE</span>
+              <span class="text-xs text-slate-400 dark:text-slate-300 font-mono mt-0.5 block font-medium">SX1278 @ 433.0 MHz</span>
             </div>
-            <a href="/monitoring" class="w-10 h-10 rounded-xl bg-[#6425FE] hover:bg-[#5219E0] text-white flex items-center justify-center transition shadow-sm cursor-pointer">
-              <i class="fa-solid fa-arrow-right text-xs"></i>
+            <a href="/monitoring" class="w-11 h-11 rounded-xl bg-[#6425FE] hover:bg-[#5219E0] dark:bg-[#181C26] dark:hover:bg-[#202533] dark:border dark:border-white/[0.12] text-white flex items-center justify-center transition shadow-sm cursor-pointer">
+              <i class="fa-solid fa-arrow-right text-sm"></i>
             </a>
           </div>
 
           <!-- Top Stations Mini List (matching "Top Stock" in reference) -->
-          <div class="p-5 rounded-2xl bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800 space-y-3 shadow-xs">
-            <h3 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider block">Real-time Readings</h3>
+          <div class="p-6 rounded-2xl bg-white dark:bg-[#11141A] border border-slate-200/80 dark:border-white/[0.08] space-y-4 shadow-xs">
+            <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider block font-mono">Real-time Readings</h3>
             
             <div class="space-y-2.5 text-xs">
               <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
@@ -314,109 +287,127 @@
         </div>
 
         <!-- CENTER COLUMN: Trajectory Chart & Live Horizon (lg:col-span-5) -->
-        <div class="lg:col-span-5 p-5 sm:p-6 rounded-2xl bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800 space-y-4 shadow-xs">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
+        <div class="lg:col-span-5 p-6 rounded-2xl bg-white dark:bg-[#11141A] border border-slate-200/80 dark:border-white/[0.08] space-y-5 shadow-xs">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-white/[0.08] pb-3.5">
             <div>
-              <h3 class="text-sm font-bold text-slate-900 dark:text-white">Predictive Trajectory Forecaster</h3>
-              <p class="text-[11px] text-slate-400">Jetson Orin PyTorch GRU Recurrent Horizon</p>
+              <h3 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight">Predictive Trajectory Forecaster</h3>
+              <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium mt-0.5">Jetson Orin PyTorch GRU Recurrent Horizon</p>
             </div>
             
-            <!-- Filter Pills (1D, 5D, 1M... matching reference) -->
-            <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-[11px] font-medium self-start sm:self-auto">
-              <button onclick="setHorizonFilter(10)" class="hz-btn px-2.5 py-1 rounded-lg bg-white dark:bg-slate-700 text-[#6425FE] dark:text-purple-300 font-bold shadow-xs">10m</button>
-              <button onclick="setHorizonFilter(20)" class="hz-btn px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white">20m</button>
-              <button onclick="setHorizonFilter(30)" class="hz-btn px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white">30m</button>
-              <button onclick="setHorizonFilter(50)" class="hz-btn px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white">50m</button>
+            <!-- Filter Pills (10m, 20m, 30m, 50m) -->
+            <div class="flex items-center gap-1 bg-slate-100 dark:bg-[#0A0C10] p-1 rounded-xl text-xs font-medium self-start sm:self-auto border border-transparent dark:border-white/[0.08]">
+              <button onclick="setHorizonFilter(10)" class="hz-btn px-3 py-1.5 rounded-lg bg-white dark:bg-[#181C26] text-[#6425FE] dark:text-purple-300 font-bold shadow-xs">10m</button>
+              <button onclick="setHorizonFilter(20)" class="hz-btn px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">20m</button>
+              <button onclick="setHorizonFilter(30)" class="hz-btn px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">30m</button>
+              <button onclick="setHorizonFilter(50)" class="hz-btn px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">50m</button>
             </div>
           </div>
 
           <!-- Chart.js Container -->
-          <div class="relative w-full h-56 sm:h-64">
+          <div class="relative w-full h-60 sm:h-64">
             <canvas id="centerTrajectoryChart"></canvas>
           </div>
 
-          <!-- Summary Metric Footer (High / Low in reference) -->
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px]">
+          <!-- Summary Metric Footer -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3.5 border-t border-slate-100 dark:border-white/[0.08] text-xs">
             <div>
-              <span class="text-slate-400 block">Forecast Model:</span>
-              <span class="font-mono font-bold text-slate-800 dark:text-slate-200">PyTorch GRU</span>
+              <span class="text-slate-500 dark:text-slate-300 block font-medium">Forecast Model:</span>
+              <span class="font-mono font-bold text-slate-900 dark:text-white text-sm">PyTorch GRU</span>
             </div>
             <div>
-              <span class="text-slate-400 block">Confidence:</span>
-              <span class="font-mono font-bold text-emerald-600 dark:text-emerald-400">98.4%</span>
+              <span class="text-slate-500 dark:text-slate-300 block font-medium">Confidence:</span>
+              <span class="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm">98.4%</span>
             </div>
             <div>
-              <span class="text-slate-400 block">Lead Time:</span>
-              <span id="statLeadTime" class="font-mono font-bold text-slate-800 dark:text-slate-200">50+ MIN</span>
+              <span class="text-slate-500 dark:text-slate-300 block font-medium">Lead Time:</span>
+              <span id="statLeadTime" class="font-mono font-bold text-slate-900 dark:text-white text-sm">50+ MIN</span>
             </div>
             <div>
-              <span class="text-slate-400 block">Hardware:</span>
-              <span class="font-mono font-bold text-slate-800 dark:text-slate-200">Jetson Orin</span>
+              <span class="text-slate-500 dark:text-slate-300 block font-medium">Hardware:</span>
+              <span class="font-mono font-bold text-slate-900 dark:text-white text-sm">Jetson Orin</span>
             </div>
           </div>
         </div>
 
         <!-- RIGHT COLUMN: Snapshot & Range Sliders (lg:col-span-4) -->
-        <div class="lg:col-span-4 p-5 sm:p-6 rounded-2xl bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800 space-y-4 shadow-xs">
-          <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-            <h3 class="text-sm font-bold text-slate-900 dark:text-white">Safety Threshold Snapshot</h3>
-            <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 uppercase">Live SPI</span>
+        <div class="lg:col-span-4 p-6 rounded-2xl bg-white dark:bg-[#11141A] border border-slate-200/80 dark:border-white/[0.08] space-y-4 shadow-xs">
+          <div class="flex items-center justify-between border-b border-slate-100 dark:border-white/[0.08] pb-3">
+            <div>
+              <h3 class="text-base font-bold text-slate-900 dark:text-white tracking-tight">Safety Threshold Snapshot</h3>
+              <p class="text-xs text-slate-500 dark:text-slate-300 mt-0.5">Live sensor limits &amp; tripwires</p>
+            </div>
+            <span class="text-xs font-mono font-bold px-2.5 py-1 rounded-md bg-slate-100 dark:bg-emerald-950/70 dark:border dark:border-emerald-500/40 text-slate-700 dark:text-emerald-300 uppercase">Live SPI</span>
           </div>
 
           <!-- Threshold Range Gauge 1: River Flood -->
-          <div class="space-y-1.5 text-xs">
+          <div class="space-y-2 text-xs pt-1">
             <div class="flex justify-between items-baseline">
-              <span class="font-medium text-slate-700 dark:text-slate-300">FLD1 River Depth</span>
-              <span id="rangeValFLD1" class="font-mono font-bold text-slate-900 dark:text-white">2.10 m</span>
+              <span class="font-semibold text-sm text-slate-800 dark:text-slate-200">FLD1 River Depth</span>
+              <span id="rangeValFLD1" class="font-mono font-bold text-sm text-slate-900 dark:text-white">2.10 m</span>
             </div>
             <div class="threshold-track">
               <div id="needleFLD1" class="threshold-needle" style="left: 21%;"></div>
             </div>
-            <div class="flex justify-between text-[10px] text-slate-400 font-mono">
+            <div class="flex justify-between text-xs text-slate-500 dark:text-slate-300 font-mono font-medium">
               <span>0.0m Low</span>
               <span class="text-rose-500 font-bold">10.0m Breach</span>
             </div>
           </div>
 
           <!-- Threshold Range Gauge 2: Mountain Slope -->
-          <div class="space-y-1.5 text-xs pt-1">
+          <div class="space-y-2 text-xs pt-1">
             <div class="flex justify-between items-baseline">
-              <span class="font-medium text-slate-700 dark:text-slate-300">SLD2 Slope Incline</span>
-              <span id="rangeValSLD2" class="font-mono font-bold text-slate-900 dark:text-white">12.0 °</span>
+              <span class="font-semibold text-sm text-slate-800 dark:text-slate-200">SLD2 Slope Incline</span>
+              <span id="rangeValSLD2" class="font-mono font-bold text-sm text-slate-900 dark:text-white">12.0 °</span>
             </div>
             <div class="threshold-track">
               <div id="needleSLD2" class="threshold-needle" style="left: 26%;"></div>
             </div>
-            <div class="flex justify-between text-[10px] text-slate-400 font-mono">
+            <div class="flex justify-between text-xs text-slate-500 dark:text-slate-300 font-mono font-medium">
               <span>0° Nominal</span>
               <span class="text-amber-500 font-bold">45° Landslide</span>
             </div>
           </div>
 
           <!-- Threshold Range Gauge 3: Fire TVOC -->
-          <div class="space-y-1.5 text-xs pt-1">
+          <div class="space-y-2 text-xs pt-1">
             <div class="flex justify-between items-baseline">
-              <span class="font-medium text-slate-700 dark:text-slate-300">FIR3 Combustion Gas</span>
-              <span id="rangeValFIR3" class="font-mono font-bold text-slate-900 dark:text-white">818 ppb</span>
+              <span class="font-semibold text-sm text-slate-800 dark:text-slate-200">FIR3 Combustion Gas</span>
+              <span id="rangeValFIR3" class="font-mono font-bold text-sm text-slate-900 dark:text-white">818 ppb</span>
             </div>
             <div class="threshold-track">
               <div id="needleFIR3" class="threshold-needle" style="left: 16%;"></div>
             </div>
-            <div class="flex justify-between text-[10px] text-slate-400 font-mono">
+            <div class="flex justify-between text-xs text-slate-500 dark:text-slate-300 font-mono font-medium">
               <span>0 Baseline</span>
               <span class="text-rose-500 font-bold">5000 ppb Fire</span>
             </div>
           </div>
 
-          <!-- Bottom Snapshot Metadata (Trade Time / Date in reference) -->
-          <div class="pt-3 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-3 text-xs">
+          <!-- Threshold Range Gauge 4: Industrial PM2.5 (POL4) -->
+          <div class="space-y-2 text-xs pt-1">
+            <div class="flex justify-between items-baseline">
+              <span class="font-semibold text-sm text-slate-800 dark:text-slate-200">POL4 PM2.5 Density</span>
+              <span id="rangeValPOL4" class="font-mono font-bold text-sm text-slate-900 dark:text-white">11.5 &micro;g/m&sup3;</span>
+            </div>
+            <div class="threshold-track">
+              <div id="needlePOL4" class="threshold-needle" style="left: 8%;"></div>
+            </div>
+            <div class="flex justify-between text-xs text-slate-500 dark:text-slate-300 font-mono font-medium">
+              <span>0 Clean</span>
+              <span class="text-rose-500 font-bold">150 &micro;g/m&sup3; Breach</span>
+            </div>
+          </div>
+
+          <!-- Bottom Snapshot Metadata -->
+          <div class="pt-3.5 border-t border-slate-100 dark:border-white/[0.08] grid grid-cols-2 gap-3 text-xs">
             <div>
-              <span class="text-[10px] text-slate-400 uppercase tracking-wider block">Satellite Link</span>
-              <span class="font-mono font-bold text-slate-900 dark:text-white">SIM800L UART</span>
+              <span class="text-xs text-slate-500 dark:text-slate-300 uppercase tracking-wider block font-semibold">Satellite Link</span>
+              <span class="font-mono font-bold text-sm text-slate-900 dark:text-white">SIM800L UART</span>
             </div>
             <div>
-              <span class="text-[10px] text-slate-400 uppercase tracking-wider block">RSSI Reception</span>
-              <span class="font-mono font-bold text-emerald-600 dark:text-emerald-400">28 / 31 (90%)</span>
+              <span class="text-xs text-slate-500 dark:text-slate-300 uppercase tracking-wider block font-semibold">RSSI Reception</span>
+              <span class="font-mono font-bold text-sm text-emerald-600 dark:text-emerald-400">28 / 31 (90%)</span>
             </div>
           </div>
         </div>
@@ -429,14 +420,14 @@
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
         <!-- Left: Long-Horizon Predictive Analysis Area Chart (lg:col-span-8) -->
-        <div class="lg:col-span-8 p-5 sm:p-6 rounded-2xl bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800 space-y-4 shadow-xs">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
+        <div class="lg:col-span-8 p-6 rounded-2xl bg-white dark:bg-[#11141A] border border-slate-200/80 dark:border-white/[0.08] space-y-4 shadow-xs">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-white/[0.08] pb-3.5">
             <div>
-              <h3 class="text-sm font-bold text-slate-900 dark:text-white">Orin Nano Jetson GRU 50-Minute Lead-Time Horizon</h3>
-              <p class="text-[11px] text-slate-400">Autonomous edge early warning trajectory forecasting across all time steps</p>
+              <h3 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight">Orin Nano Jetson GRU 50-Minute Lead-Time Horizon</h3>
+              <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium mt-0.5">Autonomous edge early warning trajectory forecasting across all time steps</p>
             </div>
             
-            <a href="/analytics" class="text-xs text-[#6425FE] dark:text-[#A78BFA] font-semibold hover:underline flex items-center gap-1">
+            <a href="/analytics" class="text-xs font-semibold text-[#6425FE] hover:text-[#5219E0] dark:text-purple-300 dark:hover:text-purple-200 flex items-center gap-1.5 transition">
               <span>Full Analytics Suite</span>
               <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
             </a>
@@ -449,82 +440,85 @@
         </div>
 
         <!-- Right: Active Monitored Stations Watchlist (lg:col-span-4) -->
-        <div class="lg:col-span-4 p-5 sm:p-6 rounded-2xl bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800 space-y-4 shadow-xs">
-          <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-            <h3 class="text-sm font-bold text-slate-900 dark:text-white">Active Stations Watchlist</h3>
-            <span class="w-6 h-6 rounded-lg bg-[#6425FE] text-white flex items-center justify-center text-xs">
-              <i class="fa-solid fa-plus text-[10px]"></i>
-            </span>
+        <div class="lg:col-span-4 p-6 rounded-2xl bg-white dark:bg-[#11141A] border border-slate-200/80 dark:border-white/[0.08] space-y-4 shadow-xs">
+          <div class="flex items-center justify-between border-b border-slate-100 dark:border-white/[0.08] pb-3.5">
+            <div>
+              <h3 class="text-base font-bold text-slate-900 dark:text-white tracking-tight">Active Stations Watchlist</h3>
+              <p class="text-xs text-slate-500 dark:text-slate-300 mt-0.5">Unified telemetry quick stream</p>
+            </div>
+            <a href="/monitoring" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#181C26] dark:hover:bg-[#202533] dark:border dark:border-white/[0.1] text-slate-700 dark:text-slate-200 flex items-center justify-center text-xs transition cursor-pointer">
+              <i class="fa-solid fa-arrow-right text-xs"></i>
+            </a>
           </div>
 
-          <!-- Watchlist Items (styled like Amazon, Tesla, Apple stock items) -->
+          <!-- Watchlist Items (styled like clean enterprise card rows) -->
           <div class="space-y-3">
             
             <!-- Station 1: Ganga Catchment -->
-            <a href="/monitoring#flood" class="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/60 transition group">
+            <a href="/monitoring#flood" class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-[#161A22] border border-transparent hover:border-slate-200 dark:hover:border-white/[0.08] transition group">
               <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-700 dark:text-emerald-300 text-sm">
+                <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/70 dark:border dark:border-emerald-500/30 flex items-center justify-center text-emerald-700 dark:text-emerald-300 text-sm">
                   <i class="fa-solid fa-water"></i>
                 </div>
                 <div>
-                  <h4 class="font-bold text-xs text-slate-900 dark:text-white group-hover:text-[#6425FE] transition">Ganga Catchment #4</h4>
-                  <span class="text-[10px] text-slate-400 font-mono">FLD1 · Ultrasonic</span>
+                  <h4 class="font-bold text-sm text-slate-900 dark:text-white group-hover:text-emerald-500 transition">Ganga Catchment #4</h4>
+                  <span class="text-xs text-slate-500 dark:text-slate-300 font-mono font-medium block">FLD1 · Ultrasonic</span>
                 </div>
               </div>
               <div class="text-right">
-                <span id="watchValFLD1" class="font-mono font-bold text-xs text-slate-900 dark:text-white block">2.10 m</span>
-                <span class="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">NORMAL</span>
+                <span id="watchValFLD1" class="font-mono font-bold text-sm text-slate-900 dark:text-white block">2.10 m</span>
+                <span class="text-xs font-mono text-emerald-600 dark:text-emerald-400 font-bold">NORMAL</span>
               </div>
             </a>
 
             <!-- Station 2: Chamoli Slope -->
-            <a href="/monitoring#landslide" class="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/60 transition group">
+            <a href="/monitoring#landslide" class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-[#161A22] border border-transparent hover:border-slate-200 dark:hover:border-white/[0.08] transition group">
               <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-700 dark:text-purple-300 text-sm">
+                <div class="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-950/70 dark:border dark:border-purple-500/30 flex items-center justify-center text-purple-700 dark:text-purple-300 text-sm">
                   <i class="fa-solid fa-mountain"></i>
                 </div>
                 <div>
-                  <h4 class="font-bold text-xs text-slate-900 dark:text-white group-hover:text-[#6425FE] transition">Chamoli Garhwal 2B</h4>
-                  <span class="text-[10px] text-slate-400 font-mono">SLD2 · Gyro/Pore</span>
+                  <h4 class="font-bold text-sm text-slate-900 dark:text-white group-hover:text-purple-500 transition">Chamoli Garhwal 2B</h4>
+                  <span class="text-xs text-slate-500 dark:text-slate-300 font-mono font-medium block">SLD2 · Gyro/Pore</span>
                 </div>
               </div>
               <div class="text-right">
-                <span id="watchValSLD2" class="font-mono font-bold text-xs text-slate-900 dark:text-white block">12.0 °</span>
-                <span class="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">STABLE</span>
+                <span id="watchValSLD2" class="font-mono font-bold text-sm text-slate-900 dark:text-white block">12.0 °</span>
+                <span class="text-xs font-mono text-emerald-600 dark:text-emerald-400 font-bold">STABLE</span>
               </div>
             </a>
 
             <!-- Station 3: Pine Forest -->
-            <a href="/monitoring#fire" class="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/60 transition group">
+            <a href="/monitoring#fire" class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-[#161A22] border border-transparent hover:border-slate-200 dark:hover:border-white/[0.08] transition group">
               <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-700 dark:text-amber-300 text-sm">
+                <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950/70 dark:border dark:border-amber-500/30 flex items-center justify-center text-amber-700 dark:text-amber-300 text-sm">
                   <i class="fa-solid fa-fire-flame-curved"></i>
                 </div>
                 <div>
-                  <h4 class="font-bold text-xs text-slate-900 dark:text-white group-hover:text-[#6425FE] transition">Almora Perimeter</h4>
-                  <span class="text-[10px] text-slate-400 font-mono">FIR3 · Gas/Flame</span>
+                  <h4 class="font-bold text-sm text-slate-900 dark:text-white group-hover:text-amber-500 transition">Almora Perimeter</h4>
+                  <span class="text-xs text-slate-500 dark:text-slate-300 font-mono font-medium block">FIR3 · Gas/Flame</span>
                 </div>
               </div>
               <div class="text-right">
-                <span id="watchValFIR3" class="font-mono font-bold text-xs text-slate-900 dark:text-white block">818 ppb</span>
-                <span class="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">CLEAR</span>
+                <span id="watchValFIR3" class="font-mono font-bold text-sm text-slate-900 dark:text-white block">818 ppb</span>
+                <span class="text-xs font-mono text-emerald-600 dark:text-emerald-400 font-bold">CLEAR</span>
               </div>
             </a>
 
             <!-- Station 4: Selaqui Basin -->
-            <a href="/monitoring#pollution" class="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/60 transition group">
+            <a href="/monitoring#pollution" class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-[#161A22] border border-transparent hover:border-slate-200 dark:hover:border-white/[0.08] transition group">
               <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-700 dark:text-blue-300 text-sm">
+                <div class="w-10 h-10 rounded-xl bg-blue-100 dark:bg-sky-950/70 dark:border dark:border-sky-500/30 flex items-center justify-center text-blue-700 dark:text-sky-300 text-sm">
                   <i class="fa-solid fa-smog"></i>
                 </div>
                 <div>
-                  <h4 class="font-bold text-xs text-slate-900 dark:text-white group-hover:text-[#6425FE] transition">Selaqui Industrial</h4>
-                  <span class="text-[10px] text-slate-400 font-mono">POL4 · PM2.5/NO2</span>
+                  <h4 class="font-bold text-sm text-slate-900 dark:text-white group-hover:text-blue-500 transition">Selaqui Industrial</h4>
+                  <span class="text-xs text-slate-500 dark:text-slate-300 font-mono font-medium block">POL4 · PM2.5/NO2</span>
                 </div>
               </div>
               <div class="text-right">
-                <span id="watchValPOL4" class="font-mono font-bold text-xs text-slate-900 dark:text-white block">11.5 µg</span>
-                <span class="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">GOOD</span>
+                <span id="watchValPOL4" class="font-mono font-bold text-sm text-slate-900 dark:text-white block">11.5 µg</span>
+                <span class="text-xs font-mono text-emerald-600 dark:text-emerald-400 font-bold">GOOD</span>
               </div>
             </a>
 
@@ -662,20 +656,7 @@
     event.target.className = 'hz-btn px-2.5 py-1 rounded-lg bg-white dark:bg-slate-700 text-[#6425FE] dark:text-purple-300 font-bold shadow-xs';
   }
 
-  // Update theme icons and charts on toggle
-  const origToggle = window.toggleTheme;
-  window.toggleTheme = function() {
-    origToggle();
-    const isDark = document.documentElement.classList.contains('dark');
-    const hIcon = document.getElementById('headerThemeIcon');
-    if (hIcon) hIcon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
-    
-    if (centerChartInstance && largeForecastChartInstance) {
-      centerChartInstance.destroy();
-      largeForecastChartInstance.destroy();
-      initCharts();
-    }
-  };
+
 
   // Real-time Event Listener bound to base.html polling stream
   window.addEventListener('sentinel_data', (event) => {
@@ -697,6 +678,8 @@
       document.getElementById('heroThreatBadge').className = 'px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-rose-400 text-rose-950 uppercase';
       document.getElementById('heroThreatBadge').textContent = 'BREACH';
       document.getElementById('heroThreatText').textContent = 'CRITICAL';
+      const desc = document.getElementById('heroThreatDesc');
+      if (desc) desc.textContent = `${hub.active_alerts_count} critical threshold breach${hub.active_alerts_count > 1 ? 'es' : ''}`;
     } else {
       pill.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800';
       pillText.textContent = 'ALL CLEAR';
@@ -706,6 +689,8 @@
       document.getElementById('heroThreatBadge').className = 'px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-400 text-emerald-950 uppercase';
       document.getElementById('heroThreatBadge').textContent = '+50m SAFE';
       document.getElementById('heroThreatText').textContent = 'NORMAL';
+      const desc = document.getElementById('heroThreatDesc');
+      if (desc) desc.textContent = '0 critical threshold breaches';
     }
 
     // 2. Update Sector Cards & Range Gauges
@@ -723,10 +708,10 @@
 
       const b = document.getElementById('badgeFLD1');
       if (nodes.FLD1.status === 'Hazardous') {
-        b.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-rose-800/20 text-rose-950 dark:text-rose-300 uppercase';
+        b.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-rose-800/20 dark:bg-rose-950/80 dark:border dark:border-rose-500/40 text-rose-950 dark:text-rose-400 uppercase';
         b.textContent = 'CRITICAL';
       } else {
-        b.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-800/15 dark:bg-emerald-500/20 text-emerald-950 dark:text-emerald-300 uppercase';
+        b.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-800/15 dark:bg-emerald-950/80 dark:border dark:border-emerald-500/30 text-emerald-950 dark:text-emerald-400 uppercase';
         b.textContent = 'SAFE';
       }
     }
@@ -745,10 +730,10 @@
 
       const b = document.getElementById('badgeSLD2');
       if (nodes.SLD2.status === 'Hazardous') {
-        b.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-rose-800/20 text-rose-950 dark:text-rose-300 uppercase';
+        b.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-rose-800/20 dark:bg-rose-950/80 dark:border dark:border-rose-500/40 text-rose-950 dark:text-rose-400 uppercase';
         b.textContent = 'CRITICAL';
       } else {
-        b.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-purple-900/15 dark:bg-purple-500/20 text-purple-950 dark:text-purple-300 uppercase';
+        b.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-purple-900/15 dark:bg-purple-950/80 dark:border dark:border-purple-500/30 text-purple-950 dark:text-purple-300 uppercase';
         b.textContent = 'SAFE';
       }
     }
@@ -767,10 +752,10 @@
 
       const b = document.getElementById('badgeFIR3');
       if (nodes.FIR3.status === 'Hazardous') {
-        b.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-rose-800/20 text-rose-950 dark:text-rose-300 uppercase';
+        b.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-rose-800/20 dark:bg-rose-950/80 dark:border dark:border-rose-500/40 text-rose-950 dark:text-rose-400 uppercase';
         b.textContent = 'CRITICAL';
       } else {
-        b.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-900/15 dark:bg-amber-500/20 text-amber-950 dark:text-amber-300 uppercase';
+        b.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-900/15 dark:bg-amber-950/80 dark:border dark:border-amber-500/30 text-amber-950 dark:text-amber-400 uppercase';
         b.textContent = 'SAFE';
       }
     }
@@ -783,12 +768,20 @@
       const miniPOL4 = document.getElementById('miniValPOL4');
       if (miniPOL4) miniPOL4.textContent = `${val.toFixed(1)} µg`;
 
+      const rangePOL4 = document.getElementById('rangeValPOL4');
+      if (rangePOL4) rangePOL4.textContent = `${val.toFixed(1)} µg/m³`;
+      const needlePOL4 = document.getElementById('needlePOL4');
+      if (needlePOL4) {
+        const pct = Math.min(Math.max((val / 150.0) * 100, 4), 96);
+        needlePOL4.style.left = `${pct}%`;
+      }
+
       const b = document.getElementById('badgePOL4');
       if (nodes.POL4.status === 'Hazardous') {
-        b.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-rose-800/20 text-rose-950 dark:text-rose-300 uppercase';
+        b.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-rose-800/20 dark:bg-rose-950/80 dark:border dark:border-rose-500/40 text-rose-950 dark:text-rose-400 uppercase';
         b.textContent = 'CRITICAL';
       } else {
-        b.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-blue-900/15 dark:bg-blue-500/20 text-blue-950 dark:text-blue-300 uppercase';
+        b.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-blue-900/15 dark:bg-sky-950/80 dark:border dark:border-sky-500/30 text-blue-950 dark:text-sky-400 uppercase';
         b.textContent = 'SAFE';
       }
     }

@@ -75,35 +75,35 @@
     <!-- ======================================================================= -->
     <!-- CARD 1: FLOOD (FLD1 - GANGA CATCHMENT) -->
     <!-- ======================================================================= -->
-    <div id="cardSectionFlood" class="card-base p-5 sm:p-6 bg-white dark:bg-[#131B2E] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm transition-all duration-300">
+    <div id="cardSectionFlood" class="card-base p-5 sm:p-6 bg-white dark:bg-[#131B2E] border-2 border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm transition-all duration-300">
       
       <!-- Primary Summary Row (Always Visible) -->
       <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         
         <!-- Left: Sector Identity & Geography -->
-        <div class="flex items-start gap-4 flex-1">
+        <div class="flex items-start gap-4 flex-1 min-w-0">
           <div class="w-12 h-12 rounded-xl bg-[#A6F7E2]/40 dark:bg-[#0D382B] text-emerald-800 dark:text-[#A6F7E2] flex items-center justify-center text-xl shrink-0 border border-emerald-300/60 dark:border-emerald-700/60 shadow-sm">
             <i class="fa-solid fa-water"></i>
           </div>
-          <div>
-            <div class="flex items-center gap-2.5">
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2.5 flex-wrap">
               <h2 class="text-base font-extrabold text-slate-900 dark:text-white tracking-tight">FLD1 · River Basin Monitoring</h2>
               <span id="badgeFlood" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 uppercase tracking-wider">
                 Safe
               </span>
             </div>
-            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium truncate">
               Rishikesh · Ganga Basin &middot; Station #4 (30.0869&deg; N, 78.2676&deg; E)
             </p>
-            <div class="flex items-center gap-2 mt-2 text-xs">
-              <span class="text-slate-400">Risk Assessment:</span>
-              <span id="floodRiskText" class="font-bold text-emerald-600 dark:text-emerald-400">Low Risk · Nominal River Flow</span>
+            <div class="flex items-center gap-2 mt-2 text-xs flex-wrap sm:flex-nowrap">
+              <span class="text-slate-400 shrink-0">Risk Assessment:</span>
+              <span id="floodRiskText" class="font-bold text-emerald-600 dark:text-emerald-400 truncate">Low Risk · Nominal River Flow</span>
             </div>
           </div>
         </div>
 
         <!-- Center: Calibrated Semi-Circular Dial Gauge -->
-        <div class="flex flex-col items-center justify-center px-4 py-1 lg:border-l lg:border-r border-slate-200 dark:border-slate-800">
+        <div class="w-full lg:w-[220px] shrink-0 flex flex-col items-center justify-center px-2 py-1 lg:border-l lg:border-r border-slate-200 dark:border-slate-800">
           <div class="relative w-[160px] h-[95px] flex items-center justify-center">
             
             <svg class="w-full h-full overflow-visible" viewBox="0 0 160 95">
@@ -126,12 +126,12 @@
           </div>
 
           <!-- Digital Readout Inside Arc Center -->
-          <div class="text-center mt-1">
+          <div class="text-center mt-1 w-full px-2">
             <div class="flex items-baseline justify-center gap-1">
               <span id="metricFlood" class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white font-mono tracking-tight">2.10</span>
               <span class="text-xs text-slate-500 dark:text-slate-400 font-mono font-bold">m</span>
             </div>
-            <span id="floodThresholdNotice" class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 block mt-0.5">Normal (&lt; 6.0 m)</span>
+            <span id="floodThresholdNotice" class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 block mt-0.5 text-center leading-tight">Normal (&lt; 6.0 m)</span>
           </div>
 
           <!-- Range Legend Boundaries -->
@@ -143,17 +143,17 @@
         </div>
 
         <!-- Right: Secondary Sensor & Toggle -->
-        <div class="flex items-center gap-6 self-start lg:self-center shrink-0">
-          <div class="hidden sm:block">
-            <span class="text-[11px] text-slate-400 font-semibold block uppercase tracking-wider">Rain Intensity</span>
+        <div class="w-full lg:w-[275px] shrink-0 flex items-center justify-between lg:justify-end gap-5">
+          <div class="w-[130px] shrink-0 hidden sm:block">
+            <span class="text-[11px] text-slate-400 font-semibold block uppercase tracking-wider truncate">Rain Intensity</span>
             <div class="flex items-baseline gap-1 mt-0.5">
               <span id="metricFloodRain" class="text-xl font-extrabold text-slate-900 dark:text-white font-mono">1.54</span>
               <span class="text-xs text-slate-500 font-mono">mm/h</span>
             </div>
-            <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium block mt-0.5">Light Drizzle</span>
+            <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium block mt-0.5 truncate">Light Drizzle</span>
           </div>
 
-          <button onclick="toggleDetails('Flood')" id="btnToggleFlood" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center gap-2 transition cursor-pointer">
+          <button onclick="toggleDetails('Flood')" id="btnToggleFlood" class="shrink-0 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center gap-2 transition cursor-pointer">
             <span id="btnTextFlood">Diagnostics</span>
             <i id="btnIconFlood" class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform"></i>
           </button>
@@ -208,35 +208,35 @@
     <!-- ======================================================================= -->
     <!-- CARD 2: LANDSLIDE (SLD2 - GARHWAL FOOTHILLS) -->
     <!-- ======================================================================= -->
-    <div id="cardSectionLandslide" class="card-base p-5 sm:p-6 bg-white dark:bg-[#131B2E] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm transition-all duration-300">
+    <div id="cardSectionLandslide" class="card-base p-5 sm:p-6 bg-white dark:bg-[#131B2E] border-2 border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm transition-all duration-300">
       
       <!-- Primary Summary Row (Always Visible) -->
       <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         
         <!-- Left: Sector Identity & Geography -->
-        <div class="flex items-start gap-4 flex-1">
+        <div class="flex items-start gap-4 flex-1 min-w-0">
           <div class="w-12 h-12 rounded-xl bg-[#D5C4FD]/40 dark:bg-[#2A1E4F] text-purple-800 dark:text-[#D5C4FD] flex items-center justify-center text-xl shrink-0 border border-purple-300/60 dark:border-purple-700/60 shadow-sm">
             <i class="fa-solid fa-mountain"></i>
           </div>
-          <div>
-            <div class="flex items-center gap-2.5">
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2.5 flex-wrap">
               <h2 class="text-base font-extrabold text-slate-900 dark:text-white tracking-tight">SLD2 · Slope Incline &amp; Tilt</h2>
               <span id="badgeLandslide" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 uppercase tracking-wider">
                 Safe
               </span>
             </div>
-            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium truncate">
               Chamoli · Garhwal Slopes &middot; Sector 2B (30.3844&deg; N, 79.2811&deg; E)
             </p>
-            <div class="flex items-center gap-2 mt-2 text-xs">
-              <span class="text-slate-400">Risk Assessment:</span>
-              <span id="landslideRiskText" class="font-bold text-emerald-600 dark:text-emerald-400">Low Risk · Stable Mountain Incline</span>
+            <div class="flex items-center gap-2 mt-2 text-xs flex-wrap sm:flex-nowrap">
+              <span class="text-slate-400 shrink-0">Risk Assessment:</span>
+              <span id="landslideRiskText" class="font-bold text-emerald-600 dark:text-emerald-400 truncate">Low Risk · Stable Mountain Incline</span>
             </div>
           </div>
         </div>
 
         <!-- Center: Calibrated Semi-Circular Dial Gauge -->
-        <div class="flex flex-col items-center justify-center px-4 py-1 lg:border-l lg:border-r border-slate-200 dark:border-slate-800">
+        <div class="w-full lg:w-[220px] shrink-0 flex flex-col items-center justify-center px-2 py-1 lg:border-l lg:border-r border-slate-200 dark:border-slate-800">
           <div class="relative w-[160px] h-[95px] flex items-center justify-center">
             
             <svg class="w-full h-full overflow-visible" viewBox="0 0 160 95">
@@ -259,12 +259,12 @@
           </div>
 
           <!-- Digital Readout Inside Arc Center -->
-          <div class="text-center mt-1">
+          <div class="text-center mt-1 w-full px-2">
             <div class="flex items-baseline justify-center gap-1">
               <span id="metricLandslide" class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white font-mono tracking-tight">12.0</span>
               <span class="text-xs text-slate-500 dark:text-slate-400 font-mono font-bold">&deg;</span>
             </div>
-            <span id="landslideThresholdNotice" class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 block mt-0.5">Stable Slope (&lt; 30.0&deg;)</span>
+            <span id="landslideThresholdNotice" class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 block mt-0.5 text-center leading-tight">Stable Slope (&lt; 30.0&deg;)</span>
           </div>
 
           <!-- Range Legend Boundaries -->
@@ -276,17 +276,17 @@
         </div>
 
         <!-- Right: Secondary Sensor & Toggle -->
-        <div class="flex items-center gap-6 self-start lg:self-center shrink-0">
-          <div class="hidden sm:block">
-            <span class="text-[11px] text-slate-400 font-semibold block uppercase tracking-wider">Soil Moisture</span>
+        <div class="w-full lg:w-[275px] shrink-0 flex items-center justify-between lg:justify-end gap-5">
+          <div class="w-[130px] shrink-0 hidden sm:block">
+            <span class="text-[11px] text-slate-400 font-semibold block uppercase tracking-wider truncate">Soil Moisture</span>
             <div class="flex items-baseline gap-1 mt-0.5">
               <span id="metricLandslideSoil" class="text-xl font-extrabold text-slate-900 dark:text-white font-mono">28.5</span>
               <span class="text-xs text-slate-500 font-mono">%</span>
             </div>
-            <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium block mt-0.5">Low Saturation</span>
+            <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium block mt-0.5 truncate">Low Saturation</span>
           </div>
 
-          <button onclick="toggleDetails('Landslide')" id="btnToggleLandslide" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center gap-2 transition cursor-pointer">
+          <button onclick="toggleDetails('Landslide')" id="btnToggleLandslide" class="shrink-0 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center gap-2 transition cursor-pointer">
             <span id="btnTextLandslide">Diagnostics</span>
             <i id="btnIconLandslide" class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform"></i>
           </button>
@@ -341,35 +341,35 @@
     <!-- ======================================================================= -->
     <!-- CARD 3: WILDFIRE (FIR3 - ALMORA PINE FOREST) -->
     <!-- ======================================================================= -->
-    <div id="cardSectionFire" class="card-base p-5 sm:p-6 bg-white dark:bg-[#131B2E] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm transition-all duration-300">
+    <div id="cardSectionFire" class="card-base p-5 sm:p-6 bg-white dark:bg-[#131B2E] border-2 border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm transition-all duration-300">
       
       <!-- Primary Summary Row (Always Visible) -->
       <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         
         <!-- Left: Sector Identity & Geography -->
-        <div class="flex items-start gap-4 flex-1">
+        <div class="flex items-start gap-4 flex-1 min-w-0">
           <div class="w-12 h-12 rounded-xl bg-[#FFE5A5]/50 dark:bg-[#3D2E0B] text-amber-800 dark:text-[#FFE5A5] flex items-center justify-center text-xl shrink-0 border border-amber-300/60 dark:border-amber-700/60 shadow-sm">
             <i class="fa-solid fa-fire-flame-curved"></i>
           </div>
-          <div>
-            <div class="flex items-center gap-2.5">
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2.5 flex-wrap">
               <h2 class="text-base font-extrabold text-slate-900 dark:text-white tracking-tight">FIR3 · Wildfire &amp; Combustion Gas</h2>
               <span id="badgeFire" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 uppercase tracking-wider">
                 Safe
               </span>
             </div>
-            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium truncate">
               Almora · Binsar Pine Forest &middot; Perimeter Ridge (29.6200&deg; N, 79.6800&deg; E)
             </p>
-            <div class="flex items-center gap-2 mt-2 text-xs">
-              <span class="text-slate-400">Risk Assessment:</span>
-              <span id="fireRiskText" class="font-bold text-emerald-600 dark:text-emerald-400">Low Risk · No Pyrolysis Signatures</span>
+            <div class="flex items-center gap-2 mt-2 text-xs flex-wrap sm:flex-nowrap">
+              <span class="text-slate-400 shrink-0">Risk Assessment:</span>
+              <span id="fireRiskText" class="font-bold text-emerald-600 dark:text-emerald-400 truncate">Low Risk · No Pyrolysis Signatures</span>
             </div>
           </div>
         </div>
 
         <!-- Center: Calibrated Semi-Circular Dial Gauge -->
-        <div class="flex flex-col items-center justify-center px-4 py-1 lg:border-l lg:border-r border-slate-200 dark:border-slate-800">
+        <div class="w-full lg:w-[220px] shrink-0 flex flex-col items-center justify-center px-2 py-1 lg:border-l lg:border-r border-slate-200 dark:border-slate-800">
           <div class="relative w-[160px] h-[95px] flex items-center justify-center">
             
             <svg class="w-full h-full overflow-visible" viewBox="0 0 160 95">
@@ -392,12 +392,12 @@
           </div>
 
           <!-- Digital Readout Inside Arc Center -->
-          <div class="text-center mt-1">
+          <div class="text-center mt-1 w-full px-2">
             <div class="flex items-baseline justify-center gap-1">
               <span id="metricFire" class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white font-mono tracking-tight">25</span>
               <span class="text-xs text-slate-500 dark:text-slate-400 font-mono font-bold">ppb</span>
             </div>
-            <span id="fireThresholdNotice" class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 block mt-0.5">Normal Baseline (&lt; 1,500 ppb)</span>
+            <span id="fireThresholdNotice" class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 block mt-0.5 text-center leading-tight">Normal Baseline (&lt; 1,500 ppb)</span>
           </div>
 
           <!-- Range Legend Boundaries -->
@@ -409,17 +409,17 @@
         </div>
 
         <!-- Right: Secondary Sensor & Toggle -->
-        <div class="flex items-center gap-6 self-start lg:self-center shrink-0">
-          <div class="hidden sm:block">
-            <span class="text-[11px] text-slate-400 font-semibold block uppercase tracking-wider">Thermal Signature</span>
+        <div class="w-full lg:w-[275px] shrink-0 flex items-center justify-between lg:justify-end gap-5">
+          <div class="w-[130px] shrink-0 hidden sm:block">
+            <span class="text-[11px] text-slate-400 font-semibold block uppercase tracking-wider truncate">Thermal Signature</span>
             <div class="flex items-baseline gap-1 mt-0.5">
               <span id="metricFireTemp" class="text-xl font-extrabold text-slate-900 dark:text-white font-mono">28.4</span>
               <span class="text-xs text-slate-500 font-mono">&deg;C</span>
             </div>
-            <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium block mt-0.5">Nominal Ambient</span>
+            <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium block mt-0.5 truncate">Nominal Ambient</span>
           </div>
 
-          <button onclick="toggleDetails('Fire')" id="btnToggleFire" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center gap-2 transition cursor-pointer">
+          <button onclick="toggleDetails('Fire')" id="btnToggleFire" class="shrink-0 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center gap-2 transition cursor-pointer">
             <span id="btnTextFire">Diagnostics</span>
             <i id="btnIconFire" class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform"></i>
           </button>
@@ -474,35 +474,35 @@
     <!-- ======================================================================= -->
     <!-- CARD 4: POLLUTION (POL4 - SELAQUI INDUSTRIAL CORRIDOR) -->
     <!-- ======================================================================= -->
-    <div id="cardSectionPollution" class="card-base p-5 sm:p-6 bg-white dark:bg-[#131B2E] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm transition-all duration-300">
+    <div id="cardSectionPollution" class="card-base p-5 sm:p-6 bg-white dark:bg-[#131B2E] border-2 border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm transition-all duration-300">
       
       <!-- Primary Summary Row (Always Visible) -->
       <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         
         <!-- Left: Sector Identity & Geography -->
-        <div class="flex items-start gap-4 flex-1">
+        <div class="flex items-start gap-4 flex-1 min-w-0">
           <div class="w-12 h-12 rounded-xl bg-[#BEE1FD]/50 dark:bg-[#0C2D4A] text-blue-800 dark:text-[#BEE1FD] flex items-center justify-center text-xl shrink-0 border border-blue-300/60 dark:border-blue-700/60 shadow-sm">
             <i class="fa-solid fa-smog"></i>
           </div>
-          <div>
-            <div class="flex items-center gap-2.5">
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2.5 flex-wrap">
               <h2 class="text-base font-extrabold text-slate-900 dark:text-white tracking-tight">POL4 · Industrial Air Quality &amp; PM2.5</h2>
               <span id="badgePollution" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 uppercase tracking-wider">
                 Safe
               </span>
             </div>
-            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium truncate">
               Dehradun · Selaqui Valley &middot; Pharma Corridor (30.3400&deg; N, 77.8700&deg; E)
             </p>
-            <div class="flex items-center gap-2 mt-2 text-xs">
-              <span class="text-slate-400">Risk Assessment:</span>
-              <span id="pollutionRiskText" class="font-bold text-emerald-600 dark:text-emerald-400">Good Quality · Clean Smog Index</span>
+            <div class="flex items-center gap-2 mt-2 text-xs flex-wrap sm:flex-nowrap">
+              <span class="text-slate-400 shrink-0">Risk Assessment:</span>
+              <span id="pollutionRiskText" class="font-bold text-emerald-600 dark:text-emerald-400 truncate">Good Quality · Clean Smog Index</span>
             </div>
           </div>
         </div>
 
         <!-- Center: Calibrated Semi-Circular Dial Gauge -->
-        <div class="flex flex-col items-center justify-center px-4 py-1 lg:border-l lg:border-r border-slate-200 dark:border-slate-800">
+        <div class="w-full lg:w-[220px] shrink-0 flex flex-col items-center justify-center px-2 py-1 lg:border-l lg:border-r border-slate-200 dark:border-slate-800">
           <div class="relative w-[160px] h-[95px] flex items-center justify-center">
             
             <svg class="w-full h-full overflow-visible" viewBox="0 0 160 95">
@@ -525,12 +525,12 @@
           </div>
 
           <!-- Digital Readout Inside Arc Center -->
-          <div class="text-center mt-1">
+          <div class="text-center mt-1 w-full px-2">
             <div class="flex items-baseline justify-center gap-1">
               <span id="metricPollution" class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white font-mono tracking-tight">11.5</span>
               <span class="text-xs text-slate-500 dark:text-slate-400 font-mono font-bold">&micro;g/m&sup3;</span>
             </div>
-            <span id="pollutionThresholdNotice" class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 block mt-0.5">Good (&lt; 60 &micro;g/m&sup3;)</span>
+            <span id="pollutionThresholdNotice" class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 block mt-0.5 text-center leading-tight">Good (&lt; 60 &micro;g/m&sup3;)</span>
           </div>
 
           <!-- Range Legend Boundaries -->
@@ -542,17 +542,17 @@
         </div>
 
         <!-- Right: Secondary Sensor & Toggle -->
-        <div class="flex items-center gap-6 self-start lg:self-center shrink-0">
-          <div class="hidden sm:block">
-            <span class="text-[11px] text-slate-400 font-semibold block uppercase tracking-wider">PM10 Coarse</span>
+        <div class="w-full lg:w-[275px] shrink-0 flex items-center justify-between lg:justify-end gap-5">
+          <div class="w-[130px] shrink-0 hidden sm:block">
+            <span class="text-[11px] text-slate-400 font-semibold block uppercase tracking-wider truncate">PM10 Coarse</span>
             <div class="flex items-baseline gap-1 mt-0.5">
               <span id="metricPollutionPm10" class="text-xl font-extrabold text-slate-900 dark:text-white font-mono">24.2</span>
               <span class="text-xs text-slate-500 font-mono">&micro;g</span>
             </div>
-            <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium block mt-0.5">Clear Dispersion</span>
+            <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium block mt-0.5 truncate">Clear Dispersion</span>
           </div>
 
-          <button onclick="toggleDetails('Pollution')" id="btnTogglePollution" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center gap-2 transition cursor-pointer">
+          <button onclick="toggleDetails('Pollution')" id="btnTogglePollution" class="shrink-0 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center gap-2 transition cursor-pointer">
             <span id="btnTextPollution">Diagnostics</span>
             <i id="btnIconPollution" class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform"></i>
           </button>
@@ -701,20 +701,22 @@
       if (isCrit) {
         b.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-800 uppercase tracking-wider animate-pulse';
         b.textContent = 'Breach Detected';
-        card.classList.add('border-2', 'border-rose-500', 'bg-rose-50/20');
+        card.classList.add('border-rose-500', 'bg-rose-50/20');
+        card.classList.remove('border-slate-200', 'dark:border-slate-800');
         riskText.textContent = 'Critical Inundation Risk — Flash Flood Active';
-        riskText.className = 'font-bold text-rose-600 dark:text-rose-400';
+        riskText.className = 'font-bold text-rose-600 dark:text-rose-400 truncate';
         notice.textContent = 'Critical Depth Exceeded (> 8.0 m)';
-        notice.className = 'text-[11px] font-bold text-rose-600 dark:text-rose-400 block mt-0.5 animate-pulse';
+        notice.className = 'text-[11px] font-bold text-rose-600 dark:text-rose-400 block mt-0.5 animate-pulse text-center leading-tight';
         narrative.textContent = 'Critical flood crest identified. Upstream precipitation surge has exceeded hydraulic holding capacity.';
       } else {
         b.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 uppercase tracking-wider';
         b.textContent = 'Safe';
-        card.classList.remove('border-2', 'border-rose-500', 'bg-rose-50/20');
+        card.classList.remove('border-rose-500', 'bg-rose-50/20');
+        card.classList.add('border-slate-200', 'dark:border-slate-800');
         riskText.textContent = 'Low Risk · Nominal River Flow';
-        riskText.className = 'font-bold text-emerald-600 dark:text-emerald-400';
+        riskText.className = 'font-bold text-emerald-600 dark:text-emerald-400 truncate';
         notice.textContent = 'Normal (< 6.0 m)';
-        notice.className = 'text-[11px] font-bold text-emerald-600 dark:text-emerald-400 block mt-0.5';
+        notice.className = 'text-[11px] font-bold text-emerald-600 dark:text-emerald-400 block mt-0.5 text-center leading-tight';
         narrative.textContent = 'Discharge is nominal. Zero catchment overflow risk projected over the next 50 minutes.';
       }
     }
@@ -747,20 +749,22 @@
       if (isCrit) {
         b.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-800 uppercase tracking-wider animate-pulse';
         b.textContent = 'Shear Imminent';
-        card.classList.add('border-2', 'border-rose-500', 'bg-rose-50/20');
+        card.classList.add('border-rose-500', 'bg-rose-50/20');
+        card.classList.remove('border-slate-200', 'dark:border-slate-800');
         riskText.textContent = 'Critical Instability — Shear Plane Failure Predicted';
-        riskText.className = 'font-bold text-rose-600 dark:text-rose-400';
+        riskText.className = 'font-bold text-rose-600 dark:text-rose-400 truncate';
         notice.textContent = 'Shear Failure Angle Exceeded (> 45.0°)';
-        notice.className = 'text-[11px] font-bold text-rose-600 dark:text-rose-400 block mt-0.5 animate-pulse';
+        notice.className = 'text-[11px] font-bold text-rose-600 dark:text-rose-400 block mt-0.5 animate-pulse text-center leading-tight';
         narrative.textContent = 'Slope deformation rate exceeds safety threshold. High pore pressure has saturated slip plane.';
       } else {
         b.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 uppercase tracking-wider';
         b.textContent = 'Safe';
-        card.classList.remove('border-2', 'border-rose-500', 'bg-rose-50/20');
+        card.classList.remove('border-rose-500', 'bg-rose-50/20');
+        card.classList.add('border-slate-200', 'dark:border-slate-800');
         riskText.textContent = 'Low Risk · Stable Mountain Incline';
-        riskText.className = 'font-bold text-emerald-600 dark:text-emerald-400';
+        riskText.className = 'font-bold text-emerald-600 dark:text-emerald-400 truncate';
         notice.textContent = 'Stable Slope (< 30.0°)';
-        notice.className = 'text-[11px] font-bold text-emerald-600 dark:text-emerald-400 block mt-0.5';
+        notice.className = 'text-[11px] font-bold text-emerald-600 dark:text-emerald-400 block mt-0.5 text-center leading-tight';
         narrative.textContent = 'Slope equilibrium is well within safety thresholds. Low soil saturation indicates negligible failure probability.';
       }
     }
@@ -793,22 +797,24 @@
       if (isCrit) {
         b.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-800 uppercase tracking-wider animate-pulse';
         b.textContent = 'Active Wildfire';
-        card.classList.add('border-2', 'border-rose-500', 'bg-rose-50/20');
+        card.classList.add('border-rose-500', 'bg-rose-50/20');
+        card.classList.remove('border-slate-200', 'dark:border-slate-800');
         riskText.textContent = 'High Risk — Active Pyrolysis & Combustion Spike';
-        riskText.className = 'font-bold text-rose-600 dark:text-rose-400';
+        riskText.className = 'font-bold text-rose-600 dark:text-rose-400 truncate';
         notice.textContent = 'Combustion Gas Exceeded (> 3,000 ppb)';
-        notice.className = 'text-[11px] font-bold text-rose-600 dark:text-rose-400 block mt-0.5 animate-pulse';
+        notice.className = 'text-[11px] font-bold text-rose-600 dark:text-rose-400 block mt-0.5 animate-pulse text-center leading-tight';
         flame.textContent = 'Active Flame Detected';
         flame.className = 'text-base font-bold text-rose-600 font-mono mt-0.5 block animate-pulse';
         narrative.textContent = 'Combustion gas surge and thermal spikes confirm active flame propagation across the pine forest canopy.';
       } else {
         b.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 uppercase tracking-wider';
         b.textContent = 'Safe';
-        card.classList.remove('border-2', 'border-rose-500', 'bg-rose-50/20');
+        card.classList.remove('border-rose-500', 'bg-rose-50/20');
+        card.classList.add('border-slate-200', 'dark:border-slate-800');
         riskText.textContent = 'Low Risk · No Pyrolysis Signatures';
-        riskText.className = 'font-bold text-emerald-600 dark:text-emerald-400';
+        riskText.className = 'font-bold text-emerald-600 dark:text-emerald-400 truncate';
         notice.textContent = 'Normal Baseline (< 1,500 ppb)';
-        notice.className = 'text-[11px] font-bold text-emerald-600 dark:text-emerald-400 block mt-0.5';
+        notice.className = 'text-[11px] font-bold text-emerald-600 dark:text-emerald-400 block mt-0.5 text-center leading-tight';
         flame.textContent = 'Clear';
         flame.className = 'text-base font-bold text-emerald-600 dark:text-emerald-400 font-mono mt-0.5 block';
         narrative.textContent = 'Zero combustion signatures detected. Gas emission curves confirm clear atmospheric perimeter.';
@@ -843,20 +849,22 @@
       if (isCrit) {
         b.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-800 uppercase tracking-wider animate-pulse';
         b.textContent = 'Toxic Inversion';
-        card.classList.add('border-2', 'border-rose-500', 'bg-rose-50/20');
+        card.classList.add('border-rose-500', 'bg-rose-50/20');
+        card.classList.remove('border-slate-200', 'dark:border-slate-800');
         riskText.textContent = 'Severe Smog Inversion — High Particulate Density';
-        riskText.className = 'font-bold text-rose-600 dark:text-rose-400';
+        riskText.className = 'font-bold text-rose-600 dark:text-rose-400 truncate';
         notice.textContent = 'Hazardous PM2.5 Inversion (> 120 µg/m³)';
-        notice.className = 'text-[11px] font-bold text-rose-600 dark:text-rose-400 block mt-0.5 animate-pulse';
+        notice.className = 'text-[11px] font-bold text-rose-600 dark:text-rose-400 block mt-0.5 animate-pulse text-center leading-tight';
         narrative.textContent = 'Atmospheric inversion layer has trapped toxic industrial particulates. Public health advisory recommended.';
       } else {
         b.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 uppercase tracking-wider';
         b.textContent = 'Safe';
-        card.classList.remove('border-2', 'border-rose-500', 'bg-rose-50/20');
+        card.classList.remove('border-rose-500', 'bg-rose-50/20');
+        card.classList.add('border-slate-200', 'dark:border-slate-800');
         riskText.textContent = 'Good Quality · Clean Smog Index';
-        riskText.className = 'font-bold text-emerald-600 dark:text-emerald-400';
+        riskText.className = 'font-bold text-emerald-600 dark:text-emerald-400 truncate';
         notice.textContent = 'Good (< 60 µg/m³)';
-        notice.className = 'text-[11px] font-bold text-emerald-600 dark:text-emerald-400 block mt-0.5';
+        notice.className = 'text-[11px] font-bold text-emerald-600 dark:text-emerald-400 block mt-0.5 text-center leading-tight';
         narrative.textContent = 'Ventilation coefficients remain optimal. No hazardous thermal inversion trapped over the industrial basin.';
       }
     }

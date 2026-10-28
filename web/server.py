@@ -1008,9 +1008,35 @@ def load_web_config():
     return {}
 
 if __name__ == "__main__":
+    import argparse
+    import socket
+
+    parser = argparse.ArgumentParser(description="Disaster Sentinel Central Command Server")
+    parser.add_argument("--port", type=int, default=None, help="Port to run the server on")
+    parser.add_argument("--host", type=str, default=None, help="Host to bind to")
+    args, _ = parser.parse_known_args()
+
     web_cfg = load_web_config()
-    host = web_cfg.get("host", "0.0.0.0")
-    port = int(web_cfg.get("port", 5000))
+    host = args.host or os.environ.get("HOST") or web_cfg.get("host", "0.0.0.0")
+
+    def is_port_available(p, h="127.0.0.1"):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            try:
+                s.bind((h, p))
+                return True
+            except OSError:
+                return False
+
+    port_candidate = args.port or (int(os.environ["PORT"]) if "PORT" in os.environ else int(web_cfg.get("port", 5000)))
+    port = port_candidate
+
+    if not is_port_available(port):
+        for fallback in [5001, 8080, 5050, 8000]:
+            if is_port_available(fallback):
+                print(f"[!] Notice: Port {port} is occupied by another process. Automatically using port {fallback}.")
+                port = fallback
+                break
+
     debug = web_cfg.get("debug", True)
 
     print("\n=======================================================")

@@ -23,11 +23,11 @@
     </div>
 
     <!-- Node Selector for GRU Visualizer -->
-    <div class="flex items-center gap-1.5 p-1 rounded-xl bg-slate-100 border border-slate-200 text-xs font-mono">
-      <button onclick="selectAnalyticsNode('FLD1')" id="anTabFLD1" class="px-3 py-1.5 rounded-lg font-bold bg-white text-blue-700 border border-slate-200 shadow-sm">FLD1 (Flood)</button>
-      <button onclick="selectAnalyticsNode('SLD2')" id="anTabSLD2" class="px-3 py-1.5 rounded-lg font-bold text-slate-600 hover:text-slate-900">SLD2 (Landslide)</button>
-      <button onclick="selectAnalyticsNode('FIR3')" id="anTabFIR3" class="px-3 py-1.5 rounded-lg font-bold text-slate-600 hover:text-slate-900">FIR3 (Fire)</button>
-      <button onclick="selectAnalyticsNode('POL4')" id="anTabPOL4" class="px-3 py-1.5 rounded-lg font-bold text-slate-600 hover:text-slate-900">POL4 (Smog)</button>
+    <div class="flex items-center gap-1.5 p-1 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono">
+      <button onclick="selectAnalyticsNode('FLD1')" id="anTabFLD1" class="px-3 py-1.5 rounded-lg font-bold bg-white dark:bg-slate-700 text-blue-700 dark:text-cyan-300 border border-slate-200 dark:border-slate-600 shadow-sm">FLD1 (Flood)</button>
+      <button onclick="selectAnalyticsNode('SLD2')" id="anTabSLD2" class="px-3 py-1.5 rounded-lg font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">SLD2 (Landslide)</button>
+      <button onclick="selectAnalyticsNode('FIR3')" id="anTabFIR3" class="px-3 py-1.5 rounded-lg font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">FIR3 (Fire)</button>
+      <button onclick="selectAnalyticsNode('POL4')" id="anTabPOL4" class="px-3 py-1.5 rounded-lg font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">POL4 (Smog)</button>
     </div>
   </div>
 
@@ -236,10 +236,11 @@
 
     ['FLD1', 'SLD2', 'FIR3', 'POL4'].forEach(id => {
       const btn = document.getElementById(`anTab${id}`);
+      if (!btn) return;
       if (id === nodeId) {
-        btn.className = 'px-3 py-1.5 rounded-lg font-bold bg-white text-blue-700 border border-slate-200 shadow-sm';
+        btn.className = 'px-3 py-1.5 rounded-lg font-bold bg-white dark:bg-slate-700 text-blue-700 dark:text-cyan-300 border border-slate-200 dark:border-slate-600 shadow-sm';
       } else {
-        btn.className = 'px-3 py-1.5 rounded-lg font-bold text-slate-600 hover:text-slate-900';
+        btn.className = 'px-3 py-1.5 rounded-lg font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white';
       }
     });
 
@@ -274,30 +275,41 @@
       const isBreach = s.predicted_value >= f.thresholds.critical;
       if (isBreach) {
         return `
-          <div class="p-3 rounded-xl bg-rose-50/50 border border-rose-200 space-y-1 text-center">
-            <span class="text-[10px] font-mono text-slate-500 block">${s.step} (+${s.time_min}m)</span>
-            <div class="text-base font-bold font-mono text-rose-600">
+          <div class="p-3 rounded-xl bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/40 space-y-1 text-center">
+            <span class="text-[10px] font-mono text-slate-500 dark:text-slate-400 block">${s.step} (+${s.time_min}m)</span>
+            <div class="text-base font-bold font-mono text-rose-600 dark:text-rose-400">
               ${s.predicted_value} <span class="text-[10px] font-normal text-slate-400">${f.unit}</span>
             </div>
-            <span class="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 border border-rose-200">
+            <span class="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-rose-100 dark:bg-rose-900/50 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
               BREACH
             </span>
           </div>
         `;
       } else {
         return `
-          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1 text-center">
-            <span class="text-[10px] font-mono text-slate-500 block">${s.step} (+${s.time_min}m)</span>
-            <div class="text-base font-bold font-mono text-slate-900">
+          <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-1 text-center">
+            <span class="text-[10px] font-mono text-slate-500 dark:text-slate-400 block">${s.step} (+${s.time_min}m)</span>
+            <div class="text-base font-bold font-mono text-slate-900 dark:text-slate-100">
               ${s.predicted_value} <span class="text-[10px] font-normal text-slate-400">${f.unit}</span>
             </div>
-            <span class="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+            <span class="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
               NOMINAL
             </span>
           </div>
         `;
       }
     }).join('');
+
+    // Dynamic Chart Palette (Light & Dark theme visible)
+    const palette = (window.getChartPalette ? window.getChartPalette() : {
+      isDark: document.documentElement.classList.contains('dark'),
+      legendColor: document.documentElement.classList.contains('dark') ? '#F1F5F9' : '#0F172A',
+      tickColor: document.documentElement.classList.contains('dark') ? '#CBD5E1' : '#334155',
+      titleColor: document.documentElement.classList.contains('dark') ? '#94A3B8' : '#475569',
+      gridColor: document.documentElement.classList.contains('dark') ? 'rgba(148, 163, 184, 0.12)' : 'rgba(148, 163, 184, 0.18)',
+      historyLine: document.documentElement.classList.contains('dark') ? '#94A3B8' : '#64748B',
+      historyBg: document.documentElement.classList.contains('dark') ? 'rgba(148, 163, 184, 0.12)' : 'rgba(100, 116, 139, 0.12)'
+    });
 
     // Chart.js future curve
     const canvas = document.getElementById('anForecastCanvas');
@@ -317,17 +329,34 @@
     if (forecastChart) {
       forecastChart.data.labels = labels;
       forecastChart.data.datasets[0].data = histData;
+      forecastChart.data.datasets[0].borderColor = palette.historyLine;
+      forecastChart.data.datasets[0].pointBackgroundColor = palette.historyLine;
       forecastChart.data.datasets[1].data = futData;
       forecastChart.data.datasets[1].borderColor = cfg.color;
       forecastChart.data.datasets[1].backgroundColor = cfg.bg;
+      forecastChart.data.datasets[1].pointBackgroundColor = cfg.color;
       forecastChart.data.datasets[2].data = critLine;
       forecastChart.data.datasets[2].label = `Danger Breach Line (${f.thresholds.critical} ${f.unit})`;
       forecastChart.data.datasets[3].data = warnLine;
       forecastChart.data.datasets[3].label = `Warning Threshold (${f.thresholds.warning} ${f.unit})`;
 
-      if (forecastChart.options.scales && forecastChart.options.scales.y) {
-        forecastChart.options.scales.y.title.text = `${f.target_name} (${f.unit})`;
-        forecastChart.options.scales.y.ticks.callback = (val) => `${val} ${f.unit}`;
+      if (forecastChart.options.plugins && forecastChart.options.plugins.legend && forecastChart.options.plugins.legend.labels) {
+        forecastChart.options.plugins.legend.labels.color = palette.legendColor;
+      }
+
+      if (forecastChart.options.scales) {
+        if (forecastChart.options.scales.x) {
+          forecastChart.options.scales.x.ticks.color = palette.tickColor;
+          forecastChart.options.scales.x.title.color = palette.titleColor;
+          forecastChart.options.scales.x.grid.color = palette.gridColor;
+        }
+        if (forecastChart.options.scales.y) {
+          forecastChart.options.scales.y.title.text = `${f.target_name} (${f.unit})`;
+          forecastChart.options.scales.y.title.color = palette.titleColor;
+          forecastChart.options.scales.y.ticks.color = palette.tickColor;
+          forecastChart.options.scales.y.grid.color = palette.gridColor;
+          forecastChart.options.scales.y.ticks.callback = (val) => `${val} ${f.unit}`;
+        }
       }
       if (forecastChart.options.plugins && forecastChart.options.plugins.tooltip) {
         forecastChart.options.plugins.tooltip.callbacks.label = (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y} ${f.unit}`;
@@ -351,12 +380,12 @@
           {
             label: 'Recorded History',
             data: histData,
-            borderColor: '#CBD5E1',
-            backgroundColor: 'rgba(203, 213, 225, 0.1)',
+            borderColor: palette.historyLine,
+            backgroundColor: palette.historyBg,
             borderWidth: 2.5,
             tension: 0.25,
             pointRadius: 3.5,
-            pointBackgroundColor: '#CBD5E1'
+            pointBackgroundColor: palette.historyLine
           },
           {
             label: 'PyTorch GRU Projected Trajectory',
@@ -399,7 +428,7 @@
             display: true,
             position: 'top',
             labels: {
-              color: '#F8FAFC',
+              color: palette.legendColor,
               font: { family: 'JetBrains Mono', size: 12, weight: '600' },
               boxWidth: 16,
               padding: 16,
@@ -422,20 +451,20 @@
         },
         scales: {
           x: {
-            grid: { color: 'rgba(148, 163, 184, 0.15)', drawBorder: false },
-            ticks: { color: '#E2E8F0', font: { family: 'JetBrains Mono', size: 11, weight: '600' } },
+            grid: { color: palette.gridColor, drawBorder: false },
+            ticks: { color: palette.tickColor, font: { family: 'JetBrains Mono', size: 11, weight: '600' } },
             title: {
               display: true,
               text: 'Horizon Progression (Recorded Past Steps → +50m Projections)',
-              color: '#94A3B8',
+              color: palette.titleColor,
               font: { family: 'JetBrains Mono', size: 10, weight: '600' },
               padding: { top: 6 }
             }
           },
           y: {
-            grid: { color: 'rgba(148, 163, 184, 0.15)', drawBorder: false },
+            grid: { color: palette.gridColor, drawBorder: false },
             ticks: {
-              color: '#E2E8F0',
+              color: palette.tickColor,
               font: { family: 'JetBrains Mono', size: 11, weight: '600' },
               padding: 8,
               callback: (val) => `${val} ${f.unit}`
@@ -443,7 +472,7 @@
             title: {
               display: true,
               text: `${f.target_name} (${f.unit})`,
-              color: '#94A3B8',
+              color: palette.titleColor,
               font: { family: 'JetBrains Mono', size: 11, weight: '600' },
               padding: { bottom: 6 }
             }
@@ -459,6 +488,14 @@
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
 
+    const palette = (window.getChartPalette ? window.getChartPalette() : {
+      isDark: document.documentElement.classList.contains('dark'),
+      legendColor: document.documentElement.classList.contains('dark') ? '#F1F5F9' : '#0F172A',
+      tickColor: document.documentElement.classList.contains('dark') ? '#CBD5E1' : '#334155',
+      titleColor: document.documentElement.classList.contains('dark') ? '#94A3B8' : '#475569',
+      gridColor: document.documentElement.classList.contains('dark') ? 'rgba(148, 163, 184, 0.12)' : 'rgba(148, 163, 184, 0.18)'
+    });
+
     const labels = history.map(h => h.time);
     const riverData = history.map(h => h.fld1_water);
     const tiltData = history.map(h => (h.sld2_slope !== undefined ? h.sld2_slope : h.sld2_angle));
@@ -472,12 +509,20 @@
       streamingChart.data.datasets[2].data = tvocData;
       streamingChart.data.datasets[3].data = pmData;
 
-      if (streamingChart.options.plugins && streamingChart.options.plugins.legend) {
-        streamingChart.options.plugins.legend.labels.color = '#F8FAFC';
+      if (streamingChart.options.plugins && streamingChart.options.plugins.legend && streamingChart.options.plugins.legend.labels) {
+        streamingChart.options.plugins.legend.labels.color = palette.legendColor;
       }
       if (streamingChart.options.scales) {
-        if (streamingChart.options.scales.x) streamingChart.options.scales.x.ticks.color = '#E2E8F0';
-        if (streamingChart.options.scales.y) streamingChart.options.scales.y.ticks.color = '#E2E8F0';
+        if (streamingChart.options.scales.x) {
+          streamingChart.options.scales.x.ticks.color = palette.tickColor;
+          streamingChart.options.scales.x.title.color = palette.titleColor;
+          streamingChart.options.scales.x.grid.color = palette.gridColor;
+        }
+        if (streamingChart.options.scales.y) {
+          streamingChart.options.scales.y.ticks.color = palette.tickColor;
+          streamingChart.options.scales.y.title.color = palette.titleColor;
+          streamingChart.options.scales.y.grid.color = palette.gridColor;
+        }
       }
       streamingChart.update('none'); // Real-time update without canvas wipe or jitter
       return;
@@ -488,10 +533,10 @@
       data: {
         labels: labels,
         datasets: [
-          { label: 'FLD1 River (m)', data: riverData, borderColor: '#38BDF8', backgroundColor: 'rgba(56, 189, 248, 0.15)', borderWidth: 2.2, tension: 0.3, pointRadius: 3, pointBackgroundColor: '#38BDF8' },
-          { label: 'SLD2 Tilt (°)', data: tiltData, borderColor: '#FBBF24', backgroundColor: 'rgba(251, 191, 36, 0.15)', borderWidth: 2.2, tension: 0.3, pointRadius: 3, pointBackgroundColor: '#FBBF24' },
-          { label: 'FIR3 TVOC (ppb/100)', data: tvocData, borderColor: '#FB7185', backgroundColor: 'rgba(251, 113, 133, 0.15)', borderWidth: 2.2, tension: 0.3, pointRadius: 3, pointBackgroundColor: '#FB7185' },
-          { label: 'POL4 PM2.5 (µg/m³)', data: pmData, borderColor: '#C084FC', backgroundColor: 'rgba(192, 132, 252, 0.15)', borderWidth: 2.2, tension: 0.3, pointRadius: 3, pointBackgroundColor: '#C084FC' }
+          { label: 'FLD1 River (m)', data: riverData, borderColor: '#0284C7', backgroundColor: 'rgba(2, 132, 199, 0.15)', borderWidth: 2.2, tension: 0.3, pointRadius: 3, pointBackgroundColor: '#0284C7' },
+          { label: 'SLD2 Tilt (°)', data: tiltData, borderColor: '#D97706', backgroundColor: 'rgba(217, 119, 6, 0.15)', borderWidth: 2.2, tension: 0.3, pointRadius: 3, pointBackgroundColor: '#D97706' },
+          { label: 'FIR3 TVOC (ppb/100)', data: tvocData, borderColor: '#E11D48', backgroundColor: 'rgba(225, 29, 72, 0.15)', borderWidth: 2.2, tension: 0.3, pointRadius: 3, pointBackgroundColor: '#E11D48' },
+          { label: 'POL4 PM2.5 (µg/m³)', data: pmData, borderColor: '#7C3AED', backgroundColor: 'rgba(124, 58, 237, 0.15)', borderWidth: 2.2, tension: 0.3, pointRadius: 3, pointBackgroundColor: '#7C3AED' }
         ]
       },
       options: {
@@ -503,7 +548,7 @@
             display: true,
             position: 'top',
             labels: {
-              color: '#F8FAFC',
+              color: palette.legendColor,
               font: { family: 'JetBrains Mono', size: 12, weight: '600' },
               boxWidth: 16,
               padding: 16,
@@ -532,26 +577,26 @@
         },
         scales: {
           x: {
-            grid: { color: 'rgba(148, 163, 184, 0.15)', drawBorder: false },
-            ticks: { color: '#E2E8F0', font: { family: 'JetBrains Mono', size: 10, weight: '500' } },
+            grid: { color: palette.gridColor, drawBorder: false },
+            ticks: { color: palette.tickColor, font: { family: 'JetBrains Mono', size: 10, weight: '500' } },
             title: {
               display: true,
               text: 'Observation Timestamp (LoRa SX1278)',
-              color: '#94A3B8',
+              color: palette.titleColor,
               font: { family: 'JetBrains Mono', size: 10, weight: '600' }
             }
           },
           y: {
-            grid: { color: 'rgba(148, 163, 184, 0.15)', drawBorder: false },
+            grid: { color: palette.gridColor, drawBorder: false },
             ticks: {
-              color: '#E2E8F0',
+              color: palette.tickColor,
               font: { family: 'JetBrains Mono', size: 11, weight: '600' },
               padding: 6
             },
             title: {
               display: true,
               text: 'Sensor Values [FLD1: m · SLD2: ° · FIR3: ppb/100 · POL4: µg/m³]',
-              color: '#94A3B8',
+              color: palette.titleColor,
               font: { family: 'JetBrains Mono', size: 10, weight: '600' },
               padding: { bottom: 6 }
             }
@@ -590,10 +635,34 @@
     }
   }
 
+  async function fetchForecastData() {
+    try {
+      const res = await fetch(`${API_BASE}/api/forecast`);
+      const data = await res.json();
+      if (data.success && data.forecasts) {
+        if (!cachedData) cachedData = { forecasts: data.forecasts };
+        else cachedData.forecasts = data.forecasts;
+        renderForecastCanvas();
+      }
+    } catch (e) {
+      console.warn("Forecast fetch error:", e);
+    }
+  }
+
   window.addEventListener('sentinel_data', (event) => {
     cachedData = event.detail;
     renderForecastCanvas();
   });
+
+
+
+  // Immediate initialization: use globally cached data or fetch directly
+  if (window.sentinel_latest_data && window.sentinel_latest_data.forecasts) {
+    cachedData = window.sentinel_latest_data;
+    renderForecastCanvas();
+  } else {
+    fetchForecastData();
+  }
 
   pollHistory();
   setInterval(pollHistory, 4000);

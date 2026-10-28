@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Disaster Sentinel · Central Command AI Dashboard (Uttarakhand, India)</title>
   
-  <!-- Google Fonts: IBM Plex Sans & JetBrains Mono -->
+  <!-- Google Fonts: Inter & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -17,8 +17,8 @@
       theme: {
         extend: {
           fontFamily: {
-            sans: ['IBM Plex Sans', 'sans-serif'],
-            mono: ['JetBrains Mono', 'monospace'],
+            sans: ['Inter', 'Arial', 'Helvetica Neue', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Courier New', 'monospace'],
           },
           colors: {
             page: '#F9FAFB',
@@ -66,7 +66,8 @@
     body {
       background-color: #F9FAFB;
       color: #0F172A;
-      font-family: 'IBM Plex Sans', sans-serif;
+      font-family: 'Inter', Arial, 'Helvetica Neue', sans-serif;
+      letter-spacing: -0.011em;
     }
     .card-base {
       background: #FFFFFF;
@@ -176,10 +177,10 @@
       const chartCanvasRef = useRef(null);
       const chartInstanceRef = useRef(null);
 
-      // Auto-detect API Base: Connects to port 5000 whether in Live Server (port 5500/3000) or browser
-      const API_BASE = (window.location.port === '5000') ? '' : 'http://127.0.0.1:5000';
-      const isFlaskHost = window.location.port === '5000';
-      const makeNavUrl = (path) => isFlaskHost ? path : `http://127.0.0.1:5000${path}`;
+      // Auto-detect API Base: Connects whether running directly via Flask, Live Server (port 5500/3000), or browser
+      const isFlaskHost = window.location.protocol.startsWith('http') && !['5500', '3000'].includes(window.location.port);
+      const API_BASE = isFlaskHost ? '' : (window.location.port ? `http://127.0.0.1:${window.location.port}` : 'http://127.0.0.1:5001');
+      const makeNavUrl = (path) => isFlaskHost ? path : `http://127.0.0.1:${window.location.port || '5001'}${path}`;
 
       // Fetch Real-Time Data from Flask API
       const fetchData = async () => {
@@ -277,7 +278,7 @@
               responsive: true,
               maintainAspectRatio: false,
               plugins: {
-                legend: { position: 'top', labels: { boxWidth: 12, font: { family: 'IBM Plex Sans', size: 11 }, color: '#475569' } },
+                legend: { position: 'top', labels: { boxWidth: 12, font: { family: "'Inter', Arial, sans-serif", size: 11 }, color: '#475569' } },
                 tooltip: { backgroundColor: '#0F172A', titleColor: '#FFFFFF', bodyColor: '#F1F5F9', padding: 10, cornerRadius: 8 }
               },
               scales: {

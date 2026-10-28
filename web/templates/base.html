@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{% block title %}Disaster Sentinel · Autonomous Disaster Intelligence Platform{% endblock %}</title>
 
-  <!-- Google Fonts: IBM Plex Sans (UI) & JetBrains Mono (Telemetry/Data) -->
+  <!-- Google Fonts: Inter (NASA / Modern Web Safe Sans) & JetBrains Mono (Telemetry/Data) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -18,8 +18,8 @@
       theme: {
         extend: {
           fontFamily: {
-            sans: ['IBM Plex Sans', 'sans-serif'],
-            mono: ['JetBrains Mono', 'monospace'],
+            sans: ['Inter', 'Arial', 'Helvetica Neue', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Courier New', 'monospace'],
           },
           colors: {
             page: '#F9FAFB',
@@ -58,18 +58,40 @@
   <!-- Chart.js 4 -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
+    window.getChartPalette = function() {
+      const isDark = document.documentElement.classList.contains('dark');
+      return {
+        isDark: isDark,
+        legendColor: isDark ? '#F1F5F9' : '#0F172A',
+        tickColor: isDark ? '#CBD5E1' : '#334155',
+        titleColor: isDark ? '#94A3B8' : '#475569',
+        gridColor: isDark ? 'rgba(148, 163, 184, 0.12)' : 'rgba(148, 163, 184, 0.18)',
+        historyLine: isDark ? '#94A3B8' : '#64748B',
+        historyBg: isDark ? 'rgba(148, 163, 184, 0.12)' : 'rgba(100, 116, 139, 0.12)'
+      };
+    };
+
     if (window.Chart) {
-      Chart.defaults.color = '#F8FAFC';
-      Chart.defaults.borderColor = 'rgba(148, 163, 184, 0.15)';
-      Chart.defaults.font.family = "'JetBrains Mono', 'IBM Plex Sans', monospace";
+      const p = window.getChartPalette();
+      Chart.defaults.color = p.tickColor;
+      Chart.defaults.borderColor = p.gridColor;
+      Chart.defaults.font.family = "'Inter', Arial, sans-serif";
+      if (!Chart.defaults.plugins) Chart.defaults.plugins = {};
+      if (!Chart.defaults.plugins.legend) Chart.defaults.plugins.legend = {};
+      if (!Chart.defaults.plugins.legend.labels) Chart.defaults.plugins.legend.labels = {};
+      Chart.defaults.plugins.legend.labels.color = p.legendColor;
     }
   </script>
 
   <style>
+    :root {
+      color-scheme: light !important;
+    }
     body {
       background-color: #F9FAFB;
       color: #0F172A;
-      font-family: 'IBM Plex Sans', sans-serif;
+      font-family: 'Inter', Arial, 'Helvetica Neue', sans-serif;
+      letter-spacing: -0.011em;
     }
     .card-base {
       background: #FFFFFF;
@@ -164,127 +186,21 @@
       color: #0F172A;
     }
 
-    /* Dark Mode Global Overrides with High Contrast (WCAG AAA) */
-    html.dark {
-      color-scheme: dark;
-    }
-    html.dark body { 
-      background-color: #0B0F19 !important; 
-      color: #F8FAFC !important; 
-    }
-    html.dark .bg-page { 
-      background-color: #0B0F19 !important; 
-    }
-    html.dark .fox-sidebar,
-    html.dark .fox-header {
-      background-color: #111827 !important;
-      border-color: #1F2937 !important;
-    }
-    html.dark .card-base,
-    html.dark .bg-white { 
-      background-color: #131B2E !important; 
-      border-color: #24314C !important; 
-    }
-    html.dark .bg-slate-50,
-    html.dark .bg-slate-100,
-    html.dark [class*="bg-slate-50"]:not([class*="dark:"]),
-    html.dark [class*="bg-slate-100"]:not([class*="dark:"]) { 
-      background-color: #1A253D !important; 
-    }
-    html.dark .border-slate-border, 
-    html.dark .border-slate-200, 
-    html.dark .border-slate-100,
-    html.dark [class*="border-slate-200"]:not([class*="dark:"]),
-    html.dark [class*="border-slate-100"]:not([class*="dark:"]) { 
-      border-color: #24314C !important; 
-    }
-
-    /* Crystal-Clear White & Silver Text in Dark Mode (No Black-on-Dark!) */
-    html.dark .text-navy-900,
-    html.dark .text-slate-900, 
-    html.dark .text-slate-800,
-    html.dark h1, html.dark h2, html.dark h3, html.dark h4 { 
-      color: #FFFFFF !important; 
-    }
-    html.dark .text-navy-800,
-    html.dark .text-slate-700 { 
-      color: #F1F5F9 !important; 
-    }
-    html.dark .text-slate-600, 
-    html.dark .text-slate-muted, 
-    html.dark .text-slate-500 { 
-      color: #CBD5E1 !important; 
-    }
-    html.dark .text-slate-400 { 
-      color: #94A3B8 !important; 
-    }
-    html.dark .font-mono:not([class*="text-"]) {
-      color: #FFFFFF;
-    }
-    html.dark .font-mono.text-slate-muted {
-      color: #CBD5E1 !important;
-    }
-    html.dark .sidebar-link-active {
-      background-color: rgba(100, 37, 254, 0.3) !important;
-      color: #C4B5FD !important;
-    }
-    html.dark .sidebar-link-active i {
-      color: #C4B5FD !important;
-    }
-    html.dark .sidebar-link:hover {
-      background-color: rgba(255, 255, 255, 0.05);
-      color: #FFFFFF;
-    }
-    html.dark .card-base:hover { 
-      border-color: #3B4E75 !important; 
-    }
-    html.dark ::-webkit-scrollbar-track { background: #0B0F19; }
-    html.dark ::-webkit-scrollbar-thumb { background: #23304B; }
-    html.dark ::-webkit-scrollbar-thumb:hover { background: #3B4E75; }
-    html.dark th.bg-slate-50 { background-color: #151E32 !important; color: #FFFFFF !important; border-bottom-color: #24314C !important; }
-    html.dark td { border-bottom-color: #24314C !important; }
   </style>
 
-  <!-- Theme Toggling Logic -->
+  <!-- Theme Configuration: Pure Clean Light Theme Only -->
   <script>
-    function applyTheme(theme) {
-      const headerIcon = document.getElementById('headerThemeIcon');
-      const icon = document.getElementById('themeIcon');
-      const btn = document.getElementById('themeToggleBtn');
-      if (theme === 'dark') {
-        document.documentElement.classList.add('dark');
-        if(headerIcon) headerIcon.className = 'fa-solid fa-sun text-amber-400';
-        if(icon) icon.className = 'fa-solid fa-sun text-lg group-hover:rotate-45 transition-transform';
-        if(btn) { btn.classList.remove('bg-white', 'border-slate-200', 'text-slate-600'); btn.classList.add('bg-slate-800', 'border-slate-700', 'text-amber-400'); }
-        localStorage.setItem('theme', 'dark');
-        if (window.Chart) {
-           Chart.defaults.color = "#CBD5E1";
-           Chart.defaults.plugins.tooltip.backgroundColor = "#FFFFFF";
-           Chart.defaults.plugins.tooltip.titleColor = "#0F172A";
-           Chart.defaults.plugins.tooltip.bodyColor = "#1E293B";
-           for(let id in Chart.instances) Chart.instances[id].update();
-        }
-      } else {
-        document.documentElement.classList.remove('dark');
-        if(headerIcon) headerIcon.className = 'fa-solid fa-moon text-slate-600';
-        if(icon) icon.className = 'fa-solid fa-moon text-lg group-hover:-rotate-12 transition-transform';
-        if(btn) { btn.classList.add('bg-white', 'border-slate-200', 'text-slate-600'); btn.classList.remove('bg-slate-800', 'border-slate-700', 'text-amber-400'); }
+    function applyTheme() {
+      document.documentElement.classList.remove('dark');
+      try {
+        localStorage.removeItem('theme');
+        localStorage.removeItem('sentinel_theme');
         localStorage.setItem('theme', 'light');
-        if (window.Chart) {
-           Chart.defaults.color = "#64748B";
-           Chart.defaults.plugins.tooltip.backgroundColor = "#0F172A";
-           Chart.defaults.plugins.tooltip.titleColor = "#FFFFFF";
-           Chart.defaults.plugins.tooltip.bodyColor = "#F1F5F9";
-           for(let id in Chart.instances) Chart.instances[id].update();
-        }
-      }
+      } catch (e) {}
     }
-
     function toggleTheme() {
-      const isDark = document.documentElement.classList.contains('dark');
-      applyTheme(isDark ? 'light' : 'dark');
+      applyTheme();
     }
-
     function toggleSidebar() {
       const sb = document.getElementById('dashboardSidebar');
       const backdrop = document.getElementById('sidebarBackdrop');
@@ -292,19 +208,19 @@
       if (backdrop) backdrop.classList.toggle('hidden');
     }
 
-    // Default theme is Foxstocks Light Theme
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    if(savedTheme === 'dark') document.documentElement.classList.add('dark');
-    
+    // Force Clean Light Mode Immediately
+    document.documentElement.classList.remove('dark');
+    applyTheme();
     document.addEventListener("DOMContentLoaded", () => {
-      applyTheme(localStorage.getItem('theme') || 'light');
+      document.documentElement.classList.remove('dark');
+      applyTheme();
     });
   </script>
 
   <script>
     // Global Chart.js Light-Mode Styling Configuration
     if (window.Chart) {
-      Chart.defaults.font.family = "'IBM Plex Sans', sans-serif";
+      Chart.defaults.font.family = "'Inter', Arial, sans-serif";
       Chart.defaults.color = "#64748B";
       Chart.defaults.plugins.tooltip.backgroundColor = "#0F172A";
       Chart.defaults.plugins.tooltip.titleColor = "#FFFFFF";
@@ -319,10 +235,7 @@
 </head>
 <body class="min-h-screen flex flex-col bg-page text-navy-900 antialiased selection:bg-brand-light selection:text-brand-action">
 
-  <!-- Floating Movable Day/Night Theme Toggle -->
-  <button onclick="toggleTheme()" id="themeToggleBtn" title="Toggle Light/Dark Mode" class="fixed bottom-6 right-6 z-[999] w-11 h-11 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-600 transition-colors cursor-pointer group">
-    <i id="themeIcon" class="fa-solid fa-moon text-base"></i>
-  </button>
+
   <!-- ========================================================================= -->
   <!-- 0. DYNAMIC CONDITIONAL EMERGENCY ALERT BAR (HIDDEN WHEN ALL SYSTEMS SAFE) -->
   <!-- ========================================================================= -->
@@ -415,16 +328,16 @@
           </a>
         </div>
 
-        <!-- Situational Posture Callout (Thoughts Time in Reference) -->
-        <div class="p-4 rounded-xl bg-emerald-50 dark:bg-[#0D241E] border border-emerald-200 dark:border-emerald-800/80 space-y-2">
-          <div class="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-bold">
-            <div class="w-6 h-6 rounded-lg bg-emerald-200/80 dark:bg-emerald-900/60 flex items-center justify-center text-xs text-emerald-900 dark:text-emerald-200">
-              <i class="fa-solid fa-tower-broadcast"></i>
+        <!-- Situational Posture Callout (Tactical AI Diagnostic block from reference) -->
+        <div class="p-3.5 rounded-xl bg-emerald-50 dark:bg-[#0B0D12] border border-emerald-200 dark:border-white/[0.08] space-y-2">
+          <div class="flex items-center gap-2 text-emerald-800 dark:text-emerald-400 font-bold">
+            <div class="w-6 h-6 rounded-lg bg-emerald-200/80 dark:bg-emerald-950/60 dark:border dark:border-emerald-500/30 flex items-center justify-center text-xs text-emerald-900 dark:text-emerald-300">
+              <i class="fa-solid fa-sparkles text-[10px]"></i>
             </div>
-            <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-900 dark:text-emerald-300">Edge Posture</span>
+            <span class="text-[11px] font-mono font-bold uppercase tracking-wider text-emerald-900 dark:text-emerald-400">✦ AI DIAGNOSTIC</span>
           </div>
-          <p class="text-xs text-slate-700 dark:text-slate-200 leading-relaxed font-medium">
-            Jetson Orin recurrent GRU forecasters are projecting nominal baseline safety across all 4 field stations with 50m lead time.
+          <p class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
+            Orin Nano recurrent GRU forecasters projecting nominal baseline stability across all 4 field stations with 50m lead time.
           </p>
         </div>
 
@@ -471,11 +384,12 @@
           </div>
         </div>
 
-        <!-- Center: Search Input Bar -->
+        <!-- Center: Search Input Bar with ⌘K Badge (Reference Style) -->
         <div class="hidden md:flex items-center flex-1 max-w-md mx-4">
           <div class="relative w-full">
             <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-            <input type="text" placeholder="Search sensor nodes, telemetry metrics, sectors..." class="w-full pl-9 pr-4 py-2 bg-slate-100 dark:bg-slate-800/80 border border-transparent dark:border-slate-700/60 rounded-xl text-xs text-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:border-[#6425FE] transition" />
+            <input type="text" placeholder="Search sensor nodes, telemetry metrics, sectors..." class="w-full pl-9 pr-14 py-2 bg-slate-100 dark:bg-[#0A0C10] border border-transparent dark:border-white/[0.08] rounded-xl text-xs text-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:border-emerald-500 transition" />
+            <kbd class="hidden sm:inline-block absolute right-3 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[10px] font-mono text-slate-400 bg-white dark:bg-[#141720] border border-slate-200 dark:border-white/[0.08] rounded">⌘K</kbd>
           </div>
         </div>
 
@@ -499,10 +413,7 @@
             <span id="bellBadge" class="hidden absolute top-2 right-2 w-2 h-2 rounded-full bg-rose-500"></span>
           </a>
 
-          <!-- Dark/Light Theme Toggle -->
-          <button id="dashboardThemeBtn" onclick="toggleTheme()" title="Toggle Theme" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center transition cursor-pointer text-xs">
-            <i id="headerThemeIcon" class="fa-solid fa-moon"></i>
-          </button>
+
 
           <!-- Commander Avatar -->
           <div class="flex items-center gap-2 pl-2 border-l border-slate-200 dark:border-slate-800">
@@ -513,6 +424,41 @@
         </div>
 
       </header>
+
+      <!-- TACTICAL MISSION STATUS RIBBON (AGRI-COMMAND MISSION CONTROL STYLE) -->
+      <div class="hidden xl:flex items-center justify-between px-7 py-2 bg-slate-100/90 dark:bg-[#0A0C10] border-b border-slate-200 dark:border-white/[0.08] text-[11px] font-mono text-slate-500 dark:text-slate-400">
+        <div class="flex items-center gap-4">
+          <span class="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <strong class="font-bold text-slate-900 dark:text-white uppercase tracking-wider">SYSTEM:</strong>
+            <span class="text-emerald-600 dark:text-emerald-400 font-bold">Secure (99.9%)</span>
+          </span>
+          <span class="text-slate-300 dark:text-slate-700">&bull;</span>
+          <span class="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
+            <i class="fa-solid fa-tower-broadcast text-emerald-500 text-[10px]"></i>
+            <strong class="font-bold text-slate-900 dark:text-white uppercase tracking-wider">UPLINK:</strong>
+            <span class="text-emerald-600 dark:text-emerald-400 font-bold">14ms</span>
+          </span>
+          <span class="text-slate-300 dark:text-slate-700">&bull;</span>
+          <span class="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
+            <i class="fa-solid fa-satellite text-blue-500 text-[10px]"></i>
+            <strong class="font-bold text-slate-900 dark:text-white uppercase tracking-wider">ACTIVE NODES:</strong>
+            <span class="text-slate-900 dark:text-white font-bold">4/4 Online</span>
+          </span>
+          <span class="text-slate-300 dark:text-slate-700">&bull;</span>
+          <span class="text-slate-600 dark:text-slate-400">
+            <strong class="font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">GRID:</strong>
+            <span>30.0869&deg; N, 78.2676&deg; E</span>
+          </span>
+        </div>
+        <div class="flex items-center gap-3.5 text-slate-600 dark:text-slate-400">
+          <span class="flex items-center gap-1.5"><i class="fa-solid fa-droplet text-blue-400 text-[10px]"></i> 68% RH</span>
+          <span class="flex items-center gap-1.5"><i class="fa-solid fa-wind text-slate-400 text-[10px]"></i> 12 km/h NW</span>
+          <span class="flex items-center gap-1.5"><i class="fa-solid fa-temperature-half text-amber-400 text-[10px]"></i> 18&deg;C</span>
+          <span class="flex items-center gap-1.5"><i class="fa-solid fa-cloud-sun text-slate-400 text-[10px]"></i> Partly Cloudy</span>
+          <span class="px-2 py-0.5 rounded bg-slate-200/80 dark:bg-white/[0.08] text-slate-700 dark:text-slate-300 text-[10px] font-bold border border-transparent dark:border-white/[0.06]">BASE-01 TELEMETRY</span>
+        </div>
+      </div>
 
       <!-- MAIN PAGE CONTENT BLOCK -->
       <main class="flex-1 p-5 sm:p-7 space-y-6 overflow-y-auto">
@@ -705,7 +651,7 @@
   <script>
     let globalAudioMuted = false;
     let previousAlertCount = 0;
-    const API_BASE = window.location.port === '5000' ? '' : 'http://127.0.0.1:5000';
+    const API_BASE = window.location.protocol.startsWith('http') && !['5500', '3000'].includes(window.location.port) ? '' : (window.location.port ? `http://127.0.0.1:${window.location.port}` : 'http://127.0.0.1:5001');
 
     // Pixabay Emergency Siren Audio
     const sirenAudio = new Audio("https://cdn.pixabay.com/download/audio/2022/03/13/audio_07f92ebab8.mp3?filename=freesound_community-loud-emergency-alarm-54635.mp3");
@@ -864,6 +810,8 @@
             }
           }
           previousAlertCount = hub.active_alerts_count;
+          // Cache globally for immediate availability on navigation
+          window.sentinel_latest_data = { hub, nodes, forecasts, incidents };
 
           // Dispatch event to page-specific listeners
           window.dispatchEvent(new CustomEvent('sentinel_data', {
