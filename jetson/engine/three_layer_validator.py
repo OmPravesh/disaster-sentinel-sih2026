@@ -2,7 +2,7 @@
 Disaster Sentinel — Three-Layer Validator (Jetson)
 
 Second-pass validation of 3-layer sensor confirmation.
-This is the KEY mechanism that judges will evaluate.
+This is the KEY mechanism.
 
 Validates that a calamity is real by requiring all sensor
 layers to independently show anomalous behavior.

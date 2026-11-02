@@ -32,124 +32,108 @@ The Jetson runs **layered sensor confirmation** and a **PyTorch GRU neural netwo
 
 
 
-## Project Images
+## Project Gallery & Hardware Showcase
 
-All hardware photos, circuit schematics, dashboard screenshots, and documentation images are stored in the [`project_images/`](project_images/) directory.
+All visual assets, circuit schematics, dashboard telemetry, and hardware photographs are cataloged in [`project_images/`](project_images/).
 
 ---
 
-### [A] System Flowchart
+### [A] System Flowchart & Full Hardware Demonstration Setup
 
-| System Flowchart |
+| End-to-End System Architecture Flowchart |
 |:---:|
 | ![System Flowchart](project_images/Flowchart.jpg) |
-| *End-to-end disaster detection and alert flowchart* |
+| *Complete system architecture pipeline: Multi-sensor edge data acquisition, SX1278 LoRa transmission, Jetson Orin Nano edge intelligence (Random Forest + PyTorch GRU), real-time web dashboard, and multi-channel emergency alerting.* |
+
+| Full Hardware Demonstration Setup (Dual-Laptop Command Station & Multi-Node Testbed) |
+|:---:|
+| ![Full Hardware Setup](project_images/full_hardware_setup.jpg) |
+| *End-to-end physical hardware demonstration: Dual-laptop command station running the SIH Technical Approach poster & real-time telemetry dashboard, connected to the NVIDIA Jetson Orin Nano gateway and all 4 ESP32 multi-hazard sensor nodes.* |
+
+| Multi-Node Deployment Array | LoRa Gateway & Field Breadboard Array |
+|:---:|:---:|
+| ![Multi-Node Array](project_images/full_demo_network_setup_02.jpeg) | ![Node Sensor Bus Wiring](project_images/power_battery_circuit_02.jpeg) |
+| *Live 4-node LoRa transmitter array in active operation* | *Sensor bus, voltage regulation, and LoRa antenna integration* |
 
 ---
 
-### [B] Circuit & Wiring Schematics
+### [B] Circuit Schematics & Network Architecture
 
-| System Pinout & Wiring Diagram | Multi-Node Circuit Architecture |
+| Multi-Node Circuit Architecture | Complete System Pinout & Component Wiring Diagram |
 |:---:|:---:|
-| ![Circuit Pinout Schematic](project_images/circuit_pinout_schematic.png) | ![Multi-Node Circuit Architecture](project_images/multi_node_circuit_architecture.png) |
-| *System pinout & component wiring diagram* | *Multi-node circuit & gateway connections* |
+| ![Multi-Node Circuit Architecture](project_images/multi_node_circuit_architecture.png) | ![Circuit Pinout Schematic](project_images/circuit_pinout_schematic.png) |
+| *LoRa star network topology connecting 4 edge nodes to Jetson* | *Full hardware pinout schematic for ESP32 nodes, sensors, and Jetson Orin Nano* |
 
 ---
 
-### [C] Dashboard Screenshots
+### [C] Dedicated Sensor Nodes & Gateway Hardware (Annotated)
 
-| Dashboard - Main View | Dashboard - Alert Panel |
+| Node 1: Flood Monitoring (`FLD1`) | Node 1: Ultrasonic Water Level Sensor |
 |:---:|:---:|
-| ![Dashboard Main View](project_images/Dashboard00.jpg) | ![Dashboard Alert Panel](project_images/Dashboard01.jpg) |
-| *Live sensor telemetry & risk status* | *Active alert & notification panel* |
+| ![Flood Monitoring Node](project_images/Hardware03.jpg) | ![Ultrasonic Water Level Sensor](project_images/Hardware02.jpg) |
+| *ESP32 Node FLD1: YL-83 Rain Sensor, MPU6050, and LoRa 433MHz* | *Waterproof JSN-SR04T ultrasonic transducer mounted on river gauge pipe* |
 
-| Dashboard - Sensor Details | Dashboard - AI Predictions |
+| Node 2: Landslide Monitoring (`SLD2`) | Node 2: Inclinometer & Soil Probe Wiring |
 |:---:|:---:|
-| ![Dashboard Sensor Details](project_images/Dashboard02.jpg) | ![Dashboard AI Predictions](project_images/Dashboard03.jpg) |
-| *Individual sensor node data view* | *GRU AI prediction graphs (T+15/30/60m)* |
+| ![Landslide Monitoring Node](project_images/Hardware05.jpg) | ![Landslide Inclinometer Wiring](project_images/node_enclosure_wiring_03.jpeg) |
+| *ESP32 Node SLD2: Capacitive Soil Moisture Sensor & MPU-6050 Tilt* | *Close-up of MPU-6050 tilt accelerometer and soil saturation bus* |
+
+| Node 3: Wildfire Monitoring (`FIR3`) | Node 4: Air Pollution Monitoring (`POL4`) |
+|:---:|:---:|
+| ![Wildfire Monitoring Node](project_images/Hardware07.jpg) | ![Air Pollution Monitoring Node](project_images/Hardware06.jpg) |
+| *ESP32 Node FIR3: KY-026 Flame/IR, BME280, and MQ-2 Gas/Smoke* | *ESP32 Node POL4: MQ-135 AQI, PM2.5 Optical Dust, and LoRa Antenna* |
+
+| NVIDIA Jetson Orin Nano AI Gateway | Jetson SPI LoRa Interface & Cooling |
+|:---:|:---:|
+| ![Jetson Gateway Hardware](project_images/Hardware04.jpg) | ![Jetson LoRa Gateway Detail](project_images/jetson_lora_gateway_01.jpeg) |
+| *Central hub with active fan, SX1278 SPI LoRa receiver, and alert actuators* | *Jetson Orin Nano header pin connections, SPI bus, and status display* |
 
 ---
 
-### [D] Hardware Prototypes & Field Deployment
+### [D] Edge Node Assembly & Prototype Build
 
-| ESP32 Node Assembly - Photo 1 | ESP32 Node Assembly - Photo 2 |
+| Microcontroller Core Assembly | Breadboard Prototyping Layout |
 |:---:|:---:|
 | ![ESP32 Node Assembly 01](project_images/esp32_node_assembly_01.jpeg) | ![ESP32 Node Assembly 02](project_images/esp32_node_assembly_02.jpeg) |
-| *ESP32 field sensor node assembly (front)* | *ESP32 field sensor node (side view)* |
+| *ESP32-WROOM-32 microcontroller and pinout header assembly* | *Side perspective of sensor bus wiring and voltage regulation* |
 
-| ESP32 Node Assembly - Photo 3 | Jetson LoRa Gateway |
+| Sensor Bus Integration | Gateway & Node Cluster Testing |
 |:---:|:---:|
-| ![ESP32 Node Assembly 03](project_images/esp32_node_assembly_03.jpeg) | ![Jetson LoRa Gateway](project_images/jetson_lora_gateway_01.jpeg) |
-| *ESP32 breadboard wiring detail* | *NVIDIA Jetson LoRa receiver & gateway hub* |
-
-| Sensor Module Wiring | Sensor Integration - Photo 1 |
-|:---:|:---:|
-| ![Sensor Module Wiring](project_images/sensor_module_wiring_01.jpeg) | ![Sensor Integration 01](project_images/sensor_integration_01.jpeg) |
-| *3-layer sensor array wiring layout* | *Sensor module integration on node* |
-
-| Sensor Integration - Photo 2 | Node Enclosure Wiring - Photo 1 |
-|:---:|:---:|
-| ![Sensor Integration 02](project_images/sensor_integration_02.jpeg) | ![Node Enclosure Wiring 01](project_images/node_enclosure_wiring_01.jpeg) |
-| *Sensor module closeup & connections* | *Node field enclosure wiring (view 1)* |
-
-| Node Enclosure Wiring - Photo 2 | Node Enclosure Wiring - Photo 3 |
-|:---:|:---:|
-| ![Node Enclosure Wiring 02](project_images/node_enclosure_wiring_02.jpeg) | ![Node Enclosure Wiring 03](project_images/node_enclosure_wiring_03.jpeg) |
-| *Node field enclosure (view 2)* | *Node field enclosure (view 3)* |
-
-| Node Enclosure Wiring - Photo 4 | Power & Battery Circuit - Photo 1 |
-|:---:|:---:|
-| ![Node Enclosure Wiring 04](project_images/node_enclosure_wiring_04.jpeg) | ![Power Battery Circuit 01](project_images/power_battery_circuit_01.jpeg) |
-| *Node enclosure (view 4)* | *Solar power & battery charging circuit* |
-
-| Power & Battery Circuit - Photo 2 | Completed Edge Node - Photo 1 |
-|:---:|:---:|
-| ![Power Battery Circuit 02](project_images/power_battery_circuit_02.jpeg) | ![Completed Edge Node 01](project_images/completed_edge_node_01.jpeg) |
-| *Battery circuit wiring detail* | *Fully assembled edge sensor node* |
-
-| Completed Edge Node - Photo 2 | Full Demo Network Setup - Photo 1 |
-|:---:|:---:|
-| ![Completed Edge Node 02](project_images/completed_edge_node_02.jpeg) | ![Full Demo Network Setup 01](project_images/full_demo_network_setup_01.jpeg) |
-| *Completed node (side view)* | *Full SIH demonstration network setup* |
-
-| Full Demo Network Setup - Photo 2 | Hardware Overview 1 |
-|:---:|:---:|
-| ![Full Demo Network Setup 02](project_images/full_demo_network_setup_02.jpeg) | ![Hardware Overview 1](project_images/Hardware00.jpg) |
-| *Demo network (alternate view)* | *Hardware component overview* |
-
-| Hardware Overview 2 | Hardware Overview 3 |
-|:---:|:---:|
-| ![Hardware Overview 2](project_images/Hardware01.jpg) | ![Hardware Overview 3](project_images/Hardware02.jpg) |
-| *Hardware assembly detail* | *Node wiring and layout* |
-
-| Hardware Overview 4 | Hardware Overview 5 |
-|:---:|:---:|
-| ![Hardware Overview 4](project_images/Hardware03.jpg) | ![Hardware Overview 5](project_images/Hardware04.jpg) |
-| *Full node circuit view* | *Node deployment ready* |
-
-| Hardware Overview 6 | Hardware Overview 7 |
-|:---:|:---:|
-| ![Hardware Overview 6](project_images/Hardware05.jpg) | ![Hardware Overview 7](project_images/Hardware06.jpg) |
-| *Gateway hardware setup* | *Multi-node layout* |
-
-| Hardware Overview 8 |
-|:---:|
-| ![Hardware Overview 8](project_images/Hardware07.jpg) |
-| *Complete system hardware overview* |
+| ![ESP32 Sensor Bus Integration](project_images/esp32_node_assembly_03.jpeg) | ![Gateway & Node Cluster Testing](project_images/node_enclosure_wiring_01.jpeg) |
+| *Top-down view of breadboard power rails and LoRa SPI connections* | *Integrated bench testing of Jetson gateway and edge sensor clusters* |
 
 ---
 
-### [E] Documentation & Reports
+### [E] Central Command Web Dashboard
 
-| Documentation Page 1 | Documentation Page 2 |
+| Master Executive Overview | Real-Time Multi-Hazard Telemetry |
 |:---:|:---:|
-| ![Documentation 01](project_images/Documentation00.jpg) | ![Documentation 02](project_images/Documentation01.jpg) |
-| *Project documentation (page 1)* | *Project documentation (page 2)* |
+| ![Dashboard Master Overview](project_images/Dashboard03.jpg) | ![Live Monitoring Telemetry](project_images/Dashboard01.jpg) |
+| *Master situational awareness: 4 hazard status cards and quick dispatch* | *Dedicated multi-sensor telemetry streams across all 4 edge stations* |
 
-| Documentation Page 3 |
+| Geospatial GIS Disaster Map | PyTorch GRU AI Forecasts |
+|:---:|:---:|
+| ![Geospatial Disaster Map](project_images/Dashboard00.jpg) | ![AI Prediction Trajectory](project_images/Dashboard02.jpg) |
+| *Interactive Leaflet satellite mapping with GPS markers and hazard perimeters* | *Recurrent neural network forecasting future trends (T+10m to T+50m)* |
+
+| Live Field Deployment - Overview Screen | Live Field Deployment - GIS Danger Alert Screen |
+|:---:|:---:|
+| ![Field Test Dashboard](project_images/sensor_integration_01.jpeg) | ![Field Test Map Alert](project_images/sensor_module_wiring_01.jpeg) |
+| *Live field validation: Laptop displaying active multi-hazard overview* | *Live field validation: Tactical GIS map displaying active critical alert* |
+
+---
+
+### [F] Technical Posters & Documentation
+
+| SIH Technical Approach (Page 1) | System Architecture & Pipeline (Page 2) |
+|:---:|:---:|
+| ![Documentation Page 1](project_images/Documentation00.jpg) | ![Documentation Page 2](project_images/Documentation01.jpg) |
+| *Problem statement, solution overview, and system features* | *Layered validation architecture and hardware-in-the-loop pipeline* |
+
+| Implementation & Results (Page 3) |
 |:---:|
-| ![Documentation 03](project_images/Documentation02.jpg) |
-| *Project documentation (page 3)* |
+| ![Documentation Page 3](project_images/Documentation02.jpg) |
+| *Hardware setup, field validation results, and edge deployment specifications* |
 
 ---
 
