@@ -38,22 +38,17 @@ All visual assets, circuit schematics, dashboard telemetry, and hardware photogr
 
 ---
 
-### [A] System Flowchart & Full Hardware Demonstration Setup
+### [A] System Architecture Flowchart & Complete Multi-Node Hardware Setup
 
 | End-to-End System Architecture Flowchart |
 |:---:|
 | ![System Flowchart](project_images/Flowchart.jpg) |
 | *Complete system architecture pipeline: Multi-sensor edge data acquisition, SX1278 LoRa transmission, Jetson Orin Nano edge intelligence (Random Forest + PyTorch GRU), real-time web dashboard, and multi-channel emergency alerting.* |
 
-| Full Hardware Demonstration Setup (Dual-Laptop Command Station & Multi-Node Testbed) |
-|:---:|
-| ![Full Hardware Setup](project_images/full_hardware_setup.jpg) |
-| *End-to-end physical hardware demonstration: Dual-laptop command station running the SIH Technical Approach poster & real-time telemetry dashboard, connected to the NVIDIA Jetson Orin Nano gateway and all 4 ESP32 multi-hazard sensor nodes.* |
-
-| Multi-Node Deployment Array | LoRa Gateway & Field Breadboard Array |
+| Full Multi-Hazard Hardware Testbed Array (4 Solar Nodes + Jetson) | Dual-Laptop Command Station & Live Testbed Demonstration |
 |:---:|:---:|
-| ![Multi-Node Array](project_images/full_demo_network_setup_02.jpeg) | ![Node Sensor Bus Wiring](project_images/power_battery_circuit_02.jpeg) |
-| *Live 4-node LoRa transmitter array in active operation* | *Sensor bus, voltage regulation, and LoRa antenna integration* |
+| ![Full Hardware Setup](project_images/full_hardware_setup.jpg) | ![Dual Laptop Command Station](project_images/full_hardware_setup01.jpg) |
+| *End-to-end physical testbed: All 4 dedicated solar-powered ESP32 multi-hazard sensor nodes (Flood, Landslide, Fire, Air Quality) operating concurrently with the central NVIDIA Jetson Orin Nano AI gateway and LoRa radio receiver.* | *Live hackathon command station: Dual-laptop monitoring terminal running the SIH Technical Approach poster & real-time telemetry dashboard, connected to the active Jetson gateway and 4-node cluster.* |
 
 ---
 
@@ -66,64 +61,88 @@ All visual assets, circuit schematics, dashboard telemetry, and hardware photogr
 
 ---
 
-### [C] Dedicated Sensor Nodes & Gateway Hardware (Annotated)
+### [C] Dedicated Sensor Nodes & Central AI Gateway Hardware
 
-| Node 1: Flood Monitoring (`FLD1`) | Node 1: Ultrasonic Water Level Sensor |
+| Node 1: Flood Monitoring (`FLD1`) | Node 2: Landslide Monitoring (`SLD2`) |
 |:---:|:---:|
-| ![Flood Monitoring Node](project_images/Hardware03.jpg) | ![Ultrasonic Water Level Sensor](project_images/Hardware02.jpg) |
-| *ESP32 Node FLD1: YL-83 Rain Sensor, MPU6050, and LoRa 433MHz* | *Waterproof JSN-SR04T ultrasonic transducer mounted on river gauge pipe* |
-
-| Node 2: Landslide Monitoring (`SLD2`) | Node 2: Inclinometer & Soil Probe Wiring |
-|:---:|:---:|
-| ![Landslide Monitoring Node](project_images/Hardware05.jpg) | ![Landslide Inclinometer Wiring](project_images/node_enclosure_wiring_03.jpeg) |
-| *ESP32 Node SLD2: Capacitive Soil Moisture Sensor & MPU-6050 Tilt* | *Close-up of MPU-6050 tilt accelerometer and soil saturation bus* |
+| ![Flood Monitoring Node](project_images/node_flood_fld1.jpg) | ![Landslide Monitoring Node](project_images/node_landslide_sld2.jpg) |
+| *ESP32 Node FLD1: YL-83 Rain Sensor, JSN-SR04T Waterproof Ultrasonic Transducer, BME280, Solar Li-ion & LoRa 433MHz* | *ESP32 Node SLD2: Capacitive Soil Moisture Sensor v2.0, MPU-6050 Gyro/Tilt Inclinometer, Solar Li-ion & LoRa 433MHz* |
 
 | Node 3: Wildfire Monitoring (`FIR3`) | Node 4: Air Pollution Monitoring (`POL4`) |
 |:---:|:---:|
-| ![Wildfire Monitoring Node](project_images/Hardware07.jpg) | ![Air Pollution Monitoring Node](project_images/Hardware06.jpg) |
-| *ESP32 Node FIR3: KY-026 Flame/IR, BME280, and MQ-2 Gas/Smoke* | *ESP32 Node POL4: MQ-135 AQI, PM2.5 Optical Dust, and LoRa Antenna* |
+| ![Wildfire Monitoring Node](project_images/node_fire_fir3.jpg) | ![Air Pollution Monitoring Node](project_images/node_pollution_pol4.jpg) |
+| *ESP32 Node FIR3: KY-026 Flame/IR Photodiode, MQ-2 Gas/Smoke, BME280, Solar Li-ion & LoRa 433MHz* | *ESP32 Node POL4: GP2Y1010AU0F Optical Dust / PM2.5, MQ-135 AQI, OLED Display, Solar Li-ion & LoRa 433MHz* |
 
-| NVIDIA Jetson Orin Nano AI Gateway | Jetson SPI LoRa Interface & Cooling |
-|:---:|:---:|
-| ![Jetson Gateway Hardware](project_images/Hardware04.jpg) | ![Jetson LoRa Gateway Detail](project_images/jetson_lora_gateway_01.jpeg) |
-| *Central hub with active fan, SX1278 SPI LoRa receiver, and alert actuators* | *Jetson Orin Nano header pin connections, SPI bus, and status display* |
+| NVIDIA Jetson Orin Nano AI Gateway & LoRa Hub |
+|:---:|
+| ![Jetson Gateway Hardware](project_images/jetson_orin_gateway.jpg) |
+| *Central command hub: NVIDIA Jetson Orin Nano with active cooling, SX1278 SPI LoRa receiver, SIM800L GSM SMS module, 2N2222 active piezo buzzer driver, and 5V strobe light relay.* |
 
 ---
 
-### [D] Edge Node Assembly & Prototype Build
+### [D] Field Sensor Hardware Callouts & Physical Verification
 
-| Microcontroller Core Assembly | Breadboard Prototyping Layout |
+| Node 1: Sensor Callouts (`FLD1`) | Waterproof Ultrasonic Pipe Transducer |
+|:---:|:---:|
+| ![Flood Sensor Callouts](project_images/Hardware03.jpg) | ![Ultrasonic Water Level Sensor](project_images/Hardware02.jpg) |
+| *Annotated Flood node: Rain plate, MPU-6050 tilt, and SX1278 LoRa radio* | *Field deployment: Waterproof JSN-SR04T ultrasonic transducer mounted on river gauge pipe* |
+
+| Node 2: Sensor Callouts (`SLD2`) | Node 3: Sensor Callouts (`FIR3`) |
+|:---:|:---:|
+| ![Landslide Sensor Callouts](project_images/Hardware05.jpg) | ![Wildfire Sensor Callouts](project_images/Hardware07.jpg) |
+| *Annotated Landslide node: Soil moisture probe and tilt accelerometer* | *Annotated Wildfire node: KY-026 Flame/IR sensor, MQ-2 smoke detector, BME280* |
+
+| Node 4: Sensor Callouts (`POL4`) | Central Hub & Node Bench Verification |
+|:---:|:---:|
+| ![Air Quality Sensor Callouts](project_images/Hardware06.jpg) | ![Bench Verification Setup](project_images/Hardware04.jpg) |
+| *Annotated Pollution node: Optical dust PM2.5 and MQ-135 AQI detector* | *SIH qualifying bench setup: Jetson Orin Nano gateway wired to active sensor stations* |
+
+---
+
+### [E] Prototype Assembly & Breadboard Clustering
+
+| Microcontroller Core Wiring | Breadboard Prototyping Layout |
 |:---:|:---:|
 | ![ESP32 Node Assembly 01](project_images/esp32_node_assembly_01.jpeg) | ![ESP32 Node Assembly 02](project_images/esp32_node_assembly_02.jpeg) |
-| *ESP32-WROOM-32 microcontroller and pinout header assembly* | *Side perspective of sensor bus wiring and voltage regulation* |
+| *ESP32 microcontroller pinout header assembly and bus routing* | *Breadboard prototyping of sensor bus and power regulation* |
 
-| Sensor Bus Integration | Gateway & Node Cluster Testing |
+| Sensor Bus & Power Rails | Multi-Node Transmitter Array |
 |:---:|:---:|
-| ![ESP32 Sensor Bus Integration](project_images/esp32_node_assembly_03.jpeg) | ![Gateway & Node Cluster Testing](project_images/node_enclosure_wiring_01.jpeg) |
-| *Top-down view of breadboard power rails and LoRa SPI connections* | *Integrated bench testing of Jetson gateway and edge sensor clusters* |
+| ![ESP32 Sensor Bus Integration](project_images/esp32_node_assembly_03.jpeg) | ![Multi-Node Transmitter Array](project_images/full_demo_network_setup_02.jpeg) |
+| *Top-down view of power distribution rails and LoRa SPI connections* | *Benchtop testbed of multi-node LoRa transmitters operating concurrently* |
+
+| Jetson SPI LoRa Header Wiring |
+|:---:|
+| ![Jetson SPI LoRa Header Detail](project_images/jetson_lora_gateway_01.jpeg) |
+| *Jetson Orin Nano 40-pin GPIO header connections: SPI0 bus, interrupt line (DIO0), and reset control* |
 
 ---
 
-### [E] Central Command Web Dashboard
+### [F] Central Command Web Dashboard & 3D Tactical GIS
 
-| Master Executive Overview | Real-Time Multi-Hazard Telemetry |
+| Master Executive Overview (`/dashboard`) | Live Multi-Hazard Telemetry (`/monitoring`) |
 |:---:|:---:|
-| ![Dashboard Master Overview](project_images/Dashboard03.jpg) | ![Live Monitoring Telemetry](project_images/Dashboard01.jpg) |
-| *Master situational awareness: 4 hazard status cards and quick dispatch* | *Dedicated multi-sensor telemetry streams across all 4 edge stations* |
+| ![Dashboard Master Overview](project_images/dashboard_executive_overview.png) | ![Live Monitoring Telemetry](project_images/dashboard_live_telemetry.png) |
+| *Situational awareness command panel: 4 hazard status cards, global threat index, GRU trajectory, and safety tripwires.* | *Real-time telemetry streams with calibrated radial gauges, sensor diagnostics, and active thresholds.* |
 
-| Geospatial GIS Disaster Map | PyTorch GRU AI Forecasts |
+| Tactical 2D GIS Disaster Map (`/map`) | 3D Himalayan Tactical Terrain GIS (`/map3d`) |
 |:---:|:---:|
-| ![Geospatial Disaster Map](project_images/Dashboard00.jpg) | ![AI Prediction Trajectory](project_images/Dashboard02.jpg) |
-| *Interactive Leaflet satellite mapping with GPS markers and hazard perimeters* | *Recurrent neural network forecasting future trends (T+10m to T+50m)* |
+| ![Geospatial Disaster Map](project_images/dashboard_gis_map_2d.png) | ![3D Himalayan Satellite Terrain](project_images/dashboard_3d_terrain_satellite.png) |
+| *Interactive Leaflet GIS map with Uttarakhand regional bounds, threat radiuses, and sensor station inspector.* | *WebGL 3D Digital Elevation Model with satellite imagery, Himalayan elevation relief, and 3D node markers.* |
 
-| Live Field Deployment - Overview Screen | Live Field Deployment - GIS Danger Alert Screen |
+| 3D Topographic Contour & Ridge View (`/map3d`) | PyTorch GRU AI Forecast Engine (`/analytics`) |
 |:---:|:---:|
-| ![Field Test Dashboard](project_images/sensor_integration_01.jpeg) | ![Field Test Map Alert](project_images/sensor_module_wiring_01.jpeg) |
-| *Live field validation: Laptop displaying active multi-hazard overview* | *Live field validation: Tactical GIS map displaying active critical alert* |
+| ![3D Topographic Terrain View](project_images/dashboard_3d_terrain_topo.png) | ![PyTorch GRU AI Forecast Engine](project_images/dashboard_ai_forecast_gru.png) |
+| *3D topographic contour lines highlighting mountain slopes and runoff channels for landslide & flood analysis.* | *Deep learning recurrent forecast: Recorded historical steps vs projected +10m to +50m trajectory.* |
+
+| Multi-Variable LoRa Historical Telemetry Stream (`/analytics`) |
+|:---:|
+| ![Multi-Variable Telemetry Stream](project_images/dashboard_telemetry_stream.png) |
+| *Rolling observation window of LoRa packets across all 4 field stations with one-click CSV dataset export.* |
 
 ---
 
-### [F] Technical Posters & Documentation
+### [G] Technical Posters & Documentation
 
 | SIH Technical Approach (Page 1) | System Architecture & Pipeline (Page 2) |
 |:---:|:---:|
@@ -237,18 +256,32 @@ The system includes a lightweight GRU (Gated Recurrent Unit) time-series model r
 
 ## Quick Start Guide
 
-### 1. Run the Gateway & Dashboard (Simulation Mode)
+### 1. Run the Central Command Web Dashboard & 3D Tactical GIS
 
-No hardware required:
+Run the full Flask Central Command server with real-time PyTorch GRU forecasting and 3D WebGL terrain mapping:
+
+```bash
+python web/server.py
+```
+
+- **Executive Command Dashboard**: [http://localhost:5000](http://localhost:5000)
+- **Live Telemetry & Gauges**: [http://localhost:5000/monitoring](http://localhost:5000/monitoring)
+- **Tactical 2D GIS Map**: [http://localhost:5000/map](http://localhost:5000/map)
+- **3D Himalayan Tactical Terrain GIS**: [http://localhost:5000/map3d](http://localhost:5000/map3d)
+- **AI Forecast Engine**: [http://localhost:5000/analytics](http://localhost:5000/analytics)
+
+### 2. Run the Gateway Orchestrator (Simulation Mode)
+
+No hardware required for simulated LoRa test streams:
 
 ```bash
 cd jetson
 python main.py --simulate --port 8080
 ```
 
-Open in browser: `http://localhost:8080`
+Open embedded FastAPI SPA: `http://localhost:8080`
 
-### 2. Train or Retrain the AI Models
+### 3. Train or Retrain the AI Models
 
 ```bash
 python ai/jetson_model/train_gru_model.py --epochs 100
@@ -310,6 +343,9 @@ cd firmware/node_pollution && pio run -t upload
 | `jetson/engine/ai_predictor.py` | PyTorch GRU neural network and prediction manager |
 | `jetson/engine/risk_predictor.py` | Risk scoring, severity levels, and ETA calculation |
 | `jetson/alerts/` | SMS (SIM800L), buzzer, and strobe light alert drivers |
+| `web/server.py` | Flask Central Command Server with REST API & 3D WebGL GIS engine |
+| `web/templates/` | Multi-page templates: Dashboard, Monitoring, 2D Map, 3D Terrain, Analytics |
+| `web/templates/map3d.html` | WebGL 3D Himalayan Digital Elevation Model (DEM) with MapLibre GL |
 | `jetson/dashboard/app.py` | FastAPI web server with REST API and WebSocket support |
 | `jetson/dashboard/static/` | Frontend CSS and JavaScript for the web dashboard |
 | `jetson/dashboard/templates/` | HTML shell for the Single-Page Application |

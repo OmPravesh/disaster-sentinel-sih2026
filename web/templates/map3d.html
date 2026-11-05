@@ -1,0 +1,928 @@
+{% extends "base.html" %}
+
+{% block title %}3D Tactical Terrain Map · Disaster Sentinel{% endblock %}
+
+{% block page_title %}3D Himalayan Tactical Terrain GIS{% endblock %}
+{% block page_subtitle %}WebGL 3D Digital Elevation Model with photorealistic terrain across Garhwal &amp; Kumaon ranges{% endblock %}
+
+{% block content %}
+<!-- MapLibre GL JS (v4.7.1) for WebGL 3D Terrain -->
+<link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+
+<style>
+  /* 3D Map Custom Marker Styles — Fixed Billboard Mode */
+  .marker-3d-node {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    pointer-events: auto;
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    will-change: transform;
+    transform-origin: 50% 100%;
+    z-index: 10;
+  }
+
+  .marker-pin-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: transform 0.15s ease-out;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.45));
+  }
+
+  .marker-3d-node:hover .marker-pin-body {
+    transform: translateY(-4px) scale(1.08);
+  }
+
+  .marker-pill-label {
+    background: rgba(15, 23, 42, 0.95);
+    color: #FFFFFF;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 9999px;
+    white-space: nowrap;
+    margin-bottom: 2px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    letter-spacing: 0.02em;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
+  }
+
+  .marker-pin-head {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    border: 2.5px solid #FFFFFF;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .marker-pin-point {
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 8px solid;
+    margin-top: -2px;
+  }
+
+  .marker-ground-shadow {
+    width: 12px;
+    height: 4px;
+    background: rgba(0, 0, 0, 0.45);
+    border-radius: 50%;
+    margin-top: 1px;
+  }
+
+  /* Custom MapLibre Popups */
+  .maplibregl-popup-content {
+    padding: 0 !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+    border: 1px solid #E2E8F0 !important;
+    font-family: inherit !important;
+  }
+  .maplibregl-popup-close-button {
+    top: 6px !important;
+    right: 8px !important;
+    padding: 2px 6px !important;
+    color: #64748B !important;
+    font-size: 14px !important;
+    border-radius: 6px !important;
+  }
+  .maplibregl-popup-close-button:hover {
+    background-color: #F1F5F9 !important;
+    color: #0F172A !important;
+  }
+</style>
+
+<div class="space-y-6 pb-12">
+
+  <!-- ========================================================================= -->
+  <!-- 1. HEADER: CLEAN CONTROLS & 2D/3D SWITCHER -->
+  <!-- ========================================================================= -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+    <div>
+      <div class="flex items-center gap-2">
+        <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-200 flex items-center gap-1.5">
+          <i class="fa-solid fa-mountain text-indigo-500"></i>
+          3D Digital Elevation Model (DEM)
+        </span>
+        <span class="text-slate-300">&bull;</span>
+        <span class="text-xs text-slate-500">Himalayan Garhwal &amp; Kumaon Terrain</span>
+      </div>
+      <h1 class="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5 mt-1">
+        <span>Uttarakhand 3D Tactical Terrain GIS</span>
+      </h1>
+      <p class="text-xs sm:text-sm text-slate-500 mt-1">
+        Real-time 3D elevation modeling for slope stability, river gorge depth, and mountain ridge hazard projection.
+      </p>
+    </div>
+
+    <!-- Quick Action Buttons -->
+    <div class="flex flex-wrap items-center gap-2.5">
+      <!-- Back to 2D Map -->
+      <a href="/map" class="px-3 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 border border-slate-200 text-xs font-semibold flex items-center gap-1.5 transition shadow-sm" title="Switch to standard 2D flat GIS map">
+        <i class="fa-solid fa-map text-blue-600 text-xs"></i>
+        <span>2D Tactical Map</span>
+      </a>
+
+      <!-- Reset Camera -->
+      <button onclick="flyToSector('overview')" class="px-3 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 border border-slate-200 text-xs font-semibold flex items-center gap-1.5 transition shadow-sm" title="Reset camera to state-wide 3D perspective">
+        <i class="fa-solid fa-rotate-left text-indigo-600 text-xs"></i>
+        <span>Reset 3D View</span>
+      </button>
+
+      <!-- Fullscreen Toggle -->
+      <button onclick="toggle3DFullscreen()" class="px-3 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 border border-slate-200 text-xs font-semibold flex items-center gap-1.5 transition shadow-sm" title="Toggle full-screen 3D view">
+        <i class="fa-solid fa-expand text-slate-600 text-xs" id="btnFullscreenIcon"></i>
+        <span id="btnFullscreenText">Fullscreen</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 2. MAIN 3D TERRAIN HERO & TELEMETRY INSPECTOR -->
+  <!-- ========================================================================= -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- Left: 3D WebGL Canvas (8 Cols) -->
+    <div class="lg:col-span-8 card-base p-4 sm:p-5 bg-white border border-slate-border rounded-lg shadow-sm flex flex-col space-y-3" id="mapCardContainer">
+
+      <!-- Statewide Status Banner -->
+      <div id="statusBanner3D" class="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-between text-xs transition shadow-sm">
+        <div class="flex items-center gap-2.5">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          <div>
+            <span class="font-bold tracking-tight uppercase block sm:inline">3D Elevation Mesh: Active &amp; Calibrated</span>
+            <span class="text-slate-300 hidden sm:inline">&bull;</span>
+            <span class="text-slate-600 text-[11px] sm:text-xs">DEM resolution 10m &middot; Terrarium elevation encoding synchronized with 4 LoRa nodes.</span>
+          </div>
+        </div>
+        <span class="text-[10px] font-bold px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-200 uppercase whitespace-nowrap">
+          60 FPS WebGL
+        </span>
+      </div>
+
+      <!-- 3D Canvas Container -->
+      <div class="relative w-full h-[580px] rounded-xl border border-slate-200 overflow-hidden shadow-inner bg-slate-950" id="canvasWrapper">
+        <!-- WebGL Mount Point -->
+        <div id="map3d" class="w-full h-full"></div>
+
+        <!-- Floating Top-Right: 3D Texture & Terrain Controls -->
+        <div class="absolute top-3 right-3 flex flex-col items-end gap-2 z-10 pointer-events-auto">
+          <!-- Texture Switcher -->
+          <div class="bg-white/95 backdrop-blur rounded-xl border border-slate-200 shadow-md p-1 flex items-center gap-1 text-[11px] font-medium">
+            <button onclick="switch3DTexture('satellite')" id="btnTexSatellite" class="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 font-bold transition">
+              <i class="fa-solid fa-earth-americas mr-1 text-[10px]"></i> Satellite
+            </button>
+            <button onclick="switch3DTexture('osm')" id="btnTexOsm" class="px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition">
+              <i class="fa-solid fa-road mr-1 text-[10px]"></i> OpenStreetMap
+            </button>
+            <button onclick="switch3DTexture('topo')" id="btnTexTopo" class="px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition">
+              <i class="fa-solid fa-mountain mr-1 text-[10px]"></i> Topo
+            </button>
+          </div>
+
+          <!-- Elevation Exaggeration Pill Selector -->
+          <div class="bg-white/95 backdrop-blur rounded-xl border border-slate-200 shadow-md p-1.5 flex items-center gap-1.5 text-[11px] text-slate-600">
+            <span class="text-[10px] font-bold text-slate-400 uppercase px-1">Relief:</span>
+            <button onclick="setElevationExaggeration(1.0)" id="btnEx10" class="px-2 py-0.5 rounded text-[10px] font-medium text-slate-600 hover:bg-slate-100 transition">1.0x</button>
+            <button onclick="setElevationExaggeration(1.6)" id="btnEx16" class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-700 transition">1.6x</button>
+            <button onclick="setElevationExaggeration(2.2)" id="btnEx22" class="px-2 py-0.5 rounded text-[10px] font-medium text-slate-600 hover:bg-slate-100 transition">2.2x</button>
+          </div>
+        </div>
+
+        <!-- Floating Bottom-Left: Live Camera Telemetry & Navigation Tips -->
+        <div class="absolute bottom-3 left-3 bg-white/95 backdrop-blur px-3 py-2 rounded-xl border border-slate-200 text-[11px] text-slate-600 flex flex-wrap items-center gap-3 shadow-md z-10 pointer-events-auto">
+          <span class="flex items-center gap-1 font-mono text-[10px]">
+            <span class="text-slate-400">Pitch:</span> <span id="camPitch" class="font-bold text-indigo-600">62°</span>
+          </span>
+          <span class="text-slate-300">|</span>
+          <span class="flex items-center gap-1 font-mono text-[10px]">
+            <span class="text-slate-400">Bearing:</span> <span id="camBearing" class="font-bold text-indigo-600">-15°</span>
+          </span>
+          <span class="text-slate-300">|</span>
+          <span class="flex items-center gap-1 font-mono text-[10px]">
+            <span class="text-slate-400">Zoom:</span> <span id="camZoom" class="font-bold text-indigo-600">8.5</span>
+          </span>
+          <span class="hidden sm:inline text-slate-300">|</span>
+          <span class="hidden sm:inline text-[10px] text-slate-500">
+            <i class="fa-regular fa-compass mr-0.5 text-indigo-500"></i> Hold <strong>Right-Click</strong> or <strong>Ctrl+Drag</strong> to orbit &amp; tilt in 3D
+          </span>
+        </div>
+
+      </div>
+
+      <!-- Quick Sector Jump Bar (Cinematic 3D Camera Flight) -->
+      <div class="flex items-center gap-2 pt-1 text-xs overflow-x-auto no-scrollbar">
+        <span class="text-slate-500 text-[11px] font-medium mr-1 whitespace-nowrap">
+          <i class="fa-solid fa-plane-departure text-indigo-500 mr-1"></i> Fly To Sector:
+        </span>
+        <button onclick="flyToSector('overview')" id="flyBtnOverview" class="px-3 py-1.5 rounded-xl bg-indigo-50 text-indigo-700 font-semibold border border-indigo-200 shadow-sm transition whitespace-nowrap flex items-center gap-1.5">
+          <i class="fa-solid fa-globe text-xs"></i>
+          <span>Overview Basin</span>
+        </button>
+        <button onclick="flyToSector('fld1')" id="flyBtnFld1" class="px-3 py-1.5 rounded-xl bg-slate-50 text-slate-600 hover:text-slate-900 border border-slate-200 transition whitespace-nowrap flex items-center gap-1.5">
+          <i class="fa-solid fa-water text-blue-600 text-xs"></i>
+          <span>Rishikesh (Flood)</span>
+        </button>
+        <button onclick="flyToSector('sld2')" id="flyBtnSld2" class="px-3 py-1.5 rounded-xl bg-slate-50 text-slate-600 hover:text-slate-900 border border-slate-200 transition whitespace-nowrap flex items-center gap-1.5">
+          <i class="fa-solid fa-mountain text-amber-600 text-xs"></i>
+          <span>Chamoli (Landslide)</span>
+        </button>
+        <button onclick="flyToSector('fir3')" id="flyBtnFir3" class="px-3 py-1.5 rounded-xl bg-slate-50 text-slate-600 hover:text-slate-900 border border-slate-200 transition whitespace-nowrap flex items-center gap-1.5">
+          <i class="fa-solid fa-fire text-rose-600 text-xs"></i>
+          <span>Almora (Wildfire)</span>
+        </button>
+        <button onclick="flyToSector('pol4')" id="flyBtnPol4" class="px-3 py-1.5 rounded-xl bg-slate-50 text-slate-600 hover:text-slate-900 border border-slate-200 transition whitespace-nowrap flex items-center gap-1.5">
+          <i class="fa-solid fa-smog text-teal-600 text-xs"></i>
+          <span>Dehradun (Air Basin)</span>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Right: 3D Sector Inspector & Live Risk Cards (4 Cols) -->
+    <div class="lg:col-span-4 card-base p-5 sm:p-6 bg-white border border-slate-border rounded-lg shadow-sm flex flex-col justify-between space-y-5">
+      <div class="space-y-4">
+
+        <!-- Inspector Header -->
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div class="flex items-center gap-2.5">
+            <div id="inspectorIconContainer3D" class="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm border border-indigo-100">
+              <i id="inspectorIcon3D" class="fa-solid fa-mountain"></i>
+            </div>
+            <div>
+              <span id="inspectorHazardType3D" class="text-xs font-bold text-slate-900 uppercase tracking-wide">Landslide Slope</span>
+              <span id="inspectorDistrict3D" class="text-[11px] text-slate-400 block">Garhwal Mountain Ridge, Chamoli</span>
+            </div>
+          </div>
+          <span id="inspectorStatusBadge3D" class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase">
+            Safe
+          </span>
+        </div>
+
+        <!-- Location Title -->
+        <div>
+          <h2 id="inspectorTitle3D" class="text-base font-bold text-slate-900">Chamoli &middot; Mountain Slope 2B</h2>
+          <p id="inspectorSubtitle3D" class="text-xs text-slate-500 mt-0.5">High-gradient Himalayan slope with dual MPU6050 &amp; soil moisture telemetry.</p>
+        </div>
+
+        <!-- 3D Spatial Metrics Grid -->
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <span class="text-slate-400 block text-[10px] uppercase font-bold">Terrain Altitude</span>
+            <span id="metricAltitude3D" class="text-base font-extrabold text-slate-900 font-mono">1,480 m</span>
+            <span class="text-[10px] text-slate-500 block">AMSL Elevation</span>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <span class="text-slate-400 block text-[10px] uppercase font-bold">Slope Gradient</span>
+            <span id="metricGradient3D" class="text-base font-extrabold text-slate-900 font-mono">12.0°</span>
+            <span class="text-[10px] text-emerald-600 block font-medium">Stable (&lt; 35°)</span>
+          </div>
+        </div>
+
+        <!-- Live Primary Telemetry Card -->
+        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
+          <div class="flex justify-between items-center text-xs">
+            <span id="metricLabel3D" class="text-slate-500 font-medium">Soil Saturation Index:</span>
+            <span id="metricThreshold3D" class="text-[11px] text-slate-400 font-mono">Critical &gt; 80%</span>
+          </div>
+          <div class="flex items-baseline justify-between pt-0.5">
+            <span id="metricValue3D" class="text-3xl font-extrabold text-slate-900 font-mono">15.0%</span>
+            <span id="metricRiskLevel3D" class="text-xs font-semibold text-emerald-600 uppercase">Optimal Stability</span>
+          </div>
+        </div>
+
+        <!-- 3D Topographic Analysis Box -->
+        <div class="p-3.5 rounded-xl bg-indigo-50/60 border border-indigo-200 text-indigo-900 text-xs space-y-1.5">
+          <div class="flex items-center gap-2 font-bold text-indigo-950">
+            <i class="fa-solid fa-layer-group text-indigo-600"></i>
+            <span>3D Watershed &amp; Runoff Modeling</span>
+          </div>
+          <p id="topographicNote3D" class="text-slate-600 text-[11px] leading-relaxed">
+            Himalayan ridgeline telemetry shows nominal pore-water pressure. Zero debris flow hazard projected along Alaknanda river drainage basin.
+          </p>
+        </div>
+
+        <!-- Node GPS & Radio Specs -->
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5 text-[11px]">
+          <div class="flex justify-between text-slate-500">
+            <span>Coordinates:</span>
+            <span id="specsCoords3D" class="text-slate-800 font-mono font-medium">30.3844° N, 79.2811° E</span>
+          </div>
+          <div class="flex justify-between text-slate-500">
+            <span>LoRa Radio Link:</span>
+            <span id="specsLora3D" class="text-emerald-600 font-medium">433 MHz &middot; RSSI -72 dBm</span>
+          </div>
+          <div class="flex justify-between text-slate-500">
+            <span>Power State:</span>
+            <span id="specsBattery3D" class="text-slate-800 font-mono">89% Solar LiPo</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Action Button -->
+      <div class="pt-4 border-t border-slate-100 space-y-2">
+        <a id="linkMonitoring3D" href="/monitoring#landslide" class="w-full py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 font-semibold text-xs flex items-center justify-center gap-2 border border-slate-200 shadow-sm transition">
+          <i class="fa-solid fa-chart-line text-indigo-600 text-xs"></i>
+          <span>View Real-Time Node Telemetry</span>
+        </a>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ========================================================================= -->
+<!-- 3. JAVASCRIPT: MAPLIBRE 3D TERRAIN LOGIC -->
+<!-- ========================================================================= -->
+<script>
+  // 4 Dedicated ESP32 Sensor Nodes
+  const NODES_CONFIG = {
+    fld1: {
+      id: "FLD1",
+      hazard: "Flood",
+      district: "Dehradun / Tehri Garhwal",
+      title: "Rishikesh · Ganga Catchment Basin",
+      subtitle: "Lowland river gauge monitoring water surge and upstream cloudburst runoff.",
+      lng: 78.2676,
+      lat: 30.0869,
+      altitude: "372 m",
+      gradient: "3.2°",
+      metricLabel: "River Water Level:",
+      metricThreshold: "Warning > 6.0 m",
+      metricValue: "2.10 m",
+      riskLevel: "Low Risk",
+      topographicNote: "Upstream Himalayan runoff is standard. Ganga riverbed depth is within normal dry season envelope with zero flash flood risk.",
+      lora: "433 MHz · RSSI -68 dBm",
+      battery: "94%",
+      link: "/monitoring#flood",
+      icon: "fa-water",
+      iconBg: "bg-blue-50",
+      iconColor: "text-blue-600",
+      color: "#2563EB",
+      camera: { center: [78.2676, 30.0869], zoom: 13.0, pitch: 65, bearing: 40 }
+    },
+    sld2: {
+      id: "SLD2",
+      hazard: "Landslide",
+      district: "Garhwal Mountain Ridge, Chamoli",
+      title: "Chamoli · Mountain Slope 2B",
+      subtitle: "High-gradient Himalayan slope with dual MPU6050 & soil moisture telemetry.",
+      lng: 79.2811,
+      lat: 30.3844,
+      altitude: "1,480 m",
+      gradient: "12.0°",
+      metricLabel: "Soil Saturation Index:",
+      metricThreshold: "Critical > 80%",
+      metricValue: "15.0%",
+      riskLevel: "Optimal Stability",
+      topographicNote: "Himalayan ridgeline telemetry shows nominal pore-water pressure. Zero debris flow hazard projected along Alaknanda river drainage basin.",
+      lora: "433 MHz · RSSI -72 dBm",
+      battery: "89%",
+      link: "/monitoring#landslide",
+      icon: "fa-mountain",
+      iconBg: "bg-indigo-50",
+      iconColor: "text-indigo-600",
+      color: "#4F46E5",
+      camera: { center: [79.2811, 30.3844], zoom: 13.5, pitch: 72, bearing: -25 }
+    },
+    fir3: {
+      id: "FIR3",
+      hazard: "Wildfire",
+      district: "Kumaon Pine Ridge, Almora",
+      title: "Almora · Kumaon Forest Perimeter",
+      subtitle: "Dense pine needle canopy with dry wind thermal and smoke infrared surveillance.",
+      lng: 79.6800,
+      lat: 29.6200,
+      altitude: "1,640 m",
+      gradient: "18.5°",
+      metricLabel: "Canopy Temperature:",
+      metricThreshold: "Threshold > 45°C",
+      metricValue: "22.5°C",
+      riskLevel: "Low Thermal Risk",
+      topographicNote: "High relative humidity and moderate slope updraft. Smoke TVOC baseline is clear across Binsar wildlife ridge.",
+      lora: "433 MHz · RSSI -65 dBm",
+      battery: "92%",
+      link: "/monitoring#fire",
+      icon: "fa-fire",
+      iconBg: "bg-rose-50",
+      iconColor: "text-rose-600",
+      color: "#E11D48",
+      camera: { center: [79.6800, 29.6200], zoom: 13.0, pitch: 62, bearing: 110 }
+    },
+    pol4: {
+      id: "POL4",
+      hazard: "Air Quality",
+      district: "Selaqui Valley Basin, Dehradun",
+      title: "Dehradun · Selaqui Valley Corridor",
+      subtitle: "Industrial valley inversion trap monitored by optical PM2.5 and MQ-135 sensors.",
+      lng: 77.8700,
+      lat: 30.3400,
+      altitude: "640 m",
+      gradient: "4.8°",
+      metricLabel: "Fine Particulate (PM2.5):",
+      metricThreshold: "Good < 30 µg/m³",
+      metricValue: "11.5 µg/m³",
+      riskLevel: "Good Air Quality",
+      topographicNote: "Valley mountain-breeze ventilation is active. Particulates and combustion gases are dispersing smoothly toward the plains.",
+      lora: "433 MHz · RSSI -70 dBm",
+      battery: "87%",
+      link: "/monitoring#pollution",
+      icon: "fa-smog",
+      iconBg: "bg-teal-50",
+      iconColor: "text-teal-600",
+      color: "#0D9488",
+      camera: { center: [77.8700, 30.3400], zoom: 12.8, pitch: 52, bearing: 5 }
+    }
+  };
+
+  const OVERVIEW_CAMERA = {
+    center: [78.85, 30.10],
+    zoom: 8.6,
+    pitch: 52,
+    bearing: -10
+  };
+
+  let map3d = null;
+  let currentTexture = 'satellite';
+  let currentExaggeration = 1.6;
+  let activeSectorKey = 'overview';
+  let nodeMarkers = {};
+
+  // Tile Sources Dictionary
+  const TILE_SOURCES = {
+    satellite: {
+      tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+      tileSize: 256,
+      attribution: '&copy; Esri, Earthstar Geographics'
+    },
+    osm: {
+      tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+      tileSize: 256,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    },
+    topo: {
+      tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}'],
+      tileSize: 256,
+      attribution: '&copy; Esri World Topo'
+    }
+  };
+
+  // Initialize MapLibre 3D Scene
+  function init3DMap() {
+    map3d = new maplibregl.Map({
+      container: 'map3d',
+      zoom: OVERVIEW_CAMERA.zoom,
+      center: OVERVIEW_CAMERA.center,
+      pitch: OVERVIEW_CAMERA.pitch,
+      bearing: OVERVIEW_CAMERA.bearing,
+      maxPitch: 82,
+      style: {
+        version: 8,
+        sources: {
+          'base-raster-source': {
+            type: 'raster',
+            tiles: TILE_SOURCES.satellite.tiles,
+            tileSize: 256,
+            attribution: TILE_SOURCES.satellite.attribution
+          },
+          // Free AWS Terrarium DEM (Digital Elevation Model)
+          'terrain-dem': {
+            type: 'raster-dem',
+            encoding: 'terrarium',
+            tiles: ['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],
+            tileSize: 256,
+            maxzoom: 15
+          }
+        },
+        layers: [
+          {
+            id: 'base-raster-layer',
+            type: 'raster',
+            source: 'base-raster-source',
+            minzoom: 0,
+            maxzoom: 20
+          }
+        ],
+        terrain: {
+          source: 'terrain-dem',
+          exaggeration: currentExaggeration
+        }
+      }
+    });
+
+    // Add standard navigation control (visualizePitch: true enables 3D compass ring)
+    map3d.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-left');
+
+    map3d.on('load', () => {
+      // Create 3D markers for all 4 nodes
+      createNodeMarkers();
+
+      // Listen for camera changes to update live readout
+      map3d.on('rotate', updateCameraReadout);
+      map3d.on('pitch', updateCameraReadout);
+      map3d.on('zoom', updateCameraReadout);
+
+      // Listen to MapLibre render event to rigidly lock markers to 3D terrain
+      map3d.on('render', updateAllMarkerPositions);
+      map3d.on('terrain', updateAllMarkerPositions);
+
+      // Select default node and perform initial lock
+      selectNode('fld1');
+      updateCameraReadout();
+      updateAllMarkerPositions();
+    });
+  }
+
+  // Update Live Camera Pitch / Bearing / Zoom Readout
+  function updateCameraReadout() {
+    if (!map3d) return;
+    document.getElementById('camPitch').textContent = Math.round(map3d.getPitch()) + '°';
+    document.getElementById('camBearing').textContent = Math.round(map3d.getBearing()) + '°';
+    document.getElementById('camZoom').textContent = map3d.getZoom().toFixed(1);
+  }
+
+  // Create Custom HTML 3D Billboard Markers permanently anchored to the Terrain
+  function createNodeMarkers() {
+    Object.keys(NODES_CONFIG).forEach(key => {
+      const node = NODES_CONFIG[key];
+
+      // 1. Rigid Billboard Marker Container (anchored at bottom center)
+      const el = document.createElement('div');
+      el.className = 'marker-3d-node';
+      el.id = 'marker-' + key;
+
+      // 2. Pin Body (single vertical flow)
+      const pinBody = document.createElement('div');
+      pinBody.className = 'marker-pin-body';
+
+      // 2A. High-Contrast Station Label Pill
+      const pill = document.createElement('div');
+      pill.className = 'marker-pill-label';
+      pill.textContent = `${node.id} · ${node.hazard}`;
+      pinBody.appendChild(pill);
+
+      // 2B. Circular Pin Head with Solid Background & White Icon
+      const head = document.createElement('div');
+      head.className = 'marker-pin-head';
+      head.style.backgroundColor = node.color;
+      head.innerHTML = `<i class="fa-solid ${node.icon}"></i>`;
+      pinBody.appendChild(head);
+
+      // 2C. Downward Pointer / Pin Needle (triangular pointer)
+      const point = document.createElement('div');
+      point.className = 'marker-pin-point';
+      point.style.borderTopColor = node.color;
+      pinBody.appendChild(point);
+
+      // 2D. Ground Shadow at Contact Point
+      const shadow = document.createElement('div');
+      shadow.className = 'marker-ground-shadow';
+      pinBody.appendChild(shadow);
+
+      el.appendChild(pinBody);
+
+      // 3. Interactive Popup
+      const popup = new maplibregl.Popup({ offset: [0, -48], closeButton: true })
+        .setHTML(`
+          <div style="width: 230px;">
+            <div style="background-color: #0F172A; color: #FFFFFF; padding: 10px 14px;">
+              <span style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: #94A3B8; letter-spacing: 0.05em;">${node.id} &middot; ${node.hazard}</span>
+              <h4 style="font-size: 13px; font-weight: 700; margin-top: 2px; color: #FFFFFF;">${node.title.split('·')[0].trim()}</h4>
+            </div>
+            <div style="padding: 12px 14px; background: #FFFFFF; font-size: 11px; color: #334155;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                <span style="color: #64748B;">AMSL Altitude:</span>
+                <strong style="color: #0F172A; font-family: monospace;">${node.altitude}</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                <span style="color: #64748B;">Terrain Slope:</span>
+                <strong style="color: #0F172A; font-family: monospace;">${node.gradient}</strong>
+              </div>
+              <div style="border-top: 1px solid #E2E8F0; padding-top: 6px; display: flex; justify-content: space-between; align-items: baseline;">
+                <span style="color: #64748B;">Reading:</span>
+                <span style="font-size: 13px; font-weight: 800; color: ${node.color}; font-family: monospace;">${node.metricValue}</span>
+              </div>
+            </div>
+          </div>
+        `);
+
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        selectNode(key);
+      });
+
+      // 4. Mount with MapLibre Billboard Mode
+      const marker = new maplibregl.Marker({
+        element: el,
+        anchor: 'bottom',
+        pitchAlignment: 'viewport',
+        rotationAlignment: 'viewport'
+      })
+        .setLngLat([node.lng, node.lat])
+        .setPopup(popup)
+        .addTo(map3d);
+
+      // Intercept MapLibre internal update to ensure 3D elevation clamping
+      marker._update = function() {
+        updateSingleMarkerPosition(key);
+      };
+
+      nodeMarkers[key] = marker;
+    });
+
+    // Initial position pass
+    updateAllMarkerPositions();
+  }
+
+  // Update a single marker's position clamped to the 3D elevation terrain
+  function updateSingleMarkerPosition(key) {
+    const marker = nodeMarkers[key];
+    const node = NODES_CONFIG[key];
+    if (!marker || !node || !map3d) return;
+
+    const el = marker.getElement();
+    if (!el) return;
+
+    let pt = null;
+    // MapLibre locationPoint calculates true 3D elevation when terrain is enabled
+    if (map3d.terrain && map3d.transform && map3d.transform.locationPoint) {
+      try {
+        const lnglat = new maplibregl.LngLat(node.lng, node.lat);
+        pt = map3d.transform.locationPoint(lnglat, map3d.terrain);
+      } catch (err) {
+        pt = null;
+      }
+    }
+    // Fallback to standard 2D map projection if terrain elevation is not yet ready
+    if (!pt || isNaN(pt.x) || isNaN(pt.y)) {
+      pt = map3d.project([node.lng, node.lat]);
+    }
+
+    if (!pt || isNaN(pt.x) || isNaN(pt.y)) {
+      el.style.display = 'none';
+      return;
+    }
+
+    // Viewport frustum culling: hide if coordinate is behind camera or far out of view
+    const container = map3d.getContainer();
+    const w = container ? (container.clientWidth || 800) : 800;
+    const h = container ? (container.clientHeight || 600) : 600;
+
+    if (pt.x < -160 || pt.x > w + 160 || pt.y < -160 || pt.y > h + 160) {
+      el.style.display = 'none';
+    } else {
+      el.style.display = 'flex';
+      // Anchor needle tip to exact terrain contact point without drift
+      el.style.transform = `translate(-50%, -100%) translate(${Math.round(pt.x)}px, ${Math.round(pt.y)}px)`;
+    }
+  }
+
+  // Update all 4 station markers synchronously
+  function updateAllMarkerPositions() {
+    Object.keys(NODES_CONFIG).forEach(key => {
+      updateSingleMarkerPosition(key);
+    });
+  }
+
+  // Switch Surface Texture (Satellite, OSM, Topo)
+  function switch3DTexture(type) {
+    currentTexture = type;
+    const srcConfig = TILE_SOURCES[type];
+    if (!srcConfig || !map3d) return;
+
+    const source = map3d.getSource('base-raster-source');
+    if (source && source.setTiles) {
+      source.setTiles(srcConfig.tiles);
+    } else {
+      // Style refresh if setTiles is unsupported
+      const style = map3d.getStyle();
+      if (style && style.sources && style.sources['base-raster-source']) {
+        style.sources['base-raster-source'].tiles = srcConfig.tiles;
+        map3d.setStyle(style);
+      }
+    }
+
+    // Update switcher pill buttons
+    ['Satellite', 'Osm', 'Topo'].forEach(t => {
+      const btn = document.getElementById('btnTex' + t);
+      if (btn) {
+        if (t.toLowerCase() === type) {
+          btn.className = 'px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 font-bold transition';
+        } else {
+          btn.className = 'px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition';
+        }
+      }
+    });
+
+    updateAllMarkerPositions();
+  }
+
+  // Set Elevation Exaggeration (1.0x to 2.2x)
+  function setElevationExaggeration(val) {
+    currentExaggeration = val;
+    if (map3d && map3d.setTerrain) {
+      map3d.setTerrain({
+        source: 'terrain-dem',
+        exaggeration: val
+      });
+    }
+    updateAllMarkerPositions();
+
+    // Update pill buttons
+    const valMap = { '1.0': 'btnEx10', '1.6': 'btnEx16', '2.2': 'btnEx22' };
+    Object.keys(valMap).forEach(k => {
+      const btn = document.getElementById(valMap[k]);
+      if (btn) {
+        if (parseFloat(k) === val) {
+          btn.className = 'px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-700 transition';
+        } else {
+          btn.className = 'px-2 py-0.5 rounded text-[10px] font-medium text-slate-600 hover:bg-slate-100 transition';
+        }
+      }
+    });
+  }
+
+  // Cinematic 3D Camera Flight to Chosen Sector
+  function flyToSector(sectorKey) {
+    if (!map3d) return;
+
+    // Reset button states
+    ['Overview', 'Fld1', 'Sld2', 'Fir3', 'Pol4'].forEach(b => {
+      const btn = document.getElementById('flyBtn' + b);
+      if (btn) {
+        btn.className = 'px-3 py-1.5 rounded-xl bg-slate-50 text-slate-600 hover:text-slate-900 border border-slate-200 transition whitespace-nowrap flex items-center gap-1.5';
+      }
+    });
+
+    if (sectorKey === 'overview') {
+      const btn = document.getElementById('flyBtnOverview');
+      if (btn) btn.className = 'px-3 py-1.5 rounded-xl bg-indigo-50 text-indigo-700 font-semibold border border-indigo-200 shadow-sm transition whitespace-nowrap flex items-center gap-1.5';
+
+      map3d.flyTo({
+        center: OVERVIEW_CAMERA.center,
+        zoom: OVERVIEW_CAMERA.zoom,
+        pitch: OVERVIEW_CAMERA.pitch,
+        bearing: OVERVIEW_CAMERA.bearing,
+        duration: 2500,
+        essential: true
+      });
+      return;
+    }
+
+    const node = NODES_CONFIG[sectorKey];
+    if (!node) return;
+
+    const btn = document.getElementById('flyBtn' + sectorKey.charAt(0).toUpperCase() + sectorKey.slice(1));
+    if (btn) btn.className = 'px-3 py-1.5 rounded-xl bg-indigo-50 text-indigo-700 font-semibold border border-indigo-200 shadow-sm transition whitespace-nowrap flex items-center gap-1.5';
+
+    selectNode(sectorKey);
+
+    map3d.flyTo({
+      center: node.camera.center,
+      zoom: node.camera.zoom,
+      pitch: node.camera.pitch,
+      bearing: node.camera.bearing,
+      duration: 2800,
+      essential: true
+    });
+  }
+
+  // Select Node and populate Right Inspector Card
+  function selectNode(key) {
+    activeSectorKey = key;
+    const node = NODES_CONFIG[key];
+    if (!node) return;
+
+    document.getElementById('inspectorHazardType3D').textContent = node.hazard + ' Monitoring';
+    document.getElementById('inspectorDistrict3D').textContent = node.district;
+    document.getElementById('inspectorTitle3D').textContent = node.title;
+    document.getElementById('inspectorSubtitle3D').textContent = node.subtitle;
+
+    document.getElementById('metricAltitude3D').textContent = node.altitude;
+    document.getElementById('metricGradient3D').textContent = node.gradient;
+
+    document.getElementById('metricLabel3D').textContent = node.metricLabel;
+    document.getElementById('metricThreshold3D').textContent = node.metricThreshold;
+    document.getElementById('metricValue3D').textContent = node.metricValue;
+    document.getElementById('metricRiskLevel3D').textContent = node.riskLevel;
+
+    document.getElementById('topographicNote3D').textContent = node.topographicNote;
+    document.getElementById('specsCoords3D').textContent = `${node.lat.toFixed(4)}° N, ${node.lng.toFixed(4)}° E`;
+    document.getElementById('specsLora3D').textContent = node.lora;
+    document.getElementById('specsBattery3D').textContent = node.battery + ' Solar LiPo';
+
+    document.getElementById('linkMonitoring3D').href = node.link;
+
+    const iconContainer = document.getElementById('inspectorIconContainer3D');
+    const icon = document.getElementById('inspectorIcon3D');
+    iconContainer.className = `w-8 h-8 rounded-xl ${node.iconBg} ${node.iconColor} flex items-center justify-center text-sm border border-slate-200`;
+    icon.className = `fa-solid ${node.icon}`;
+  }
+
+  // Fullscreen Toggle
+  function toggle3DFullscreen() {
+    const card = document.getElementById('canvasWrapper');
+    if (!document.fullscreenElement) {
+      if (card.requestFullscreen) {
+        card.requestFullscreen();
+      } else if (card.webkitRequestFullscreen) {
+        card.webkitRequestFullscreen();
+      }
+      document.getElementById('btnFullscreenText').textContent = 'Exit';
+      document.getElementById('btnFullscreenIcon').className = 'fa-solid fa-compress text-slate-600 text-xs';
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+      document.getElementById('btnFullscreenText').textContent = 'Fullscreen';
+      document.getElementById('btnFullscreenIcon').className = 'fa-solid fa-expand text-slate-600 text-xs';
+    }
+    setTimeout(() => {
+      if (map3d) map3d.resize();
+    }, 200);
+  }
+
+  // Fetch Live Telemetry from /api/nodes to keep readings updated
+  async function syncLiveTelemetry() {
+    try {
+      const res = await fetch('/api/nodes');
+      if (!res.ok) return;
+      const data = await res.json();
+
+      if (data.nodes) {
+        // FLD1
+        if (data.nodes.FLD1) {
+          const s = data.nodes.FLD1.sensors;
+          if (s && s.River_Water_Level_m !== undefined) {
+            NODES_CONFIG.fld1.metricValue = s.River_Water_Level_m.toFixed(2) + ' m';
+            if (activeSectorKey === 'fld1') {
+              document.getElementById('metricValue3D').textContent = NODES_CONFIG.fld1.metricValue;
+            }
+          }
+        }
+        // SLD2
+        if (data.nodes.SLD2) {
+          const s = data.nodes.SLD2.sensors;
+          if (s && s.Slope_Angle !== undefined) {
+            NODES_CONFIG.sld2.gradient = s.Slope_Angle.toFixed(1) + '°';
+            NODES_CONFIG.sld2.metricValue = (s.Soil_Saturation * 100).toFixed(1) + '%';
+            if (activeSectorKey === 'sld2') {
+              document.getElementById('metricGradient3D').textContent = NODES_CONFIG.sld2.gradient;
+              document.getElementById('metricValue3D').textContent = NODES_CONFIG.sld2.metricValue;
+            }
+          }
+        }
+        // FIR3
+        if (data.nodes.FIR3) {
+          const s = data.nodes.FIR3.sensors;
+          if (s && s['Temperature[C]'] !== undefined) {
+            NODES_CONFIG.fir3.metricValue = s['Temperature[C]'].toFixed(1) + '°C';
+            if (activeSectorKey === 'fir3') {
+              document.getElementById('metricValue3D').textContent = NODES_CONFIG.fir3.metricValue;
+            }
+          }
+        }
+        // POL4
+        if (data.nodes.POL4) {
+          const s = data.nodes.POL4.sensors;
+          if (s && s.pm25 !== undefined) {
+            NODES_CONFIG.pol4.metricValue = s.pm25.toFixed(1) + ' µg/m³';
+            if (activeSectorKey === 'pol4') {
+              document.getElementById('metricValue3D').textContent = NODES_CONFIG.pol4.metricValue;
+            }
+          }
+        }
+      }
+    } catch (e) {
+      // Keep running smoothly
+    }
+  }
+
+  // Mount on DOM Ready
+  document.addEventListener('DOMContentLoaded', () => {
+    init3DMap();
+    setInterval(syncLiveTelemetry, 3500);
+  });
+</script>
+{% endblock %}
+

@@ -530,6 +530,11 @@ def map_page():
     api_key = os.environ.get("MAP_API_KEY", "")
     return render_template("map.html", active_page="map", map_api_key=api_key)
 
+@app.route("/map3d")
+def map3d_page():
+    """Page 3B — 3D Himalayan Disaster GIS: WebGL 3D digital elevation model and photorealistic terrain."""
+    return render_template("map3d.html", active_page="map3d")
+
 @app.route("/alerts")
 def alerts_page():
     """Page 4 — Alerts & Emergency: Prioritized alerts & NDRF SOS dispatch."""
