@@ -43,19 +43,20 @@
 // 1.8" ST7735 SPI TFT DISPLAY (128x160 RGB)
 // ============================================================
 // Component Pin connections:
-//   GND   -> ESP32 GND
-//   VCC   -> ESP32 3.3V (or 5V for boards with 3.3V regulator)
-//   SCL   -> ESP32 GPIO 18 (Shared hardware SPI Clock)
-//   SDA   -> ESP32 GPIO 23 (Shared hardware SPI MOSI)
-//   RES   -> ESP32 GPIO 22 (TFT Reset)
-//   DC/A0 -> ESP32 GPIO 21 (Data / Command Select)
-//   CS    -> ESP32 GPIO 15 (TFT Chip Select)
-//   BLK   -> ESP32 3.3V (Backlight Power)
+//   GND     -> ESP32 GND
+//   VCC     -> ESP32 5V (VIN) or 3.3V (Use 5V for boards with 3.3V LDO)
+//   SCL/SCK -> ESP32 GPIO 18 (Shared hardware SPI Clock)
+//   SDA/MOSI-> ESP32 GPIO 23 (Shared hardware SPI MOSI)
+//   RES/RST -> ESP32 GPIO 22 (TFT Reset)
+//   DC/A0   -> ESP32 GPIO 21 (Data / Command Select)
+//   CS      -> ESP32 GPIO 15 (TFT Chip Select)
+//   BLK/LED -> ESP32 3.3V (or GPIO 13 if wired to ESP32 pin)
 #define TFT_CS     15
 #define TFT_DC     21
 #define TFT_RST    22
 #define TFT_MOSI   23
 #define TFT_SCLK   18
+#define TFT_LED    13  // Driven HIGH in setup() to force backlight ON if connected to GPIO
 
 // ============================================================
 // SENSOR PIN ASSIGNMENTS (2-Layer Mode)

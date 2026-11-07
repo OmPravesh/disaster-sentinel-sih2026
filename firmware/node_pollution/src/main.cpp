@@ -76,7 +76,7 @@ float read_mq135_aqi() {
     int raw = analogRead(MQ135_ANALOG_PIN);
     float voltage = (raw / 4095.0f) * 3.3f;
     float aqi = (voltage / 3.3f) * 500.0f; // Scaled 0-500 AQI
-    return aqi;
+    return max(0.0f, aqi);
 }
 
 // Read Optical Dust Sensor (GP2Y1010AU0F)
@@ -241,6 +241,13 @@ void setup() {
     Serial.println("  1.8\" ST7735 TFT + SX1278 LoRa Integrated");
     Serial.println("═══════════════════════════════════════════════");
 
+    // Initialize Backlight pin if connected to GPIO
+    #if defined(TFT_LED) && (TFT_LED >= 0)
+    pinMode(TFT_LED, OUTPUT);
+    digitalWrite(TFT_LED, HIGH); // Force LED Backlight ON
+    Serial.printf("  [TFT Backlight] GPIO %d set HIGH (Backlight Active)\n", TFT_LED);
+    #endif
+
     // Initialize Sensor GPIOs
     pinMode(MQ135_ANALOG_PIN, INPUT);
     pinMode(PM25_ANALOG_PIN, INPUT);
@@ -254,6 +261,17 @@ void setup() {
     pinMode(TFT_CS, OUTPUT);
     digitalWrite(TFT_CS, HIGH);
 
+    // Hardware reset pulse for ST7735 TFT
+    #if defined(TFT_RST) && (TFT_RST >= 0)
+    pinMode(TFT_RST, OUTPUT);
+    digitalWrite(TFT_RST, HIGH);
+    delay(10);
+    digitalWrite(TFT_RST, LOW);
+    delay(20);
+    digitalWrite(TFT_RST, HIGH);
+    delay(150);
+    #endif
+
     // Hardware reset pulse for SX1278
     pinMode(LORA_RST, OUTPUT);
     digitalWrite(LORA_RST, LOW);
@@ -262,29 +280,16 @@ void setup() {
     delay(15);
 
     // Shared Hardware SPI Bus
-    SPI.begin(LORA_SCK, LORA_MISO, LORA_MOSI, LORA_CS);
+    SPI.begin(LORA_SCK, LORA_MISO, LORA_MOSI);
 
-    // 1. Initialize 1.8" ST7735 TFT Screen
-    Serial.print("  [TFT] Initializing 1.8\" ST7735 SPI Display...");
-    tft.initR(INITR_BLACKTAB); // Standard 1.8" 128x160 BlackTab
-    tft.setRotation(0);        // Portrait Mode (128 width x 160 height)
-    tft_initialized = true;
-    Serial.println(" OK!");
-
-    // Draw static GUI frames
-    draw_static_ui();
-
-    // 2. Direct SPI diagnostic probe for SX1278
-    digitalWrite(LORA_CS, LOW);
-    SPI.transfer(0x42 & 0x7F);
-    uint8_t probeVersion = SPI.transfer(0x00);
+    // 1. Initialize LoRa Radio FIRST while SPI bus is pristine (at 2MHz)
+    digitalWrite(TFT_CS, HIGH); // Ensure TFT is unselected
     digitalWrite(LORA_CS, HIGH);
+    delay(20);
 
-    Serial.printf("  [LoRa SPI Probe] SX1278 Chip ID: 0x%02X (Expected 0x12)\n", probeVersion);
-
-    // 3. Initialize LoRa Radio
     LoRa.setSPI(SPI);
     LoRa.setPins(LORA_CS, LORA_RST, LORA_DIO0);
+    LoRa.setSPIFrequency(2000000); // 2 MHz SPI clock for stable SX1278 comms
 
     if (LoRa.begin(LORA_FREQUENCY)) {
         lora_initialized = true;
@@ -295,8 +300,37 @@ void setup() {
         LoRa.enableCrc();
         Serial.println("  [LoRa] SX1278 initialized successfully (433 MHz, SF7)!");
     } else {
-        Serial.println("  [LoRa] SX1278 init failed. Node will continue via USB Serial!");
+        // Direct SPI diagnostic probe for SX1278
+        digitalWrite(LORA_CS, LOW);
+        SPI.beginTransaction(SPISettings(2000000, MSBFIRST, SPI_MODE0));
+        SPI.transfer(0x42 & 0x7F);
+        uint8_t probeVersion = SPI.transfer(0x00);
+        SPI.endTransaction();
+        digitalWrite(LORA_CS, HIGH);
+        Serial.printf("  [LoRa] SX1278 init check - Chip ID read: 0x%02X (Expected 0x12)\n", probeVersion);
+        if (probeVersion == 0x12) {
+            Serial.println("  [LoRa] Probe matched 0x12! Retrying begin...");
+            if (LoRa.begin(LORA_FREQUENCY)) {
+                lora_initialized = true;
+                Serial.println("  [LoRa] SX1278 initialized successfully on retry!");
+            }
+        } else {
+            Serial.println("  [LoRa] SX1278 not detected or wiring unattached. Node will stream via USB Serial!");
+        }
     }
+
+    // 2. Initialize 1.8" ST7735 TFT Screen
+    digitalWrite(LORA_CS, HIGH); // Deselect LoRa
+    digitalWrite(TFT_CS, LOW);   // Select TFT
+    Serial.print("  [TFT] Initializing 1.8\" ST7735 SPI Display...");
+    tft.initR(INITR_BLACKTAB); // Standard 1.8" 128x160 BlackTab
+    tft.setRotation(0);        // Portrait Mode (128 width x 160 height)
+    tft_initialized = true;
+    digitalWrite(TFT_CS, HIGH);
+    Serial.println(" OK!");
+
+    // Draw static GUI frames
+    draw_static_ui();
 
     Serial.println("✅ Node POL4 initialization complete. Starting sensor acquisition...\n");
 }
