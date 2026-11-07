@@ -1,7 +1,8 @@
 /**
  * Disaster Sentinel — Node 2 (Landslide) Main Firmware
  * 
- * ESP32 Node SLD2: MPU6050 Tilt + Soil Moisture + BME280/BMP280.
+ * ESP32 Node SLD2: MPU-6500 / MPU-6050 Tilt + Soil Moisture + BMP280/BME280.
+ * Supports MPU-6500 (WHO_AM_I = 0x70) & MPU-6050 (WHO_AM_I = 0x68).
  * Transmits binary LoRa packets to Jetson Orin Nano gateway over 433 MHz.
  * 
  * SIH 2026 · Problem Statement SIH26178 · Qualcomm
@@ -11,7 +12,6 @@
 #include <SPI.h>
 #include <LoRa.h>
 #include <Wire.h>
-#include <Adafruit_MPU6050.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
 #include <Adafruit_BMP280.h>
@@ -36,10 +36,13 @@ struct __attribute__((packed)) LoRaPacket {
 };
 
 static uint16_t g_sequence_num = 0;
-Adafruit_MPU6050 mpu;
 Adafruit_BME280 bme;
 Adafruit_BMP280 bmp;
+
 bool mpu_found = false;
+bool mpu_is_6500 = false;
+uint8_t mpu_address = 0x68;
+
 bool bme_found = false;
 bool is_bmp = false;
 bool lora_initialized = false;
@@ -56,62 +59,74 @@ uint16_t calculate_crc16(const uint8_t* data, size_t length) {
     return crc;
 }
 
+// Low-level register access for MPU-6500 / MPU-6050 matching YMFC-AL implementation
+uint8_t search_gyro(uint8_t gyro_address, uint8_t who_am_i_reg) {
+    Wire.beginTransmission(gyro_address);
+    Wire.write(who_am_i_reg);
+    Wire.endTransmission();
+    Wire.requestFrom((int)gyro_address, 1);
+    uint32_t timer = millis() + 100;
+    while (Wire.available() < 1 && millis() < timer);
+    if (Wire.available() > 0) return Wire.read();
+    return 0x00;
+}
+
+bool write_i2c_register(uint8_t addr, uint8_t reg, uint8_t val) {
+    Wire.beginTransmission(addr);
+    Wire.write(reg);
+    Wire.write(val);
+    return (Wire.endTransmission() == 0);
+}
+
+void recover_i2c_bus(uint8_t sda_pin, uint8_t scl_pin) {
+    pinMode(sda_pin, INPUT_PULLUP);
+    pinMode(scl_pin, OUTPUT);
+    digitalWrite(scl_pin, HIGH);
+    delayMicroseconds(10);
+    // Pulse SCL 9 times to free any locked I2C slave
+    for (int i = 0; i < 9; i++) {
+        digitalWrite(scl_pin, LOW);
+        delayMicroseconds(5);
+        digitalWrite(scl_pin, HIGH);
+        delayMicroseconds(5);
+    }
+    // Generate I2C STOP condition
+    pinMode(sda_pin, OUTPUT);
+    digitalWrite(sda_pin, LOW);
+    delayMicroseconds(5);
+    digitalWrite(scl_pin, HIGH);
+    delayMicroseconds(5);
+    digitalWrite(sda_pin, HIGH);
+    delayMicroseconds(5);
+    pinMode(sda_pin, INPUT_PULLUP);
+    pinMode(scl_pin, INPUT_PULLUP);
+}
+
 float read_tilt_angle() {
     static float s_last_valid_tilt = 0.0f;
-    static uint8_t s_mpu_address = 0x68;
-    static bool s_mpu_ready = false;
+    if (!mpu_found) return 0.0f;
 
-    if (!s_mpu_ready) {
-        for (uint8_t addr : {0x68, 0x69}) {
-            Wire.beginTransmission(addr);
-            Wire.write(0x6B); // PWR_MGMT_1 register
-            Wire.write(0x00); // Wake up MPU-6050
-            if (Wire.endTransmission(true) == 0) {
-                s_mpu_address = addr;
-                s_mpu_ready = true;
-                break;
-            }
-        }
+    Wire.beginTransmission(mpu_address);
+    Wire.write(0x3B); // ACCEL_XOUT_H register
+    if (Wire.endTransmission() != 0) {
+        return s_last_valid_tilt;
     }
-
-    if (!s_mpu_ready) {
-        return s_last_valid_tilt > 0.0f ? s_last_valid_tilt : 0.0f;
-    }
-
-    // Fast multi-sample averaging to suppress vibration noise
-    float ax_sum = 0.0f, ay_sum = 0.0f, az_sum = 0.0f;
-    int valid_samples = 0;
-
-    for (int i = 0; i < 5; i++) {
-        Wire.beginTransmission(s_mpu_address);
-        Wire.write(0x3B); // ACCEL_XOUT_H register
-        if (Wire.endTransmission(false) == 0) {
-            if (Wire.requestFrom((int)s_mpu_address, 6, (int)true) == 6) {
-                int16_t rawX = (Wire.read() << 8) | Wire.read();
-                int16_t rawY = (Wire.read() << 8) | Wire.read();
-                int16_t rawZ = (Wire.read() << 8) | Wire.read();
-
-                ax_sum += (float)rawX / 16384.0f;
-                ay_sum += (float)rawY / 16384.0f;
-                az_sum += (float)rawZ / 16384.0f;
-                valid_samples++;
-            }
-        }
-        delayMicroseconds(500);
-    }
-
-    if (valid_samples == 0) {
+    if (Wire.requestFrom((int)mpu_address, 6) != 6) {
         return s_last_valid_tilt;
     }
 
-    float ax = ax_sum / (float)valid_samples;
-    float ay = ay_sum / (float)valid_samples;
-    float az = az_sum / (float)valid_samples;
+    int16_t rawX = (Wire.read() << 8) | Wire.read();
+    int16_t rawY = (Wire.read() << 8) | Wire.read();
+    int16_t rawZ = (Wire.read() << 8) | Wire.read();
+
+    float ax = (float)rawX / 4096.0f;
+    float ay = (float)rawY / 4096.0f;
+    float az = (float)rawZ / 4096.0f;
 
     float raw_tilt = atan2(sqrt(ax * ax + ay * ay), fabs(az)) * 180.0f / 3.14159265f;
     if (isnan(raw_tilt)) raw_tilt = 0.0f;
 
-    // Exponential filter
+    // Exponential moving average filter
     if (s_last_valid_tilt == 0.0f) {
         s_last_valid_tilt = raw_tilt;
     } else {
@@ -123,7 +138,7 @@ float read_tilt_angle() {
 
 float read_soil_moisture() {
     int raw = analogRead(SOIL_ANALOG_PIN);
-    // Capacitive Soil Moisture Sensor v1.2 / Resistive:
+    // Capacitive Soil Moisture Sensor v1.2:
     // In dry air (raw ~2800 - 3200) -> 0.0%
     // In water/wet soil (raw ~1100 - 1500) -> 100.0%
     const int DRY_AIR_VAL = 3000;
@@ -144,42 +159,92 @@ uint8_t compute_battery_pct() {
 
 void setup() {
     Serial.begin(115200);
-    delay(100);
+    delay(150);
     Serial.println("\n═══════════════════════════════════════════════");
     Serial.println("  DISASTER SENTINEL — Node 2: LANDSLIDE (SLD2)");
+    Serial.println("  Hardware: MPU-6500 / MPU-6050 + Soil + BMP280");
     Serial.println("═══════════════════════════════════════════════");
 
     analogSetAttenuation(ADC_11db);
     pinMode(SOIL_ANALOG_PIN, INPUT);
 
-    // --- I2C Shared Bus (MPU6050 + BME280) ---
+    // --- I2C Bus Clean Recovery & Setup ---
+    recover_i2c_bus(BME_SDA, BME_SCL);
     Wire.begin(BME_SDA, BME_SCL, 100000);
     Wire.setTimeOut(50);
+    delay(50);
 
-    // Wake up MPU6050
-    for (uint8_t addr : {0x68, 0x69}) {
+    Serial.println("🔍 Running full I2C Bus Scan (0x01 to 0x7E)...");
+    int i2c_devs = 0;
+    for (uint8_t addr = 1; addr < 127; addr++) {
         Wire.beginTransmission(addr);
-        Wire.write(0x6B); // PWR_MGMT_1
-        Wire.write(0x00); // Wake up
         if (Wire.endTransmission() == 0) {
-            Serial.printf("✅ MPU6050 I2C ACK on 0x%02X!\n", addr);
+            Serial.printf("  ⭐ ACK from I2C device at 0x%02X\n", addr);
+            i2c_devs++;
+        }
+    }
+    if (i2c_devs == 0) {
+        Serial.println("  ⚠️ No standard ACK on I2C bus. Probing registers directly...");
+    }
+
+    // --- Probe for MPU-6500 / MPU-6050 (Matches YMFC-AL photo) ---
+    Serial.println("Searching for MPU-6500 on address 0x68...");
+    delay(200);
+    uint8_t who68 = search_gyro(0x68, 0x75);
+    Serial.printf("  search_gyro(0x68, 0x75) => 0x%02X\n", who68);
+
+    if (who68 == 0x70) {
+        Serial.println("✅ MPU-6500 found on address 0x68 (WHO_AM_I == 0x70)!");
+        mpu_address = 0x68;
+        mpu_found = true;
+        mpu_is_6500 = true;
+    } else if (who68 == 0x68) {
+        Serial.println("✅ MPU-6050 found on address 0x68 (WHO_AM_I == 0x68)!");
+        mpu_address = 0x68;
+        mpu_found = true;
+        mpu_is_6500 = false;
+    }
+
+    if (!mpu_found) {
+        Serial.println("Searching for MPU-6500 on address 0x69...");
+        delay(200);
+        uint8_t who69 = search_gyro(0x69, 0x75);
+        Serial.printf("  search_gyro(0x69, 0x75) => 0x%02X\n", who69);
+        if (who69 == 0x70) {
+            Serial.println("✅ MPU-6500 found on address 0x69 (WHO_AM_I == 0x70)!");
+            mpu_address = 0x69;
             mpu_found = true;
-            break;
+            mpu_is_6500 = true;
+        } else if (who69 == 0x68) {
+            Serial.println("✅ MPU-6050 found on address 0x69 (WHO_AM_I == 0x68)!");
+            mpu_address = 0x69;
+            mpu_found = true;
+            mpu_is_6500 = false;
         }
     }
 
     if (mpu_found) {
-        if (mpu.begin(0x68, &Wire) || mpu.begin(0x69, &Wire)) {
-            mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
-            Serial.println("✅ MPU6050 Accelerometer/Tilt initialized (±8G).");
-        }
+        // Wake up MPU-6500
+        write_i2c_register(mpu_address, 0x6B, 0x00);
+        delay(20);
+        // Auto select best clock source (PLL with X gyro)
+        write_i2c_register(mpu_address, 0x6B, 0x01);
+        delay(10);
+        // Set Accelerometer to ±8G
+        write_i2c_register(mpu_address, 0x1C, 0x10);
+        delay(10);
+        // Set DLPF to 44Hz filter
+        write_i2c_register(mpu_address, 0x1A, 0x03);
+        delay(10);
+        Serial.printf("✅ %s initialized & calibrated (±8G range, 44Hz DLPF filter).\n",
+                      mpu_is_6500 ? "MPU-6500" : "MPU-6050");
     } else {
-        Serial.println("⚠️ MPU6050 not responding on 0x68/0x69 (Check SDA=21, SCL=22).");
+        Serial.println("⚠️ MPU-6500 / MPU-6050 not detected on 0x68 or 0x69.");
     }
 
-    // Auto-detect BME280 or BMP280 on 0x76 or 0x77
-    uint8_t addrs[2] = {0x76, 0x77};
-    for (uint8_t a : addrs) {
+    // --- Auto-detect BME280 or BMP280 on 0x76 or 0x77 ---
+    uint8_t bme_addrs[2] = {0x76, 0x77};
+    for (uint8_t a : bme_addrs) {
         if (bme.begin(a, &Wire)) {
             bme.setSampling(
                 Adafruit_BME280::MODE_NORMAL,
@@ -196,7 +261,7 @@ void setup() {
         }
     }
     if (!bme_found) {
-        for (uint8_t a : addrs) {
+        for (uint8_t a : bme_addrs) {
             if (bmp.begin(a)) {
                 bmp.setSampling(
                     Adafruit_BMP280::MODE_NORMAL,
@@ -237,10 +302,6 @@ void setup() {
     Serial.printf("  [SPI Probe] SX1278 Chip ID: 0x%02X (Expected 0x12)\n", probeVersion);
     if (probeVersion == 0x12) {
         Serial.println("  ==> SPI hardware communication verified OK!");
-    } else if (probeVersion == 0x00) {
-        Serial.println("  ==> Cause: LoRa has NO 3.3V POWER, or MISO/MOSI wire is loose!");
-    } else {
-        Serial.println("  ==> Cause: NSS (D5) or SCK (D18) wire is loose!");
     }
 
     if (LoRa.begin(LORA_FREQUENCY)) {
@@ -320,8 +381,9 @@ void loop() {
     }
 
     // Diagnostics for hardware verification
-    Serial.printf("  [DIAG] Tilt=%.1f deg | RawSoil(GPIO%d)=%d (Soil=%.1f%%) | Temp=%.1fC Press=%.1fhPa\n",
-                  tilt, SOIL_ANALOG_PIN, rawSoil, soil, temp, pressure);
+    Serial.printf("  [DIAG] Tilt=%.1f deg (%s) | RawSoil(GPIO%d)=%d (Soil=%.1f%%) | Temp=%.1fC Press=%.1fhPa\n",
+                  tilt, mpu_is_6500 ? "MPU-6500" : (mpu_found ? "MPU-6050" : "None"),
+                  SOIL_ANALOG_PIN, rawSoil, soil, temp, pressure);
 
     // JSON formatted line for external serial bridge & analytics
     Serial.printf("{\"node\":\"SLD2\",\"tilt\":%.1f,\"soil\":%.1f,\"press\":%.1f,\"anomaly\":%.2f,\"batt\":%d,\"seq\":%d}\n",
