@@ -24,14 +24,20 @@ public:
     void begin(int trigPin, int echoPin, int analogPin, bool useUltrasonic = true);
 
     /**
-     * Read water level in centimeters.
-     * Averages multiple readings for stability.
-     * @return Water level in cm (0.0 = no water, higher = deeper)
+     * Read water level / distance in centimeters.
+     * Uses median filtering and temperature-compensated sound speed.
+     * @param ambientTempC Current ambient temperature in Celsius (default 25.0C)
+     * @return Measured distance in cm (20.0 to 600.0 cm)
      */
-    float readCm();
+    float readCm(float ambientTempC = 25.0f);
 
     /**
-     * Get the raw sensor value (for debugging/packet).
+     * Set linear calibration parameters: Calibrated = (Raw * scale) + offsetCm
+     */
+    void setCalibration(float scale, float offsetCm);
+
+    /**
+     * Get the raw sensor value before calibration (for debugging).
      */
     float getRawValue();
 
@@ -46,11 +52,14 @@ private:
     int _analogPin;
     bool _useUltrasonic;
     float _lastReading;
+    float _rawDistance;
     unsigned long _lastReadTime;
+    float _calScale;
+    float _calOffset;
 
-    float readUltrasonic();
+    float readUltrasonicSingle(float ambientTempC);
     float readAnalog();
-    float averageReadings(int count = 5);
+    float medianReadings(int count = 5, float ambientTempC = 25.0f);
 };
 
 #endif // WATER_LEVEL_H

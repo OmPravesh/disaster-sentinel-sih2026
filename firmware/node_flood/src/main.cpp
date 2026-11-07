@@ -272,8 +272,29 @@ void setup() {
 void loop() {
     unsigned long loopStart = millis();
 
-    // === Layer 1: Water Level ===
-    float waterLevel = waterSensor.readCm();
+    // Check if calibration command was received via Serial (e.g. "CAL 1.02 -3.5")
+    if (Serial.available()) {
+        String cmd = Serial.readStringUntil('\n');
+        cmd.trim();
+        if (cmd.startsWith("CAL ") || cmd.startsWith("cal ")) {
+            float scale = 1.0f;
+            float offset = 0.0f;
+            int n = sscanf(cmd.c_str() + 4, "%f %f", &scale, &offset);
+            if (n >= 1) {
+                waterSensor.setCalibration(scale, offset);
+                Serial.printf("✅ JSN-SR04T Calibration Updated: Scale=%.4f, Offset=%.2f cm\n", scale, offset);
+            }
+        }
+    }
+
+    // === Context: BME280 (Ambient temperature for sound speed compensation) ===
+    BME280Reading bme = bmeSensor.read();
+    float pressure = bme.valid ? bme.pressure : 1013.2f;
+    float humidity = bme.valid ? bme.humidity : 55.0f;
+    float temperature = bme.valid ? bme.temperature : 25.0f;
+
+    // === Layer 1: Water Level / Ultrasonic Distance (Temperature Compensated) ===
+    float waterLevel = waterSensor.readCm(temperature);
 
     // Calculate rate of change
     float waterRate = 0.0f;
@@ -288,12 +309,6 @@ void loop() {
     // === Layer 2: Rain ===
     float rainIntensity = rainSensor.readIntensity();
     float rainRaw = rainSensor.getRawValue();
-
-    // === Layer 3: BME280 ===
-    BME280Reading bme = bmeSensor.read();
-    float pressure = bme.valid ? bme.pressure : 1013.2f;
-    float humidity = bme.valid ? bme.humidity : 55.0f;
-    float temperature = bme.valid ? bme.temperature : 25.0f;
 
     // === Battery ===
     uint8_t battery = sleepMgr.readBatteryPercent();
@@ -360,8 +375,8 @@ void loop() {
                       result.combinedScore, isPriority, battery, seqCounter);
 
     // === 3. Standardized USB Serial Telemetry for serial_bridge.py ===
-    Serial.printf("📡 FLD1 Sent: Water=%.1fcm, Rain=%.1f, Press=%.1f | Combined=%.2f | Seq=%u\n",
-                  waterLevel, rainIntensity, pressure, result.combinedScore, seqCounter);
+    Serial.printf("📡 FLD1 Sent: Water=%.1fcm, Rain=%.1f, Press=%.1f | Dist=%.2fm (Raw=%.1fcm) | Combined=%.2f | Seq=%u\n",
+                  waterLevel, rainIntensity, pressure, waterLevel / 100.0f, waterSensor.getRawValue(), result.combinedScore, seqCounter);
 
     // JSON formatted packet for web loggers
     Serial.printf("{\"node\":\"FLD1\",\"water_level\":%.1f,\"rain\":%.1f,\"pressure\":%.1f,\"anomaly\":%.2f,\"batt\":%d,\"seq\":%u}\n",
