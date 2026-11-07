@@ -707,7 +707,10 @@
       document.getElementById('needleFLD1').style.left = `${pct}%`;
 
       const b = document.getElementById('badgeFLD1');
-      if (nodes.FLD1.status === 'Hazardous') {
+      if (!nodes.FLD1.connected) {
+        b.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-slate-500/20 text-slate-400 dark:text-slate-500 uppercase border border-slate-500/30';
+        b.textContent = 'OFFLINE';
+      } else if (nodes.FLD1.status === 'Hazardous') {
         b.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-rose-800/20 dark:bg-rose-950/80 dark:border dark:border-rose-500/40 text-rose-950 dark:text-rose-400 uppercase';
         b.textContent = 'CRITICAL';
       } else {
@@ -729,7 +732,10 @@
       document.getElementById('needleSLD2').style.left = `${pct}%`;
 
       const b = document.getElementById('badgeSLD2');
-      if (nodes.SLD2.status === 'Hazardous') {
+      if (!nodes.SLD2.connected) {
+        b.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-slate-500/20 text-slate-400 dark:text-slate-500 uppercase border border-slate-500/30';
+        b.textContent = 'OFFLINE';
+      } else if (nodes.SLD2.status === 'Hazardous') {
         b.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-rose-800/20 dark:bg-rose-950/80 dark:border dark:border-rose-500/40 text-rose-950 dark:text-rose-400 uppercase';
         b.textContent = 'CRITICAL';
       } else {
@@ -751,7 +757,10 @@
       document.getElementById('needleFIR3').style.left = `${pct}%`;
 
       const b = document.getElementById('badgeFIR3');
-      if (nodes.FIR3.status === 'Hazardous') {
+      if (!nodes.FIR3.connected) {
+        b.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-slate-500/20 text-slate-400 dark:text-slate-500 uppercase border border-slate-500/30';
+        b.textContent = 'OFFLINE';
+      } else if (nodes.FIR3.status === 'Hazardous') {
         b.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-rose-800/20 dark:bg-rose-950/80 dark:border dark:border-rose-500/40 text-rose-950 dark:text-rose-400 uppercase';
         b.textContent = 'CRITICAL';
       } else {
@@ -777,7 +786,10 @@
       }
 
       const b = document.getElementById('badgePOL4');
-      if (nodes.POL4.status === 'Hazardous') {
+      if (!nodes.POL4.connected) {
+        b.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-slate-500/20 text-slate-400 dark:text-slate-500 uppercase border border-slate-500/30';
+        b.textContent = 'OFFLINE';
+      } else if (nodes.POL4.status === 'Hazardous') {
         b.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-rose-800/20 dark:bg-rose-950/80 dark:border dark:border-rose-500/40 text-rose-950 dark:text-rose-400 uppercase';
         b.textContent = 'CRITICAL';
       } else {

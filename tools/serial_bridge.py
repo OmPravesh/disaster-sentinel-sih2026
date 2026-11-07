@@ -114,11 +114,13 @@ def parse_and_forward(port_name: str, line: str, api_url: str):
         }
 
     # 4. Node FLD1 (Flood)
-    m_fld = re.search(r"Node:\s*FLD1.*?L1=([\d.]+).*?L2=([\d.]+).*?L3=([\d.]+)", line, re.IGNORECASE)
+    m_fld = re.search(r"FLD1.*?(?:Sent:|Telemetry).*?Water=([\d.]+).*?Rain=([\d.]+).*?Press=([\d.]+)", line, re.IGNORECASE)
+    if not m_fld:
+        m_fld = re.search(r"Node:\s*FLD1.*?L1=([\d.]+).*?L2=([\d.]+).*?L3=([\d.]+)", line, re.IGNORECASE)
     if m_fld:
-        comb_match = re.search(r"Combined:\s*([\d.]+)", line)
+        comb_match = re.search(r"Combined[:=]\s*([\d.]+)", line, re.IGNORECASE)
         comb_val = float(comb_match.group(1)) if comb_match else 0.0
-        bat_match = re.search(r"Bat:\s*(\d+)%", line)
+        bat_match = re.search(r"Bat[:=]\s*(\d+)%?", line, re.IGNORECASE)
         bat_val = int(bat_match.group(1)) if bat_match else 95
 
         payload = {

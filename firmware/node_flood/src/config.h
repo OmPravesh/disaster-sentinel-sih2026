@@ -66,6 +66,12 @@
 #define BME_SCL  22
 #define BME_ADDR 0x76
 
+// 0.96" I2C OLED Display (SSD1306 128x64 - Shared I2C Bus)
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+#define OLED_RESET    -1
+#define SCREEN_ADDRESS 0x3C
+
 // ============================================================
 // ANOMALY DETECTION PARAMETERS
 // ============================================================

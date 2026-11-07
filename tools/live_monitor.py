@@ -38,13 +38,27 @@ CLR_CYAN    = "\033[96m"
 CLR_WHITE   = "\033[97m"
 CLR_BG_DARK = "\033[48;5;234m"
 
-def format_status(status_str):
+def format_node_status(node):
+    connected = node.get("connected", False)
+    last_ago = node.get("last_seen_ago")
+    status_str = node.get("status", "Safe")
+
+    if not connected:
+        if last_ago is not None:
+            return f"{CLR_RED}{CLR_DIM}⚪ DISCONNECTED (offline {last_ago:.0f}s ago){CLR_RESET}"
+        return f"{CLR_RED}{CLR_DIM}⚪ DISCONNECTED (no data received){CLR_RESET}"
+
+    # Connected and active
+    ago_str = f"{last_ago:.0f}s ago" if last_ago is not None else "live"
     status_lower = str(status_str).lower()
     if "hazard" in status_lower or "critical" in status_lower:
-        return f"{CLR_RED}{CLR_BOLD}🚨 {status_str.upper()}{CLR_RESET}"
+        badge = f"{CLR_RED}{CLR_BOLD}🚨 {status_str.upper()}{CLR_RESET}"
     elif "warn" in status_lower or "elevated" in status_lower:
-        return f"{CLR_YELLOW}{CLR_BOLD}⚠️  {status_str.upper()}{CLR_RESET}"
-    return f"{CLR_GREEN}{CLR_BOLD}✅ {status_str.upper()}{CLR_RESET}"
+        badge = f"{CLR_YELLOW}{CLR_BOLD}⚠️  {status_str.upper()}{CLR_RESET}"
+    else:
+        badge = f"{CLR_GREEN}{CLR_BOLD}✅ {status_str.upper()}{CLR_RESET}"
+    
+    return f"{badge} {CLR_CYAN}[ACTIVE · {ago_str}]{CLR_RESET}"
 
 def run_monitor(jetson_ip: str = "192.168.1.50", port: int = 5000, interval: float = 2.0):
     url = f"http://{jetson_ip}:{port}/api/nodes"
@@ -82,29 +96,41 @@ def run_monitor(jetson_ip: str = "192.168.1.50", port: int = 5000, interval: flo
             p_pm10 = p_sens.get("pm10", 0.0)
             p_co   = p_sens.get("co", 0.0)
             p_rssi = pol4.get("lora_rssi", -70)
-            p_stat = format_status(pol4.get("status", "Safe"))
-            print(f"  {CLR_CYAN}🍃 POL4 (Air Basin){CLR_RESET}   AQI/CO: {CLR_BOLD}{p_co:.1f} ppm{CLR_RESET} | PM2.5: {CLR_BOLD}{p_pm25:.1f} µg/m³{CLR_RESET} (PM10: {p_pm10:.1f}) | RSSI: {p_rssi} dBm | {p_stat}")
+            p_stat = format_node_status(pol4)
+            if pol4.get("connected"):
+                print(f"  {CLR_CYAN}{CLR_BOLD}🍃 POL4 (Air Basin){CLR_RESET}   AQI/CO: {CLR_BOLD}{p_co:.1f} ppm{CLR_RESET} | PM2.5: {CLR_BOLD}{p_pm25:.1f} µg/m³{CLR_RESET} (PM10: {p_pm10:.1f}) | RSSI: {p_rssi} dBm | {p_stat}")
+            else:
+                print(f"  {CLR_DIM}🍃 POL4 (Air Basin)   Last PM2.5: {p_pm25:.1f} µg/m³ | {p_stat}{CLR_RESET}")
 
             # 2. FLD1 Card (Flood)
             fl_sens = fld1.get("sensors", {})
             fl_w = fl_sens.get("River_Water_Level_m", 0.0)
             fl_r = fl_sens.get("Rainfall_Intensity_mm_hr", 0.0)
-            fl_stat = format_status(fld1.get("status", "Safe"))
-            print(f"  {CLR_BLUE}🌊 FLD1 (Flood Catch){CLR_RESET} Water: {CLR_BOLD}{fl_w:.2f} m{CLR_RESET}    | Rain: {fl_r:.2f} mm/h        | RSSI: {fld1.get('lora_rssi', -68)} dBm | {fl_stat}")
+            fl_stat = format_node_status(fld1)
+            if fld1.get("connected"):
+                print(f"  {CLR_BLUE}{CLR_BOLD}🌊 FLD1 (Flood Catch){CLR_RESET} Water: {CLR_BOLD}{fl_w:.2f} m{CLR_RESET}    | Rain: {CLR_BOLD}{fl_r:.2f} mm/h{CLR_RESET}        | RSSI: {fld1.get('lora_rssi', -68)} dBm | {fl_stat}")
+            else:
+                print(f"  {CLR_DIM}🌊 FLD1 (Flood Catch) Last Water: {fl_w:.2f} m | {fl_stat}{CLR_RESET}")
 
             # 3. SLD2 Card (Landslide)
             sl_sens = sld2.get("sensors", {})
             sl_ang = sl_sens.get("Slope_Angle", 0.0)
             sl_sat = sl_sens.get("Soil_Saturation", 0.0) * 100
-            sl_stat = format_status(sld2.get("status", "Safe"))
-            print(f"  {CLR_MAGENTA}⛰️  SLD2 (Landslide){CLR_RESET}   Tilt: {CLR_BOLD}{sl_ang:.1f}°{CLR_RESET}       | Soil: {sl_sat:.1f}%              | RSSI: {sld2.get('lora_rssi', -72)} dBm | {sl_stat}")
+            sl_stat = format_node_status(sld2)
+            if sld2.get("connected"):
+                print(f"  {CLR_MAGENTA}{CLR_BOLD}⛰️  SLD2 (Landslide){CLR_RESET}   Tilt: {CLR_BOLD}{sl_ang:.1f}°{CLR_RESET}       | Soil: {CLR_BOLD}{sl_sat:.1f}%{CLR_RESET}              | RSSI: {sld2.get('lora_rssi', -72)} dBm | {sl_stat}")
+            else:
+                print(f"  {CLR_DIM}⛰️  SLD2 (Landslide)   Last Tilt: {sl_ang:.1f}° | {sl_stat}{CLR_RESET}")
 
             # 4. FIR3 Card (Fire)
             fi_sens = fir3.get("sensors", {})
             fi_gas = fi_sens.get("TVOC[ppb]", 0.0)
             fi_tmp = fi_sens.get("Temperature[C]", 0.0)
-            fi_stat = format_status(fir3.get("status", "Safe"))
-            print(f"  {CLR_YELLOW}🔥 FIR3 (Forest Fire){CLR_RESET} Gas: {CLR_BOLD}{fi_gas:.0f} ppb{CLR_RESET}    | Temp: {fi_tmp:.1f} °C            | RSSI: {fir3.get('lora_rssi', -65)} dBm | {fi_stat}")
+            fi_stat = format_node_status(fir3)
+            if fir3.get("connected"):
+                print(f"  {CLR_YELLOW}{CLR_BOLD}🔥 FIR3 (Forest Fire){CLR_RESET} Gas: {CLR_BOLD}{fi_gas:.0f} ppb{CLR_RESET}    | Temp: {CLR_BOLD}{fi_tmp:.1f} °C{CLR_RESET}            | RSSI: {fir3.get('lora_rssi', -65)} dBm | {fi_stat}")
+            else:
+                print(f"  {CLR_DIM}🔥 FIR3 (Forest Fire) Last Gas: {fi_gas:.0f} ppb | {fi_stat}{CLR_RESET}")
 
             print(f"{CLR_DIM}  " + "─" * 74 + f"{CLR_RESET}")
 
@@ -126,3 +152,4 @@ if __name__ == "__main__":
         run_monitor(args.ip, args.port, args.interval)
     except KeyboardInterrupt:
         print("\n\nStopped live monitor. Have a great demo!\n")
+

@@ -229,6 +229,10 @@ node_states = {
         "location": "Rishikesh · Ganga River Basin Catchment, Uttarakhand",
         "gps": {"lat": 30.0869, "lng": 78.2676},
         "status": "Safe",
+        "status_display": "Disconnected",
+        "connected": False,
+        "last_seen": None,
+        "last_seen_ago": None,
         "battery": 95,
         "lora_rssi": -68,
         "sensors": {
@@ -256,6 +260,10 @@ node_states = {
         "location": "Chamoli · Garhwal Mountain Slope Sector 2B, Uttarakhand",
         "gps": {"lat": 30.3844, "lng": 79.2811},
         "status": "Safe",
+        "status_display": "Disconnected",
+        "connected": False,
+        "last_seen": None,
+        "last_seen_ago": None,
         "risk_prob": 0.0,
         "battery": 89,
         "lora_rssi": -72,
@@ -282,6 +290,10 @@ node_states = {
         "location": "Almora · Kumaon Pine Forest Perimeter, Uttarakhand",
         "gps": {"lat": 29.6200, "lng": 79.6800},
         "status": "Safe",
+        "status_display": "Disconnected",
+        "connected": False,
+        "last_seen": None,
+        "last_seen_ago": None,
         "battery": 92,
         "lora_rssi": -65,
         "sensors": {
@@ -315,6 +327,10 @@ node_states = {
         "location": "Dehradun · Selaqui Valley Industrial Corridor, Uttarakhand",
         "gps": {"lat": 30.3400, "lng": 77.8700},
         "status": "Safe",
+        "status_display": "Disconnected",
+        "connected": False,
+        "last_seen": None,
+        "last_seen_ago": None,
         "battery": 87,
         "lora_rssi": -70,
         "sensors": {
@@ -593,6 +609,11 @@ def ingest_telemetry():
         
     node = node_states[node_id]
     
+    # Record heartbeat timestamp
+    node["last_seen"] = time.time()
+    node["connected"] = True
+    node["last_seen_ago"] = 0.0
+    
     # Update battery & RSSI if provided
     if "battery" in data:
         node["battery"] = int(data["battery"])
@@ -693,7 +714,23 @@ def get_incidents():
 
 @app.route("/api/nodes", methods=["GET"])
 def get_nodes():
-    """Returns real-time telemetry, node health, and hub status."""
+    """Returns real-time telemetry, node health, and hub status with active heartbeat detection."""
+    now = time.time()
+    for nid, node in node_states.items():
+        last = node.get("last_seen")
+        if last is None:
+            node["connected"] = False
+            node["last_seen_ago"] = None
+            node["status_display"] = "Disconnected"
+        elif (now - last) > 15.0:
+            node["connected"] = False
+            node["last_seen_ago"] = round(now - last, 1)
+            node["status_display"] = "Disconnected"
+        else:
+            node["connected"] = True
+            node["last_seen_ago"] = round(now - last, 1)
+            node["status_display"] = node["status"]
+
     return jsonify({
         "success": True,
         "hub": hub_state,

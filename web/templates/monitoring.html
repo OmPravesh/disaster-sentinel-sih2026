@@ -698,7 +698,12 @@
       const notice = document.getElementById('floodThresholdNotice');
       const narrative = document.getElementById('floodAiNarrative');
 
-      if (isCrit) {
+      if (!nodes.FLD1.connected) {
+        b.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 border border-slate-300 dark:border-slate-700 uppercase tracking-wider';
+        b.textContent = 'Disconnected';
+        riskText.textContent = 'Node Offline — Awaiting Wireless Telemetry';
+        riskText.className = 'font-semibold text-slate-400 dark:text-slate-500 truncate';
+      } else if (isCrit) {
         b.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-800 uppercase tracking-wider animate-pulse';
         b.textContent = 'Breach Detected';
         card.classList.add('border-rose-500', 'bg-rose-50/20');
@@ -746,7 +751,17 @@
       const notice = document.getElementById('landslideThresholdNotice');
       const narrative = document.getElementById('landslideAiNarrative');
 
-      if (isCrit) {
+      if (!nodes.SLD2.connected) {
+        b.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 border border-slate-300 dark:border-slate-700 uppercase tracking-wider';
+        b.textContent = 'Disconnected';
+        card.classList.remove('border-rose-500', 'bg-rose-50/20');
+        card.classList.add('border-slate-200', 'dark:border-slate-800');
+        riskText.textContent = 'Node Offline — Awaiting Wireless Telemetry';
+        riskText.className = 'font-semibold text-slate-400 dark:text-slate-500 truncate';
+        notice.textContent = 'Awaiting Telemetry Sync';
+        notice.className = 'text-[11px] font-medium text-slate-400 block mt-0.5 text-center leading-tight';
+        narrative.textContent = 'No active signal from SLD2 station. Check LoRa gateway connectivity and node power.';
+      } else if (isCrit) {
         b.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-800 uppercase tracking-wider animate-pulse';
         b.textContent = 'Shear Imminent';
         card.classList.add('border-rose-500', 'bg-rose-50/20');
@@ -794,7 +809,21 @@
       const narrative = document.getElementById('fireAiNarrative');
       const flame = document.getElementById('detFireFlame');
 
-      if (isCrit) {
+      if (!nodes.FIR3.connected) {
+        b.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 border border-slate-300 dark:border-slate-700 uppercase tracking-wider';
+        b.textContent = 'Disconnected';
+        card.classList.remove('border-rose-500', 'bg-rose-50/20');
+        card.classList.add('border-slate-200', 'dark:border-slate-800');
+        riskText.textContent = 'Node Offline — Awaiting Wireless Telemetry';
+        riskText.className = 'font-semibold text-slate-400 dark:text-slate-500 truncate';
+        notice.textContent = 'Awaiting Telemetry Sync';
+        notice.className = 'text-[11px] font-medium text-slate-400 block mt-0.5 text-center leading-tight';
+        if (flame) {
+          flame.textContent = 'Offline';
+          flame.className = 'text-base font-medium text-slate-400 font-mono mt-0.5 block';
+        }
+        narrative.textContent = 'No active signal from FIR3 station. Check LoRa gateway connectivity and node power.';
+      } else if (isCrit) {
         b.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-800 uppercase tracking-wider animate-pulse';
         b.textContent = 'Active Wildfire';
         card.classList.add('border-rose-500', 'bg-rose-50/20');
@@ -803,8 +832,10 @@
         riskText.className = 'font-bold text-rose-600 dark:text-rose-400 truncate';
         notice.textContent = 'Combustion Gas Exceeded (> 3,000 ppb)';
         notice.className = 'text-[11px] font-bold text-rose-600 dark:text-rose-400 block mt-0.5 animate-pulse text-center leading-tight';
-        flame.textContent = 'Active Flame Detected';
-        flame.className = 'text-base font-bold text-rose-600 font-mono mt-0.5 block animate-pulse';
+        if (flame) {
+          flame.textContent = 'Active Flame Detected';
+          flame.className = 'text-base font-bold text-rose-600 font-mono mt-0.5 block animate-pulse';
+        }
         narrative.textContent = 'Combustion gas surge and thermal spikes confirm active flame propagation across the pine forest canopy.';
       } else {
         b.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 uppercase tracking-wider';
@@ -815,8 +846,10 @@
         riskText.className = 'font-bold text-emerald-600 dark:text-emerald-400 truncate';
         notice.textContent = 'Normal Baseline (< 1,500 ppb)';
         notice.className = 'text-[11px] font-bold text-emerald-600 dark:text-emerald-400 block mt-0.5 text-center leading-tight';
-        flame.textContent = 'Clear';
-        flame.className = 'text-base font-bold text-emerald-600 dark:text-emerald-400 font-mono mt-0.5 block';
+        if (flame) {
+          flame.textContent = 'Clear';
+          flame.className = 'text-base font-bold text-emerald-600 dark:text-emerald-400 font-mono mt-0.5 block';
+        }
         narrative.textContent = 'Zero combustion signatures detected. Gas emission curves confirm clear atmospheric perimeter.';
       }
     }
@@ -846,7 +879,17 @@
       const notice = document.getElementById('pollutionThresholdNotice');
       const narrative = document.getElementById('pollutionAiNarrative');
 
-      if (isCrit) {
+      if (!nodes.POL4.connected) {
+        b.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 border border-slate-300 dark:border-slate-700 uppercase tracking-wider';
+        b.textContent = 'Disconnected';
+        card.classList.remove('border-rose-500', 'bg-rose-50/20');
+        card.classList.add('border-slate-200', 'dark:border-slate-800');
+        riskText.textContent = 'Node Offline — Awaiting Wireless Telemetry';
+        riskText.className = 'font-semibold text-slate-400 dark:text-slate-500 truncate';
+        notice.textContent = 'Awaiting Telemetry Sync';
+        notice.className = 'text-[11px] font-medium text-slate-400 block mt-0.5 text-center leading-tight';
+        narrative.textContent = 'No active signal from POL4 station. Check LoRa gateway connectivity and node power.';
+      } else if (isCrit) {
         b.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-800 uppercase tracking-wider animate-pulse';
         b.textContent = 'Toxic Inversion';
         card.classList.add('border-rose-500', 'bg-rose-50/20');
