@@ -115,9 +115,9 @@ void updateOledDisplay(float waterLevel, float rainIntensity, float pressure, fl
     oled.setCursor(2, 16);
     oled.printf("Water: %.1fcm (%.2fm)", waterLevel, waterLevel / 100.0f);
 
-    // Line 2: Rain Intensity
+    // Line 2: Rain Intensity (Shows % and raw ADC for troubleshooting)
     oled.setCursor(2, 28);
-    oled.printf("Rain:  %.1f mm/h", rainIntensity);
+    oled.printf("Rain:  %.0f%% (ADC:%d)", rainIntensity * 100.0f, (int)rainSensor.getRawValue());
 
     // Line 3: Pressure & Temp
     oled.setCursor(2, 40);
@@ -376,8 +376,8 @@ void loop() {
                       result.combinedScore, isPriority, battery, seqCounter);
 
     // === 3. Standardized USB Serial Telemetry for serial_bridge.py ===
-    Serial.printf("📡 FLD1 Sent: Water=%.1fcm, Rain=%.1f, Press=%.1f | Dist=%.2fm (Raw=%.1fcm) | Combined=%.2f | Seq=%u\n",
-                  waterLevel, rainIntensity, pressure, waterLevel / 100.0f, waterSensor.getRawValue(), result.combinedScore, seqCounter);
+    Serial.printf("📡 FLD1 Sent: Water=%.1fcm, Rain=%.1f, Press=%.1f | Dist=%.2fm (Raw=%.1fcm) | RainADC=%d, DO=%d | Combined=%.2f | Seq=%u\n",
+                  waterLevel, rainIntensity, pressure, waterLevel / 100.0f, waterSensor.getRawValue(), (int)rainRaw, digitalRead(RAIN_DIGITAL_PIN), result.combinedScore, seqCounter);
 
     // JSON formatted packet for web loggers
     Serial.printf("{\"node\":\"FLD1\",\"water_level\":%.1f,\"rain\":%.1f,\"pressure\":%.1f,\"anomaly\":%.2f,\"batt\":%d,\"seq\":%u}\n",

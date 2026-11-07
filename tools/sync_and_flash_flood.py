@@ -16,6 +16,8 @@ FILES_TO_SYNC = [
     ("firmware/node_flood/src/lora/lora_tx.cpp", f"{REMOTE_BASE}/firmware/node_flood/src/lora/lora_tx.cpp"),
     ("firmware/node_flood/src/sensors/water_level.h", f"{REMOTE_BASE}/firmware/node_flood/src/sensors/water_level.h"),
     ("firmware/node_flood/src/sensors/water_level.cpp", f"{REMOTE_BASE}/firmware/node_flood/src/sensors/water_level.cpp"),
+    ("firmware/node_flood/src/sensors/rain_sensor.h", f"{REMOTE_BASE}/firmware/node_flood/src/sensors/rain_sensor.h"),
+    ("firmware/node_flood/src/sensors/rain_sensor.cpp", f"{REMOTE_BASE}/firmware/node_flood/src/sensors/rain_sensor.cpp"),
     ("web/server.py", f"{REMOTE_BASE}/web/server.py"),
     ("web/templates/dashboard.html", f"{REMOTE_BASE}/web/templates/dashboard.html"),
     ("web/templates/monitoring.html", f"{REMOTE_BASE}/web/templates/monitoring.html"),
