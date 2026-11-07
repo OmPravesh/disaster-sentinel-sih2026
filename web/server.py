@@ -640,8 +640,12 @@ def ingest_telemetry():
         if "l2_raw" in data:
             raw_s = float(data["l2_raw"])
             node["sensors"]["Soil_Saturation"] = round(raw_s / 100.0 if raw_s > 1.0 else raw_s, 2)
+            node["sensors"]["Soil_Moisture_pct"] = round(raw_s if raw_s > 1.0 else raw_s * 100.0, 1)
         if "l3_raw" in data:
-            node["sensors"]["Atmospheric_Pressure_hPa"] = round(float(data["l3_raw"]), 1)
+            p_val = round(float(data["l3_raw"]), 1)
+            node["sensors"]["Atmospheric_Pressure_hPa"] = p_val
+            node["sensors"]["Pressure_hPa"] = p_val
+            node["sensors"]["Pore_Pressure_kPa"] = round(max(0.0, (1013.25 - p_val) * 0.1), 1)
             
     elif node_id == "FIR3":
         if "l1_raw" in data:

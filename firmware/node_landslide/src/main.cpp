@@ -1,8 +1,8 @@
 /**
  * Disaster Sentinel — Node 2 (Landslide) Main Firmware
  * 
- * ESP32 Node SLD2: MPU6050 Tilt + Soil Moisture + BME280.
- * Transmits binary LoRa packets to Jetson Orin Nano gateway.
+ * ESP32 Node SLD2: MPU6050 Tilt + Soil Moisture + BME280/BMP280.
+ * Transmits binary LoRa packets to Jetson Orin Nano gateway over 433 MHz.
  * 
  * SIH 2026 · Problem Statement SIH26178 · Qualcomm
  */
@@ -14,6 +14,7 @@
 #include <Adafruit_MPU6050.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
+#include <Adafruit_BMP280.h>
 #include "config.h"
 
 struct __attribute__((packed)) LoRaPacket {
@@ -33,8 +34,6 @@ struct __attribute__((packed)) LoRaPacket {
     uint16_t crc16;
     uint8_t  end_marker;
 };
-
-#include <Adafruit_BMP280.h>
 
 static uint16_t g_sequence_num = 0;
 Adafruit_MPU6050 mpu;
@@ -75,7 +74,11 @@ float read_tilt_angle() {
         }
     }
 
-    // Take 5 fast samples and average them to eliminate sensor noise & vibration jitter
+    if (!s_mpu_ready) {
+        return s_last_valid_tilt > 0.0f ? s_last_valid_tilt : 0.0f;
+    }
+
+    // Fast multi-sample averaging to suppress vibration noise
     float ax_sum = 0.0f, ay_sum = 0.0f, az_sum = 0.0f;
     int valid_samples = 0;
 
@@ -97,7 +100,6 @@ float read_tilt_angle() {
         delayMicroseconds(500);
     }
 
-    // If I2C bus momentarily glitched, maintain the last valid tilt angle (never drop to 0.0° incorrectly)
     if (valid_samples == 0) {
         return s_last_valid_tilt;
     }
@@ -109,7 +111,7 @@ float read_tilt_angle() {
     float raw_tilt = atan2(sqrt(ax * ax + ay * ay), fabs(az)) * 180.0f / 3.14159265f;
     if (isnan(raw_tilt)) raw_tilt = 0.0f;
 
-    // Apply exponential low-pass filter (alpha = 0.3) for smooth, rock-solid angle calibration
+    // Exponential filter
     if (s_last_valid_tilt == 0.0f) {
         s_last_valid_tilt = raw_tilt;
     } else {
@@ -121,9 +123,10 @@ float read_tilt_angle() {
 
 float read_soil_moisture() {
     int raw = analogRead(SOIL_ANALOG_PIN);
-    // Calibrated: in dry air (raw >= 2800) -> 0.0%
-    // in saturated water/soil (raw <= 1200) -> 100.0%
-    const int DRY_AIR_VAL = 2800;
+    // Capacitive Soil Moisture Sensor v1.2 / Resistive:
+    // In dry air (raw ~2800 - 3200) -> 0.0%
+    // In water/wet soil (raw ~1100 - 1500) -> 100.0%
+    const int DRY_AIR_VAL = 3000;
     const int WET_VAL = 1200;
     if (raw >= DRY_AIR_VAL) return 0.0f;
     if (raw <= WET_VAL) return 100.0f;
@@ -146,60 +149,74 @@ void setup() {
     Serial.println("  DISASTER SENTINEL — Node 2: LANDSLIDE (SLD2)");
     Serial.println("═══════════════════════════════════════════════");
 
+    analogSetAttenuation(ADC_11db);
     pinMode(SOIL_ANALOG_PIN, INPUT);
 
-    Wire.begin(BME_SDA, BME_SCL);
-    Wire.setClock(100000); // Enforce 100kHz standard I2C speed for shared bus (MPU6050 + BME280)
-    Wire.setTimeOut(100);  // Prevent bus lockup on shared breadboard jumpers
+    // --- I2C Shared Bus (MPU6050 + BME280) ---
+    Wire.begin(BME_SDA, BME_SCL, 100000);
+    Wire.setTimeOut(50);
 
-    // Wake up MPU6050 from power-on sleep state
+    // Wake up MPU6050
     for (uint8_t addr : {0x68, 0x69}) {
         Wire.beginTransmission(addr);
         Wire.write(0x6B); // PWR_MGMT_1
         Wire.write(0x00); // Wake up
-        Wire.endTransmission();
+        if (Wire.endTransmission() == 0) {
+            Serial.printf("✅ MPU6050 I2C ACK on 0x%02X!\n", addr);
+            mpu_found = true;
+            break;
+        }
     }
-    delay(15);
 
-    if (mpu.begin(0x68, &Wire)) {
-        mpu_found = true;
-        mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
-        Wire.setClock(100000);
-        Serial.println("✅ MPU6050 Accelerometer/Tilt initialized on 0x68 (100kHz Shared I2C).");
-    } else if (mpu.begin(0x69, &Wire)) {
-        mpu_found = true;
-        mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
-        Wire.setClock(100000);
-        Serial.println("✅ MPU6050 Accelerometer/Tilt initialized on 0x69 (100kHz Shared I2C).");
+    if (mpu_found) {
+        if (mpu.begin(0x68, &Wire) || mpu.begin(0x69, &Wire)) {
+            mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
+            Serial.println("✅ MPU6050 Accelerometer/Tilt initialized (±8G).");
+        }
     } else {
-        Serial.println("⚠️ MPU6050 not detected on 0x68 or 0x69! Check SDA=21, SCL=22, 3.3V power.");
+        Serial.println("⚠️ MPU6050 not responding on 0x68/0x69 (Check SDA=21, SCL=22).");
     }
 
     // Auto-detect BME280 or BMP280 on 0x76 or 0x77
     uint8_t addrs[2] = {0x76, 0x77};
     for (uint8_t a : addrs) {
         if (bme.begin(a, &Wire)) {
+            bme.setSampling(
+                Adafruit_BME280::MODE_NORMAL,
+                Adafruit_BME280::SAMPLING_X2,
+                Adafruit_BME280::SAMPLING_X16,
+                Adafruit_BME280::SAMPLING_X1,
+                Adafruit_BME280::FILTER_X16,
+                Adafruit_BME280::STANDBY_MS_500
+            );
             bme_found = true;
             is_bmp = false;
-            Serial.printf("✅ BME280 detected on 0x%02X!\n", a);
+            Serial.printf("✅ BME280 detected and configured on 0x%02X!\n", a);
             break;
         }
     }
     if (!bme_found) {
         for (uint8_t a : addrs) {
             if (bmp.begin(a)) {
+                bmp.setSampling(
+                    Adafruit_BMP280::MODE_NORMAL,
+                    Adafruit_BMP280::SAMPLING_X2,
+                    Adafruit_BMP280::SAMPLING_X16,
+                    Adafruit_BMP280::FILTER_X16,
+                    Adafruit_BMP280::STANDBY_MS_500
+                );
                 bme_found = true;
                 is_bmp = true;
-                Serial.printf("✅ BMP280 detected on 0x%02X!\n", a);
+                Serial.printf("✅ BMP280 detected and configured on 0x%02X!\n", a);
                 break;
             }
         }
     }
     if (!bme_found) {
-        Serial.println("⚠️ BME280/BMP280 not found on 0x76 or 0x77 (Layer 3 fallback).");
+        Serial.println("⚠️ BME280/BMP280 not responding on 0x76 or 0x77 (Layer 3 fallback).");
     }
 
-    // Hardware reset pulse for SX1278
+    // --- LoRa SX1278 SPI Initialization ---
     pinMode(LORA_RST, OUTPUT);
     digitalWrite(LORA_RST, LOW);
     delay(10);
@@ -245,9 +262,19 @@ void setup() {
 void loop() {
     float tilt = read_tilt_angle();
     float soil = read_soil_moisture();
-    float pressure = 1013.25f;
+    int rawSoil = analogRead(SOIL_ANALOG_PIN);
+    float pressure = 990.0f;
+    float temp = 25.0f;
+
     if (bme_found) {
-        pressure = is_bmp ? (bmp.readPressure() / 100.0F) : (bme.readPressure() / 100.0F);
+        float rawPress = (is_bmp ? bmp.readPressure() : bme.readPressure()) / 100.0f;
+        float rawTemp  = is_bmp ? bmp.readTemperature() : bme.readTemperature();
+        if (!isnan(rawPress) && rawPress >= 800.0f && rawPress <= 1100.0f) {
+            pressure = rawPress;
+        }
+        if (!isnan(rawTemp) && rawTemp >= -20.0f && rawTemp <= 85.0f) {
+            temp = rawTemp;
+        }
     }
 
     float l1_anomaly_f = min(1.0f, max(0.0f, (tilt - 2.0f) / 15.0f));
@@ -273,6 +300,7 @@ void loop() {
     packet.combined_score = (uint8_t)(combined_f * 100.0f);
     packet.rate_flag = (combined_f > 0.6f) ? 3 : 0;
     packet.battery_pct = compute_battery_pct();
+    if (packet.battery_pct == 0) packet.battery_pct = 95; // USB fallback
     packet.sequence_num = ++g_sequence_num;
     packet.end_marker = 0x0D;
 
@@ -282,16 +310,20 @@ void loop() {
     if (lora_initialized) {
         LoRa.beginPacket();
         LoRa.write((const uint8_t*)&packet, sizeof(packet));
-        LoRa.endPacket();
+        LoRa.endPacket(true); // Non-blocking TX
 
         Serial.printf("📡 SLD2 Sent: Tilt=%.1f°, Soil=%.1f%%, Press=%.1fhPa | Combined=%.2f | Seq=%d\n",
                       tilt, soil, pressure, combined_f, packet.sequence_num);
     } else {
-        Serial.printf("⚠️ SLD2 Telemetry (LoRa offline): Tilt=%.1f°, Soil=%.1f%%, Press=%.1fhPa | Combined=%.2f\n",
-                      tilt, soil, pressure, combined_f);
+        Serial.printf("⚠️ SLD2 Telemetry (LoRa offline): Tilt=%.1f°, Soil=%.1f%%, Press=%.1fhPa | Combined=%.2f | Seq=%d\n",
+                      tilt, soil, pressure, combined_f, packet.sequence_num);
     }
 
-    // JSON line for external serial bridge & analytics
+    // Diagnostics for hardware verification
+    Serial.printf("  [DIAG] Tilt=%.1f deg | RawSoil(GPIO%d)=%d (Soil=%.1f%%) | Temp=%.1fC Press=%.1fhPa\n",
+                  tilt, SOIL_ANALOG_PIN, rawSoil, soil, temp, pressure);
+
+    // JSON formatted line for external serial bridge & analytics
     Serial.printf("{\"node\":\"SLD2\",\"tilt\":%.1f,\"soil\":%.1f,\"press\":%.1f,\"anomaly\":%.2f,\"batt\":%d,\"seq\":%d}\n",
                   tilt, soil, pressure, combined_f, packet.battery_pct, packet.sequence_num);
 

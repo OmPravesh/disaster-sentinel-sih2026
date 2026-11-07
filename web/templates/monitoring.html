@@ -743,8 +743,9 @@
       const angle = Number(s.Slope_Angle || 12.0);
 
       document.getElementById('metricLandslide').textContent = angle.toFixed(1);
-      document.getElementById('metricLandslideSoil').textContent = s.Soil_Moisture_pct || '0.0';
-      document.getElementById('detLandslidePore').textContent = `${s.Pore_Pressure_kPa || 0} kPa`;
+      const soilPct = (s.Soil_Moisture_pct !== undefined && s.Soil_Moisture_pct !== null) ? Number(s.Soil_Moisture_pct).toFixed(1) : ((s.Soil_Saturation !== undefined && s.Soil_Saturation !== null) ? (s.Soil_Saturation * 100).toFixed(1) : '0.0');
+      document.getElementById('metricLandslideSoil').textContent = soilPct;
+      document.getElementById('detLandslidePore').textContent = `${s.Pore_Pressure_kPa || s.Atmospheric_Pressure_hPa || 0} ${s.Pore_Pressure_kPa ? 'kPa' : 'hPa'}`;
       document.getElementById('detLandslideVib').textContent = `${s.Vibration_mms || 0} mm/s`;
 
       // Update Gauge Needle

@@ -13,15 +13,12 @@ time.sleep(1)
 jetson_script = """
 import serial, time
 s = serial.Serial('/dev/ttyUSB0', 115200, timeout=1)
-# Toggle DTR/RTS to reset ESP32
-s.dtr = False
-s.rts = True
+# Clean hardware reset into SPI flash boot:
+s.setDTR(False)
+s.setRTS(True)
 time.sleep(0.1)
-s.dtr = True
-s.rts = False
-time.sleep(0.1)
-s.dtr = False
-s.rts = False
+s.setRTS(False)
+time.sleep(0.3)
 
 t0 = time.time()
 while time.time() - t0 < 12:
