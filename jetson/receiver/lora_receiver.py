@@ -91,6 +91,14 @@ class LoRaReceiver:
 
             # Main receive loop
             while self.running:
+                # Watchdog: Ensure SX1278 remains armed in Continuous Receive mode (0x8D)
+                try:
+                    op = self._read_register(0x01)
+                    if (op & 0x07) != 0x05:  # 0x05 is RxContinuous mode
+                        self._write_register(0x01, 0x8D)
+                except Exception:
+                    pass
+
                 has_packet = False
                 try:
                     if GPIO.input(dio0_pin):
@@ -206,8 +214,9 @@ class LoRaReceiver:
         # Read FIFO
         data = bytes(self.spi.xfer2([0x00] + [0x00] * length)[1:])
 
-        # Clear IRQ flags
+        # Clear IRQ flags and re-arm continuous receive
         self._write_register(0x12, 0xFF)
+        self._write_register(0x01, 0x8D)
 
         return data
 
