@@ -296,9 +296,10 @@ void setup() {
         LoRa.setTxPower(LORA_TX_POWER);
         LoRa.setSpreadingFactor(LORA_SPREADING_FACTOR);
         LoRa.setSignalBandwidth(LORA_BANDWIDTH);
+        LoRa.setCodingRate4(5);
         LoRa.setSyncWord(0xF3);
         LoRa.enableCrc();
-        Serial.println("  [LoRa] SX1278 initialized successfully (433 MHz, SF7)!");
+        Serial.println("  [LoRa] SX1278 initialized successfully (433 MHz, SF7, CR 4/5)!");
     } else {
         // Direct SPI diagnostic probe for SX1278
         digitalWrite(LORA_CS, LOW);

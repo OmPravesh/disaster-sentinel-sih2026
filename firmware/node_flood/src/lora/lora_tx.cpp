@@ -74,14 +74,17 @@ bool LoRaTx::sendPacket(const SentinelPacket& pkt) {
         return false;
     }
 
-    // Send packet as raw bytes
+    // Send packet as raw bytes (synchronous to guarantee transmission before sleep)
     LoRa.beginPacket();
     LoRa.write((const uint8_t*)&pkt, sizeof(SentinelPacket));
-    LoRa.endPacket(true);  // true = async (non-blocking)
+    LoRa.endPacket();  // Synchronous blocking TX ensures complete over-the-air broadcast
 
     _packetsSent++;
 
-    // Debug output
+    // Debug output (standardized format matching Jetson serial_bridge.py)
+    Serial.printf("📡 FLD1 Sent: Water=%.1fcm, Rain=%.1f%%, Press=%.1fhPa | Combined=%.2f | Seq=%u\n",
+                  pkt.l1Raw, pkt.l2Raw, pkt.l3Raw, (float)pkt.combinedScore / 100.0f, _packetsSent);
+
     Serial.printf("[LoRa TX] Packet #%u sent | Node: %.4s | Hazard: 0x%02X | "
                   "L1=%.1f(a%d) L2=%.1f(a%d) L3=%.1f(a%d) | "
                   "Combined: %d | Rate: %d | Bat: %d%%\n",
@@ -94,6 +97,10 @@ bool LoRaTx::sendPacket(const SentinelPacket& pkt) {
                   pkt.combinedScore,
                   pkt.rateFlag,
                   pkt.battery);
+
+    // JSON line for external serial bridge & analytics
+    Serial.printf("{\"node\":\"FLD1\",\"water\":%.1f,\"rain\":%.1f,\"press\":%.1f,\"anomaly\":%.2f,\"batt\":%d,\"seq\":%u}\n",
+                  pkt.l1Raw, pkt.l2Raw, pkt.l3Raw, (float)pkt.combinedScore / 100.0f, pkt.battery, _packetsSent);
 
     return true;
 }

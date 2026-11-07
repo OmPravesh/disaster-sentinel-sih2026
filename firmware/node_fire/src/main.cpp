@@ -137,9 +137,10 @@ void setup() {
         LoRa.setTxPower(LORA_TX_POWER);
         LoRa.setSpreadingFactor(LORA_SPREADING_FACTOR);
         LoRa.setSignalBandwidth(LORA_BANDWIDTH);
+        LoRa.setCodingRate4(5);
         LoRa.setSyncWord(0xF3);
         LoRa.enableCrc();
-        Serial.println("✅ LoRa SX1278 initialized successfully!");
+        Serial.println("✅ LoRa SX1278 initialized successfully (433 MHz, SF7, CR 4/5)!");
     } else {
         Serial.println("❌ LoRa initialization failed! Check wiring.");
     }
@@ -195,6 +196,10 @@ void loop() {
         Serial.printf("⚠️ FIR3 Telemetry (LoRa offline): Flame=%.2f, Gas=%.2f, Temp=%.1f°C | Combined=%.2f\n",
                       flame, gas, temp, combined_f);
     }
+
+    // JSON line for external serial bridge & analytics
+    Serial.printf("{\"node\":\"FIR3\",\"flame\":%.2f,\"gas\":%.2f,\"temp\":%.1f,\"anomaly\":%.2f,\"batt\":%d,\"seq\":%d}\n",
+                  flame, gas, temp, combined_f, packet.battery_pct, packet.sequence_num);
 
     uint32_t interval = is_priority ? ALERT_INTERVAL_MS : (combined_f >= ELEVATED_THRESHOLD ? ELEVATED_INTERVAL_MS : NORMAL_INTERVAL_MS);
     delay(interval);
