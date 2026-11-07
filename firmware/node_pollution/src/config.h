@@ -5,6 +5,7 @@
  *   - Layer 1: MQ-135 Air Quality / Gas Sensor
  *   - Layer 2: PM2.5 Dust Sensor (GP2Y1010AU0F / SDS011)
  *   - Layer 3: N/A (Bypassed)
+ *   - Display: 1.8" ST7735 Color TFT LCD (128x160 SPI)
  */
 
 #ifndef CONFIG_H
@@ -39,6 +40,24 @@
 #define LORA_BANDWIDTH        125E3
 
 // ============================================================
+// 1.8" ST7735 SPI TFT DISPLAY (128x160 RGB)
+// ============================================================
+// Component Pin connections:
+//   GND   -> ESP32 GND
+//   VCC   -> ESP32 3.3V (or 5V for boards with 3.3V regulator)
+//   SCL   -> ESP32 GPIO 18 (Shared hardware SPI Clock)
+//   SDA   -> ESP32 GPIO 23 (Shared hardware SPI MOSI)
+//   RES   -> ESP32 GPIO 22 (TFT Reset)
+//   DC/A0 -> ESP32 GPIO 21 (Data / Command Select)
+//   CS    -> ESP32 GPIO 15 (TFT Chip Select)
+//   BLK   -> ESP32 3.3V (Backlight Power)
+#define TFT_CS     15
+#define TFT_DC     21
+#define TFT_RST    22
+#define TFT_MOSI   23
+#define TFT_SCLK   18
+
+// ============================================================
 // SENSOR PIN ASSIGNMENTS (2-Layer Mode)
 // ============================================================
 
@@ -47,8 +66,7 @@
 #define MQ135_DIGITAL_PIN   27
 
 // Layer 2: PM2.5 Dust Sensor (Optical Dust Sensor GP2Y1010AU0F)
-#define PM25_LED_PIN        12  // Drive LED pin
-#define PM25_LED_PIN        4   // Drive LED pin (Moved from GPIO 12 to avoid flash boot brownout)
+#define PM25_LED_PIN        4   // Drive LED pin (GPIO 4 prevents flash brownout)
 #define PM25_ANALOG_PIN     35  // ADC1_CH7 measure pin
 
 // ============================================================
@@ -63,9 +81,9 @@
 // ============================================================
 // TIMING & POWER
 // ============================================================
-#define NORMAL_INTERVAL_MS   5000    // 5 sec for debugging/demo
-#define ALERT_INTERVAL_MS    3000    // 3 sec
-#define ELEVATED_INTERVAL_MS 4000    // 4 sec
+#define NORMAL_INTERVAL_MS   4000    // 4 sec update rate
+#define ALERT_INTERVAL_MS    2500    // 2.5 sec during anomaly
+#define ELEVATED_INTERVAL_MS 3000    // 3 sec
 
 #define BATTERY_ADC_PIN      36  // ADC1_CH0
 #define BATTERY_FULL_MV      4200
