@@ -117,8 +117,11 @@ float WaterLevelSensor::averageReadings(int count) {
         if (reading > 0.0f && reading < MAX_DISTANCE_CM) {
             sum += reading;
             valid++;
+        } else if (valid == 0 && i >= 1) {
+            // If ultrasonic timed out twice in a row, abort early to keep loop snappy
+            break;
         }
-        delay(30);  // Small delay between readings
+        delay(10);  // Small delay between readings
     }
     
     if (valid == 0) {

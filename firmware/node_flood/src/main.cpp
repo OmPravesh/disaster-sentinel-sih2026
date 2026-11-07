@@ -166,14 +166,14 @@ void setup() {
     // --- I2C Initialization (Shared Bus: BME280 + OLED) ---
     Wire.begin(BME_SDA, BME_SCL);
 
-    // --- Initialize 0.96" I2C OLED ---
-    if (oled.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
+    // --- Initialize 0.96" I2C OLED (Auto-probe 0x3C and 0x3D) ---
+    if (oled.begin(SSD1306_SWITCHCAPVCC, 0x3C) || oled.begin(SSD1306_SWITCHCAPVCC, 0x3D)) {
         oledReady = true;
         Serial.println("✅ 0.96\" I2C OLED (SSD1306) Initialized Successfully");
         drawOledSplash();
-        delay(1200);
+        delay(1000);
     } else {
-        Serial.println("⚠️ OLED display not found on 0x3C, continuing headless");
+        Serial.println("⚠️ OLED display not found on 0x3C or 0x3D (check GND, VCC->3.3V, SCL->GPIO22, SDA->GPIO21)");
     }
 
     // --- Initialize sensors ---

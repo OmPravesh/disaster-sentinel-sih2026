@@ -21,7 +21,7 @@ if sys.platform == "win32":
     try:
         import os
         os.system("")
-        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace', line_buffering=True)
     except Exception:
         pass
 
@@ -60,14 +60,14 @@ def format_node_status(node):
     
     return f"{badge} {CLR_CYAN}[ACTIVE · {ago_str}]{CLR_RESET}"
 
-def run_monitor(jetson_ip: str = "192.168.1.50", port: int = 5000, interval: float = 2.0):
+def run_monitor(jetson_ip: str = "192.168.1.50", port: int = 5000, interval: float = 2.0, max_count: int = 0):
     url = f"http://{jetson_ip}:{port}/api/nodes"
     
     print("\n" + "=" * 78)
     print(f"{CLR_CYAN}{CLR_BOLD}  🛡️  DISASTER SENTINEL — LIVE WI-FI TERMINAL MONITOR{CLR_RESET}")
     print(f"  Streaming live telemetry from Jetson Orin Nano at: {CLR_WHITE}{url}{CLR_RESET}")
     print("  Press Ctrl+C to stop.")
-    print("=" * 78 + "\n")
+    print("=" * 78 + "\n", flush=True)
 
     seq_count = 0
 
@@ -139,6 +139,9 @@ def run_monitor(jetson_ip: str = "192.168.1.50", port: int = 5000, interval: flo
         except Exception as e:
             print(f"  {CLR_RED}⚠️ Error: {e}{CLR_RESET}")
 
+        if max_count > 0 and seq_count >= max_count:
+            break
+
         time.sleep(interval)
 
 if __name__ == "__main__":
@@ -146,10 +149,11 @@ if __name__ == "__main__":
     parser.add_argument("--ip", default="192.168.1.50", help="IP address of NVIDIA Jetson Orin Nano")
     parser.add_argument("--port", type=int, default=5000, help="Web dashboard port")
     parser.add_argument("--interval", type=float, default=2.5, help="Poll interval in seconds")
+    parser.add_argument("--count", type=int, default=0, help="Number of sync polls before exiting (0 = infinite)")
     args = parser.parse_args()
 
     try:
-        run_monitor(args.ip, args.port, args.interval)
+        run_monitor(args.ip, args.port, args.interval, args.count)
     except KeyboardInterrupt:
         print("\n\nStopped live monitor. Have a great demo!\n")
 

@@ -74,10 +74,10 @@ bool LoRaTx::sendPacket(const SentinelPacket& pkt) {
         return false;
     }
 
-    // Send packet as raw bytes (synchronous to guarantee transmission before sleep)
+    // Send packet as raw bytes with async=true so it NEVER hangs if LoRa module is unplugged or SPI is loose
     LoRa.beginPacket();
     LoRa.write((const uint8_t*)&pkt, sizeof(SentinelPacket));
-    LoRa.endPacket();  // Synchronous blocking TX ensures complete over-the-air broadcast
+    LoRa.endPacket(true);  // Non-blocking asynchronous TX prevents hardware hang
 
     _packetsSent++;
 
