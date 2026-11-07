@@ -28,8 +28,8 @@ void WaterLevelSensor::begin(int trigPin, int echoPin, int analogPin, bool useUl
     _lastReading = 0.0f;
     _rawDistance = 0.0f;
     _lastReadTime = 0;
-    _calScale = 1.0f;
-    _calOffset = 0.0f;
+    _calScale = 1.1039f;
+    _calOffset = -4.90f;
 
     if (_useUltrasonic) {
         pinMode(_trigPin, OUTPUT);

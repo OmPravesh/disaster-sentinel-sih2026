@@ -54,6 +54,10 @@
 #define WATER_TRIG_PIN  13
 #define WATER_ECHO_PIN  12
 
+// JSN-SR04T Ultrasonic Calibration Parameters (derived from physical tape ground truth)
+#define JSN_CAL_SCALE   1.1039f
+#define JSN_CAL_OFFSET -4.90f
+
 // Water Level Sensor (Analog fallback)
 #define WATER_ANALOG_PIN 34  // ADC1_CH6
 

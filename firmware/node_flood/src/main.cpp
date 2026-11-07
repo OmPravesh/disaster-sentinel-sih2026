@@ -227,8 +227,9 @@ void setup() {
     // --- Initialize sensors ---
     Serial.println("--- Initializing Sensors ---");
 
-    // Layer 1: Water Level
+    // Layer 1: Water Level (JSN-SR04T)
     waterSensor.begin(WATER_TRIG_PIN, WATER_ECHO_PIN, WATER_ANALOG_PIN, true);
+    waterSensor.setCalibration(JSN_CAL_SCALE, JSN_CAL_OFFSET);
 
     // Layer 2: Rain
     rainSensor.begin(RAIN_ANALOG_PIN, RAIN_DIGITAL_PIN);
