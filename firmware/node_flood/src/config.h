@@ -58,11 +58,11 @@
 #define JSN_CAL_SCALE   1.1039f
 #define JSN_CAL_OFFSET -4.90f
 
-// Water Level Sensor (Analog fallback)
-#define WATER_ANALOG_PIN 34  // ADC1_CH6
+// Water Level Sensor (Analog fallback — disabled in ultrasonic mode)
+#define WATER_ANALOG_PIN -1
 
-// Rain Sensor (YL-83)
-#define RAIN_ANALOG_PIN  35  // ADC1_CH7
+// Rain Sensor (YL-83) — Connected to GPIO 34 (ADC1_CH6)
+#define RAIN_ANALOG_PIN  34
 #define RAIN_DIGITAL_PIN 4
 
 // BME280 (I2C)

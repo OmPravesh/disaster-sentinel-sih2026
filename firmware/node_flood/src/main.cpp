@@ -376,8 +376,18 @@ void loop() {
                       result.combinedScore, isPriority, battery, seqCounter);
 
     // === 3. Standardized USB Serial Telemetry for serial_bridge.py ===
-    Serial.printf("📡 FLD1 Sent: Water=%.1fcm, Rain=%.1f, Press=%.1f | Dist=%.2fm (Raw=%.1fcm) | RainADC=%d, DO=%d | Combined=%.2f | Seq=%u\n",
-                  waterLevel, rainIntensity, pressure, waterLevel / 100.0f, waterSensor.getRawValue(), (int)rainRaw, digitalRead(RAIN_DIGITAL_PIN), result.combinedScore, seqCounter);
+    int a35 = analogRead(35);
+    int a34 = analogRead(34);
+    int a32 = analogRead(32);
+    int a33 = analogRead(33);
+    int a36 = analogRead(36);
+    int a39 = analogRead(39);
+    int d4  = digitalRead(RAIN_DIGITAL_PIN);
+
+    Serial.printf("📡 FLD1 Sent: Water=%.1fcm, Rain=%.1f, Press=%.1f | Dist=%.2fm (Raw=%.1fcm) | PINS[35:%d, 34:%d, 32:%d, 33:%d, 36:%d, 39:%d, DO4:%d] | Combined=%.2f | Seq=%u\n",
+                  waterLevel, rainIntensity, pressure, waterLevel / 100.0f, waterSensor.getRawValue(),
+                  a35, a34, a32, a33, a36, a39, d4,
+                  result.combinedScore, seqCounter);
 
     // JSON formatted packet for web loggers
     Serial.printf("{\"node\":\"FLD1\",\"water_level\":%.1f,\"rain\":%.1f,\"pressure\":%.1f,\"anomaly\":%.2f,\"batt\":%d,\"seq\":%u}\n",
