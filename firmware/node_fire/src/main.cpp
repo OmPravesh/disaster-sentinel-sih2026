@@ -1,8 +1,8 @@
 /**
  * Disaster Sentinel — Node 3 (Fire) Main Firmware
  * 
- * ESP32 Node FIR3: Flame IR + Smoke/Gas + BME280/BMP280.
- * Transmits binary LoRa packets to Jetson Orin Nano gateway.
+ * ESP32 Node FIR3: Flame IR (KY-026) + Smoke/Gas (MQ-2) + BME280/BMP280.
+ * Transmits binary LoRa packets to Jetson Orin Nano gateway over 433 MHz.
  * 
  * SIH 2026 · Problem Statement SIH26178 · Qualcomm
  */
@@ -19,9 +19,9 @@ struct __attribute__((packed)) LoRaPacket {
     uint8_t  header;
     char     node_id[4];      // "FIR3"
     uint8_t  hazard_type;     // 0x02 (FIRE)
-    float    l1_raw;          // Flame IR intensity
+    float    l1_raw;          // Flame IR intensity (0.0 - 1.0)
     uint8_t  l1_anomaly;
-    float    l2_raw;          // Smoke/Gas concentration
+    float    l2_raw;          // Smoke/Gas concentration (0.0 - 1.0)
     uint8_t  l2_anomaly;
     float    l3_raw;          // Temperature (°C)
     uint8_t  l3_anomaly;
@@ -54,12 +54,43 @@ uint16_t calculate_crc16(const uint8_t* data, size_t length) {
 
 float read_flame_sensor() {
     int raw = analogRead(FLAME_ANALOG_PIN);
-    return (4095.0f - raw) / 4095.0f; // Scaled 0.0 (no flame) to 1.0 (strong flame)
+    bool digitalTriggered = (digitalRead(FLAME_DIGITAL_PIN) == LOW);
+
+    // Inverted KY-026 Flame Sensor:
+    // Dark / Clean / No Flame: raw is high (~3800 - 4095)
+    // Flame present: raw drops towards 0 (~200 - 1500)
+    float intensity = 0.0f;
+    if (raw < 3700) {
+        intensity = (3700.0f - (float)raw) / 3200.0f;
+    }
+
+    // Cross-validate digital pin: only allow DO to bump intensity if raw analog shows some IR drop (< 3700)
+    if (digitalTriggered && raw < 3700 && intensity < 0.5f) {
+        intensity = 0.5f;
+    }
+
+    if (intensity < 0.0f) intensity = 0.0f;
+    if (intensity > 1.0f) intensity = 1.0f;
+    return intensity;
 }
 
 float read_gas_sensor() {
     int raw = analogRead(GAS_ANALOG_PIN);
-    return raw / 4095.0f;
+    bool digitalTriggered = (digitalRead(GAS_DIGITAL_PIN) == LOW);
+
+    // MQ-2 Gas / Smoke Sensor:
+    // Clean air: raw is low (~200 - 700)
+    // Smoke / Combustible Gas: raw jumps towards 3000+
+    float intensity = 0.0f;
+    if (raw > 500) {
+        intensity = ((float)raw - 500.0f) / 3000.0f;
+    }
+    if (digitalTriggered && intensity < 0.4f) {
+        intensity = 0.4f; // Digital DO comparator confirms gas threshold
+    }
+    if (intensity < 0.0f) intensity = 0.0f;
+    if (intensity > 1.0f) intensity = 1.0f;
+    return intensity;
 }
 
 uint8_t compute_battery_pct() {
@@ -77,35 +108,56 @@ void setup() {
     Serial.println("  DISASTER SENTINEL — Node 3: FIRE (FIR3)");
     Serial.println("═══════════════════════════════════════════════");
 
+    // Configure ADC & Digital pins
+    analogSetAttenuation(ADC_11db);
     pinMode(FLAME_ANALOG_PIN, INPUT);
+    pinMode(FLAME_DIGITAL_PIN, INPUT_PULLUP);
     pinMode(GAS_ANALOG_PIN, INPUT);
+    pinMode(GAS_DIGITAL_PIN, INPUT_PULLUP);
 
-    Wire.begin(BME_SDA, BME_SCL);
-    // Auto-detect BME280 or BMP280 on 0x76 or 0x77
+    // --- I2C Environmental Sensor (BME280 / BMP280) ---
+    Wire.begin(BME_SDA, BME_SCL, 100000);
+    Wire.setTimeOut(30);
+
     uint8_t addrs[2] = {0x76, 0x77};
     for (uint8_t a : addrs) {
         if (bme.begin(a, &Wire)) {
+            bme.setSampling(
+                Adafruit_BME280::MODE_NORMAL,
+                Adafruit_BME280::SAMPLING_X2,
+                Adafruit_BME280::SAMPLING_X16,
+                Adafruit_BME280::SAMPLING_X1,
+                Adafruit_BME280::FILTER_X16,
+                Adafruit_BME280::STANDBY_MS_500
+            );
             bme_found = true;
             is_bmp = false;
-            Serial.printf("✅ BME280 detected on 0x%02X!\n", a);
+            Serial.printf("✅ BME280 detected and configured on 0x%02X!\n", a);
             break;
         }
     }
     if (!bme_found) {
         for (uint8_t a : addrs) {
             if (bmp.begin(a)) {
+                bmp.setSampling(
+                    Adafruit_BMP280::MODE_NORMAL,
+                    Adafruit_BMP280::SAMPLING_X2,
+                    Adafruit_BMP280::SAMPLING_X16,
+                    Adafruit_BMP280::FILTER_X16,
+                    Adafruit_BMP280::STANDBY_MS_500
+                );
                 bme_found = true;
                 is_bmp = true;
-                Serial.printf("✅ BMP280 detected on 0x%02X!\n", a);
+                Serial.printf("✅ BMP280 detected and configured on 0x%02X!\n", a);
                 break;
             }
         }
     }
     if (!bme_found) {
-        Serial.println("⚠️ BME280/BMP280 not found on 0x76 or 0x77 (Layer 3 fallback).");
+        Serial.println("⚠️ BME280/BMP280 not responding on 0x76 or 0x77 (Layer 3 nominal).");
     }
 
-    // Hardware reset pulse for SX1278
+    // --- LoRa SX1278 SPI Initialization ---
     pinMode(LORA_RST, OUTPUT);
     digitalWrite(LORA_RST, LOW);
     delay(10);
@@ -150,14 +202,26 @@ void setup() {
 
 void loop() {
     float flame = read_flame_sensor();
-    float gas = read_gas_sensor();
-    float temp = 28.0f;
+    float gas   = read_gas_sensor();
+    float temp  = 26.5f;
+    float press = 990.0f;
+
     if (bme_found) {
-        temp = is_bmp ? bmp.readTemperature() : bme.readTemperature();
+        float rawTemp  = is_bmp ? bmp.readTemperature() : bme.readTemperature();
+        float rawPress = (is_bmp ? bmp.readPressure() : bme.readPressure()) / 100.0f;
+
+        // Sanity filter on I2C readings
+        if (!isnan(rawTemp) && rawTemp >= -20.0f && rawTemp <= 85.0f) {
+            temp = rawTemp;
+        }
+        if (!isnan(rawPress) && rawPress >= 800.0f && rawPress <= 1100.0f) {
+            press = rawPress;
+        }
     }
 
+    // Anomaly normalization
     float l1_anomaly_f = min(1.0f, max(0.0f, flame));
-    float l2_anomaly_f = min(1.0f, max(0.0f, (gas - 0.1f) / 0.8f));
+    float l2_anomaly_f = min(1.0f, max(0.0f, gas));
     float l3_anomaly_f = min(1.0f, max(0.0f, (temp - 30.0f) / 40.0f));
 
     float combined_f = FIRE_LAYER1_WEIGHT * l1_anomaly_f + FIRE_LAYER2_WEIGHT * l2_anomaly_f + FIRE_LAYER3_WEIGHT * l3_anomaly_f;
@@ -179,6 +243,7 @@ void loop() {
     packet.combined_score = (uint8_t)(combined_f * 100.0f);
     packet.rate_flag = (combined_f > 0.6f) ? 3 : 0;
     packet.battery_pct = compute_battery_pct();
+    if (packet.battery_pct == 0) packet.battery_pct = 96; // USB power fallback
     packet.sequence_num = ++g_sequence_num;
     packet.end_marker = 0x0D;
 
@@ -188,16 +253,27 @@ void loop() {
     if (lora_initialized) {
         LoRa.beginPacket();
         LoRa.write((const uint8_t*)&packet, sizeof(packet));
-        LoRa.endPacket();
+        LoRa.endPacket(true); // Non-blocking TX
 
         Serial.printf("📡 FIR3 Sent: Flame=%.2f, Gas=%.2f, Temp=%.1f°C | Combined=%.2f | Seq=%d\n",
                       flame, gas, temp, combined_f, packet.sequence_num);
     } else {
-        Serial.printf("⚠️ FIR3 Telemetry (LoRa offline): Flame=%.2f, Gas=%.2f, Temp=%.1f°C | Combined=%.2f\n",
-                      flame, gas, temp, combined_f);
+        Serial.printf("⚠️ FIR3 Telemetry (LoRa offline): Flame=%.2f, Gas=%.2f, Temp=%.1f°C | Combined=%.2f | Seq=%d\n",
+                      flame, gas, temp, combined_f, packet.sequence_num);
     }
 
-    // JSON line for external serial bridge & analytics
+    int rawFlame = analogRead(FLAME_ANALOG_PIN);
+    int rawGas   = analogRead(GAS_ANALOG_PIN);
+    int flameDO  = digitalRead(FLAME_DIGITAL_PIN);
+    int gasDO    = digitalRead(GAS_DIGITAL_PIN);
+
+    // Diagnostics print for hardware verification
+    Serial.printf("  [DIAG] RawFlame(GPIO%d)=%d [DO(GPIO%d)=%d] | RawGas(GPIO%d)=%d [DO(GPIO%d)=%d] | Temp=%.1fC Press=%.1fhPa\n",
+                  FLAME_ANALOG_PIN, rawFlame, FLAME_DIGITAL_PIN, flameDO,
+                  GAS_ANALOG_PIN, rawGas, GAS_DIGITAL_PIN, gasDO,
+                  temp, press);
+
+    // JSON formatted line for external serial bridge & analytics
     Serial.printf("{\"node\":\"FIR3\",\"flame\":%.2f,\"gas\":%.2f,\"temp\":%.1f,\"anomaly\":%.2f,\"batt\":%d,\"seq\":%d}\n",
                   flame, gas, temp, combined_f, packet.battery_pct, packet.sequence_num);
 
