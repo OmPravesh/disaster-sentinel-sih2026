@@ -48,8 +48,9 @@ ThreeLayerCombiner threeLayer;
 LoRaTx lora;
 SleepManager sleepMgr;
 
-// 0.96" SSD1306 I2C OLED
-Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+// Dedicated Second Hardware I2C Bus for 0.96" OLED Display
+TwoWire I2COLED = TwoWire(1);
+Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT, &I2COLED, OLED_RESET);
 bool oledReady = false;
 
 // Sequence counter
@@ -163,17 +164,21 @@ void setup() {
     Serial.printf("  Boot #%u | Seq #%u\n", bootCount, seqCounter);
     Serial.println("═══════════════════════════════════════════════\n");
 
-    // --- I2C Initialization (Shared Bus: BME280 + OLED) ---
+    // --- I2C Initialization ---
+    // Bus 0 (GPIO 21 SDA / GPIO 22 SCL) -> Dedicated to BME280
     Wire.begin(BME_SDA, BME_SCL);
 
-    // --- Initialize 0.96" I2C OLED (Auto-probe 0x3C and 0x3D) ---
+    // Bus 1 (GPIO 25 SDA / GPIO 26 SCL) -> Dedicated to 0.96" OLED
+    I2COLED.begin(OLED_SDA, OLED_SCL, 400000);
+
+    // --- Initialize 0.96" I2C OLED (Auto-probe 0x3C and 0x3D on Bus 1) ---
     if (oled.begin(SSD1306_SWITCHCAPVCC, 0x3C) || oled.begin(SSD1306_SWITCHCAPVCC, 0x3D)) {
         oledReady = true;
-        Serial.println("✅ 0.96\" I2C OLED (SSD1306) Initialized Successfully");
+        Serial.println("✅ 0.96\" I2C OLED Initialized on Dedicated Pins (SDA: GPIO 25, SCL: GPIO 26)");
         drawOledSplash();
         delay(1000);
     } else {
-        Serial.println("⚠️ OLED display not found on 0x3C or 0x3D (check GND, VCC->3.3V, SCL->GPIO22, SDA->GPIO21)");
+        Serial.println("⚠️ OLED not found on 0x3C or 0x3D (Wiring: VCC->3.3V, GND->GND, SDA->GPIO25, SCL->GPIO26)");
     }
 
     // --- Initialize sensors ---

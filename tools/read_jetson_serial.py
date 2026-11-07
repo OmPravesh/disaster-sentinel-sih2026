@@ -16,3 +16,4 @@ print("Sentinel service recent logs:")
 print(stdout.read().decode())
 
 ssh.close()
+
