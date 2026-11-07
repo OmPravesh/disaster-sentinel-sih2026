@@ -683,9 +683,14 @@
       const level = Number(s.River_Water_Level_m || 2.1);
       
       document.getElementById('metricFlood').textContent = level.toFixed(2);
-      document.getElementById('metricFloodRain').textContent = s.Rain_Intensity_mm_h || '0.00';
-      document.getElementById('detFloodRainAccum').textContent = `${s.Rain_Accumulated_mm || 0} mm`;
-      document.getElementById('detFloodPressure').textContent = `${s.Pressure_hPa || 1013} hPa`;
+      const rainVal = (s.Rainfall_Intensity_mm_hr !== undefined ? s.Rainfall_Intensity_mm_hr : (s.Rain_Intensity_mm_h !== undefined ? s.Rain_Intensity_mm_h : 0.0));
+      document.getElementById('metricFloodRain').textContent = Number(rainVal).toFixed(2);
+
+      const rainAccum = (s.Rainfall_mm !== undefined ? s.Rainfall_mm : (s.Rain_Accumulated_mm !== undefined ? s.Rain_Accumulated_mm : 0.0));
+      document.getElementById('detFloodRainAccum').textContent = `${rainAccum} mm`;
+
+      const baroVal = (s.Atmospheric_Pressure_hPa !== undefined ? s.Atmospheric_Pressure_hPa : (s.Pressure_hPa !== undefined ? s.Pressure_hPa : 989.8));
+      document.getElementById('detFloodPressure').textContent = `${baroVal} hPa`;
 
       // Update Gauge Needle
       const needleAngle = calcNeedleAngle(level, 0.0, 10.0);
@@ -725,8 +730,10 @@
         narrative.textContent = 'Discharge is nominal. Zero catchment overflow risk projected over the next 50 minutes.';
       }
     }
-    if (forecasts && forecasts.FLD1) {
+    if (forecasts && forecasts.FLD1 && forecasts.FLD1.risk_probability_pct !== undefined) {
       document.getElementById('detFloodAiRisk').textContent = `${forecasts.FLD1.risk_probability_pct}%`;
+    } else {
+      document.getElementById('detFloodAiRisk').textContent = '0.0%';
     }
 
     // 2. LANDSLIDE (SLD2: 0 - 60 deg)

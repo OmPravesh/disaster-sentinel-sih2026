@@ -626,9 +626,13 @@ def ingest_telemetry():
             raw_w = float(data["l1_raw"])
             node["sensors"]["River_Water_Level_m"] = round(raw_w / 100.0 if raw_w > 20 else raw_w, 2)
         if "l2_raw" in data:
-            node["sensors"]["Rainfall_Intensity_mm_hr"] = round(float(data["l2_raw"]) * 20.0, 2)
+            r_val = round(float(data["l2_raw"]) * 20.0, 2)
+            node["sensors"]["Rainfall_Intensity_mm_hr"] = r_val
+            node["sensors"]["Rain_Intensity_mm_h"] = r_val
         if "l3_raw" in data:
-            node["sensors"]["Atmospheric_Pressure_hPa"] = round(float(data["l3_raw"]), 1)
+            p_val = round(float(data["l3_raw"]), 1)
+            node["sensors"]["Atmospheric_Pressure_hPa"] = p_val
+            node["sensors"]["Pressure_hPa"] = p_val
             
     elif node_id == "SLD2":
         if "l1_raw" in data:
