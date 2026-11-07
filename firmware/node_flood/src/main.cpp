@@ -19,6 +19,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <SPI.h>
+#include <driver/dac.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
@@ -48,9 +49,8 @@ ThreeLayerCombiner threeLayer;
 LoRaTx lora;
 SleepManager sleepMgr;
 
-// Dedicated Second Hardware I2C Bus for 0.96" OLED Display
-TwoWire I2COLED = TwoWire(1);
-Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT, &I2COLED, OLED_RESET);
+// 0.96" I2C OLED Display on Hardware I2C (GPIO 21 SDA / GPIO 22 SCL)
+Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 bool oledReady = false;
 
 // Sequence counter
@@ -164,21 +164,21 @@ void setup() {
     Serial.printf("  Boot #%u | Seq #%u\n", bootCount, seqCounter);
     Serial.println("═══════════════════════════════════════════════\n");
 
-    // --- I2C Initialization ---
-    // Bus 0 (GPIO 21 SDA / GPIO 22 SCL) -> Dedicated to BME280
-    Wire.begin(BME_SDA, BME_SCL);
+    // --- I2C Initialization (GPIO 21 SDA / GPIO 22 SCL) ---
+    pinMode(BME_SDA, INPUT_PULLUP);
+    pinMode(BME_SCL, INPUT_PULLUP);
+    Wire.begin(BME_SDA, BME_SCL, 100000);
+    Wire.setTimeOut(30);
 
-    // Bus 1 (GPIO 25 SDA / GPIO 26 SCL) -> Dedicated to 0.96" OLED
-    I2COLED.begin(OLED_SDA, OLED_SCL, 400000);
-
-    // --- Initialize 0.96" I2C OLED (Auto-probe 0x3C and 0x3D on Bus 1) ---
-    if (oled.begin(SSD1306_SWITCHCAPVCC, 0x3C) || oled.begin(SSD1306_SWITCHCAPVCC, 0x3D)) {
+    Serial.println("--- Probing 0.96\" I2C OLED on GPIO 21 & 22 ---");
+    if (oled.begin(SSD1306_SWITCHCAPVCC, 0x3C, false, false) ||
+        oled.begin(SSD1306_SWITCHCAPVCC, 0x3D, false, false)) {
         oledReady = true;
-        Serial.println("✅ 0.96\" I2C OLED Initialized on Dedicated Pins (SDA: GPIO 25, SCL: GPIO 26)");
+        Serial.println("✅ 0.96\" I2C OLED (SSD1306) Initialized Successfully on GPIO 21 & 22!");
         drawOledSplash();
-        delay(1000);
+        delay(1200);
     } else {
-        Serial.println("⚠️ OLED not found on 0x3C or 0x3D (Wiring: VCC->3.3V, GND->GND, SDA->GPIO25, SCL->GPIO26)");
+        Serial.println("⚠️ OLED did not respond on 0x3C or 0x3D on GPIO 21 & 22.");
     }
 
     // --- Initialize sensors ---
