@@ -50,8 +50,8 @@ def main():
     sftp.close()
     print("Files successfully synced!")
 
-    # Verify main.cpp has SSD1306
-    run_ssh(ssh, f"grep -n 'Adafruit_SSD1306' {REMOTE_BASE}/firmware/node_flood/src/main.cpp")
+    # Verify main.cpp has SH110X
+    run_ssh(ssh, f"grep -n 'Adafruit_SH110X' {REMOTE_BASE}/firmware/node_flood/src/main.cpp")
 
     # Stop processes holding /dev/ttyUSB0
     run_ssh(ssh, "pkill -f serial_bridge.py || true")

@@ -19,9 +19,8 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <SPI.h>
-#include <driver/dac.h>
 #include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
+#include <Adafruit_SH110X.h>
 
 #include "config.h"
 #include "sensors/water_level.h"
@@ -49,8 +48,8 @@ ThreeLayerCombiner threeLayer;
 LoRaTx lora;
 SleepManager sleepMgr;
 
-// 0.96" I2C OLED Display on Hardware I2C (GPIO 21 SDA / GPIO 22 SCL)
-Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+// 1.3" I2C OLED Display (SH1106 Controller - GPIO 21 SDA / GPIO 22 SCL)
+Adafruit_SH1106G oled = Adafruit_SH1106G(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 bool oledReady = false;
 
 // Sequence counter
@@ -79,16 +78,16 @@ bool hasPrevWater = false;
 void drawOledSplash() {
     if (!oledReady) return;
     oled.clearDisplay();
-    oled.setTextColor(SSD1306_WHITE);
+    oled.setTextColor(SH110X_WHITE);
 
-    oled.drawRect(0, 0, 128, 64, SSD1306_WHITE);
+    oled.drawRect(0, 0, 128, 64, SH110X_WHITE);
     oled.setTextSize(1);
     oled.setCursor(14, 8);
     oled.print(F("DISASTER SENTINEL"));
     oled.setCursor(20, 24);
     oled.print(F("NODE 1: FLOOD"));
     oled.setCursor(12, 40);
-    oled.print(F("SX1278 LoRa 433MHz"));
+    oled.print(F("1.3\" SH1106 OLED"));
     oled.setCursor(22, 50);
     oled.print(F("System Online..."));
     oled.display();
@@ -100,8 +99,8 @@ void updateOledDisplay(float waterLevel, float rainIntensity, float pressure, fl
     oled.clearDisplay();
 
     // 1. Top Inverted Header Bar
-    oled.fillRect(0, 0, 128, 12, SSD1306_WHITE);
-    oled.setTextColor(SSD1306_BLACK, SSD1306_WHITE);
+    oled.fillRect(0, 0, 128, 12, SH110X_WHITE);
+    oled.setTextColor(SH110X_BLACK, SH110X_WHITE);
     oled.setTextSize(1);
     oled.setCursor(4, 2);
     oled.print(F("FLD1  FLOOD MONITOR"));
@@ -110,7 +109,7 @@ void updateOledDisplay(float waterLevel, float rainIntensity, float pressure, fl
     oled.printf("%d%%", batt);
 
     // 2. Body Metrics
-    oled.setTextColor(SSD1306_WHITE);
+    oled.setTextColor(SH110X_WHITE);
 
     // Line 1: Water Level (cm and m)
     oled.setCursor(2, 16);
@@ -125,7 +124,7 @@ void updateOledDisplay(float waterLevel, float rainIntensity, float pressure, fl
     oled.printf("Baro:  %.0f hPa %.0fC", pressure > 0 ? pressure : 1013.2f, temp);
 
     // 3. Footer Separator Line
-    oled.drawFastHLine(0, 51, 128, SSD1306_WHITE);
+    oled.drawFastHLine(0, 51, 128, SH110X_WHITE);
 
     // 4. Status Bar
     oled.setCursor(2, 54);
@@ -135,12 +134,12 @@ void updateOledDisplay(float waterLevel, float rainIntensity, float pressure, fl
     oled.printf("Risk:%.2f", combinedScore);
 
     if (isPriority) {
-        oled.fillRect(94, 53, 34, 11, SSD1306_WHITE);
-        oled.setTextColor(SSD1306_BLACK, SSD1306_WHITE);
+        oled.fillRect(94, 53, 34, 11, SH110X_WHITE);
+        oled.setTextColor(SH110X_BLACK, SH110X_WHITE);
         oled.setCursor(96, 55);
         oled.print(F("WARN!"));
     } else {
-        oled.setTextColor(SSD1306_WHITE);
+        oled.setTextColor(SH110X_WHITE);
         oled.setCursor(98, 54);
         oled.print(F("[SAFE]"));
     }
@@ -167,18 +166,62 @@ void setup() {
     // --- I2C Initialization (GPIO 21 SDA / GPIO 22 SCL) ---
     pinMode(BME_SDA, INPUT_PULLUP);
     pinMode(BME_SCL, INPUT_PULLUP);
-    Wire.begin(BME_SDA, BME_SCL, 100000);
-    Wire.setTimeOut(30);
+    delay(20);
 
-    Serial.println("--- Probing 0.96\" I2C OLED on GPIO 21 & 22 ---");
-    if (oled.begin(SSD1306_SWITCHCAPVCC, 0x3C, false, false) ||
-        oled.begin(SSD1306_SWITCHCAPVCC, 0x3D, false, false)) {
-        oledReady = true;
-        Serial.println("✅ 0.96\" I2C OLED (SSD1306) Initialized Successfully on GPIO 21 & 22!");
-        drawOledSplash();
-        delay(1200);
+    int sdaLevel = digitalRead(BME_SDA);
+    int sclLevel = digitalRead(BME_SCL);
+    Serial.println("--- Probing I2C Bus on GPIO 21 & 22 ---");
+    Serial.printf("  [Pin Levels] GPIO 21 (SDA)=%d | GPIO 22 (SCL)=%d\n", sdaLevel, sclLevel);
+
+    Wire.begin(BME_SDA, BME_SCL, 100000);
+    Wire.setTimeOut(20);
+
+    Serial.println("  [Scanner] Scanning addresses 0x01 - 0x7F...");
+    uint8_t oledAddr = 0;
+    int foundCount = 0;
+    for (uint8_t a = 1; a < 127; a++) {
+        Wire.beginTransmission(a);
+        if (Wire.endTransmission() == 0) {
+            Serial.printf("    ==> Device ACK at: 0x%02X\n", a);
+            foundCount++;
+            if (a == 0x3C || a == 0x3D) oledAddr = a;
+        }
+    }
+
+    bool pinsSwapped = false;
+    if (oledAddr == 0) {
+        Serial.println("  [Scanner] OLED not found on 21/22. Testing SWAPPED pins (SDA=22, SCL=21)...");
+        Wire.begin(BME_SCL, BME_SDA, 100000);
+        Wire.setTimeOut(20);
+        for (uint8_t a = 1; a < 127; a++) {
+            Wire.beginTransmission(a);
+            if (Wire.endTransmission() == 0) {
+                Serial.printf("    ==> SWAPPED ACK at: 0x%02X (SDA and SCL are reversed!)\n", a);
+                if (a == 0x3C || a == 0x3D) {
+                    oledAddr = a;
+                    pinsSwapped = true;
+                }
+            }
+        }
+        if (!pinsSwapped) {
+            // Restore standard pin mapping
+            Wire.begin(BME_SDA, BME_SCL, 100000);
+        }
+    }
+
+    if (oledAddr > 0) {
+        Serial.printf("✅ OLED Found at 0x%02X (%s)!\n", oledAddr, pinsSwapped ? "Swapped Pins 22/21" : "Standard Pins 21/22");
+        if (oled.begin(oledAddr, true)) {
+            oledReady = true;
+            oled.setContrast(0xFF);
+            Serial.println("✅ 1.3\" SH1106 OLED Initialized Successfully!");
+            drawOledSplash();
+            delay(1500);
+        } else {
+            Serial.println("⚠️ SH1106 begin() returned false.");
+        }
     } else {
-        Serial.println("⚠️ OLED did not respond on 0x3C or 0x3D on GPIO 21 & 22.");
+        Serial.println("⚠️ No OLED response on 0x3C/0x3D in either orientation.");
     }
 
     // --- Initialize sensors ---
