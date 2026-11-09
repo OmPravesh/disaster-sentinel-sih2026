@@ -168,7 +168,7 @@ def listen_port(port_name: str, baud: int, api_url: str, stop_event: threading.E
                 if raw_line:
                     line = raw_line.decode("utf-8", errors="replace").strip()
                     if line:
-                        if any(k in line for k in ["Sent:", "Node:", "LoRa", "Telemetry", "DISASTER", "Combined=", "Water Level", "Reading Sensors", "FAILED", "ERROR", "DIAG", "MPU", "BMP", "BME", "Probe"]):
+                        if any(k in line for k in ["Sent:", "Node:", "LoRa", "Telemetry", "DISASTER", "Combined=", "Water Level", "Reading Sensors", "FAILED", "ERROR", "DIAG", "MPU", "BMP", "BME", "Probe", "I2C", "🔍", "SCAN"]):
                             safe_print(f"[{port_name}] {line}")
                         parse_and_forward(port_name, line, api_url)
             except serial.SerialException:

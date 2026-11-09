@@ -1,10 +1,16 @@
 /**
- * Disaster Sentinel — Node 2 (Landslide) Main Firmware
+ * Disaster Sentinel — Node 2 (Landslide) Dual-Bus Operations Firmware
  * 
- * ESP32 Node SLD2: MPU-6050 / MPU-6500 Tilt + Soil Moisture + BME280/BMP280.
- * Automatically accepts both genuine MPU-6050 (0x68) and modern MPU-6500 (0x70).
- * Transmits binary LoRa packets to Jetson Orin Nano gateway over 433 MHz.
+ * ESP32 Node SLD2: Dual Independent Hardware I2C Architecture
+ *   - Bus 0 (Wire):  MPU-6500 / MPU-6050 on SDA=GPIO21, SCL=GPIO22
+ *   - Bus 1 (Wire1): BME280 / BMP280     on SDA=GPIO25, SCL=GPIO26
+ *   - Layer 2: Capacitive Soil Moisture v1.2 on GPIO32 ADC
+ *   - LoRa SX1278: 433 MHz, SF7, CR 4/5, Sync 0xF3
  * 
+ * Complete physical electrical isolation between MPU and BME sensors.
+ * Neither sensor can ever interfere with or clamp the other.
+ * 
+ * Zero Fake Data Policy: Offline sensors report 0.0f
  * SIH 2026 · Problem Statement SIH26178 · Qualcomm
  */
 
@@ -13,39 +19,56 @@
 #include <LoRa.h>
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
-#include <Adafruit_MPU6050.h>
 #include <Adafruit_BME280.h>
 #include <Adafruit_BMP280.h>
 #include "config.h"
 
+// ============================================================
+// PACKET STRUCTURE (27 Bytes Packed — Gateway Compatible)
+// ============================================================
 struct __attribute__((packed)) LoRaPacket {
-    uint8_t  header;
+    uint8_t  header;          // 0xAA (Normal) or 0xFF (Priority Alert)
     char     node_id[4];      // "SLD2"
     uint8_t  hazard_type;     // 0x03 (LANDSLIDE)
     float    l1_raw;          // Tilt angle (degrees)
-    uint8_t  l1_anomaly;
+    uint8_t  l1_anomaly;      // Anomaly score (0-100)
     float    l2_raw;          // Soil moisture (%)
-    uint8_t  l2_anomaly;
-    float    l3_raw;          // Pressure (hPa)
-    uint8_t  l3_anomaly;
-    uint8_t  combined_score;
-    uint8_t  rate_flag;
-    uint8_t  battery_pct;
-    uint16_t sequence_num;
-    uint16_t crc16;
-    uint8_t  end_marker;
+    uint8_t  l2_anomaly;      // Anomaly score (0-100)
+    float    l3_raw;          // Atmospheric pressure (hPa)
+    uint8_t  l3_anomaly;      // Anomaly score (0-100)
+    uint8_t  combined_score;  // Multi-layer risk (0-100)
+    uint8_t  rate_flag;       // 0 = Normal, 3 = Rapid Acceleration
+    uint8_t  battery_pct;     // Battery % (0-100)
+    uint16_t sequence_num;    // Sequential packet counter
+    uint16_t crc16;           // CRC16-CCITT integrity checksum
+    uint8_t  end_marker;      // 0x0D
 };
 
+// ============================================================
+// DUAL HARDWARE I2C OBJECTS & STATE
+// ============================================================
 static uint16_t g_sequence_num = 0;
-Adafruit_MPU6050 mpu;
+
+// Bus 0 (Wire):  GPIO 21 / 22 for MPU-6500 / MPU-6050
+// Bus 1 (Wire1): GPIO 25 / 26 for BME280 / BMP280 (Wire1 is pre-instantiated by ESP32 Wire library)
+
 Adafruit_BME280 bme;
-Adafruit_BMP280 bmp;
+Adafruit_BMP280 bmp(&Wire1);
 
 bool mpu_found = false;
+uint8_t mpu_address = 0x68;
+uint8_t mpu_chip_id = 0x00;
+
 bool bme_found = false;
 bool is_bmp = false;
+uint8_t bme_address = 0x76;
+uint8_t bme_chip_id = 0x00;
+
 bool lora_initialized = false;
 
+// ============================================================
+// CRC16-CCITT CHECKSUM
+// ============================================================
 uint16_t calculate_crc16(const uint8_t* data, size_t length) {
     uint16_t crc = 0xFFFF;
     for (size_t i = 0; i < length; i++) {
@@ -58,23 +81,111 @@ uint16_t calculate_crc16(const uint8_t* data, size_t length) {
     return crc;
 }
 
+// ============================================================
+// BUS 0 (WIRE: GPIO 21/22) HELPER FOR MPU-6500
+// ============================================================
+uint8_t read_mpu_register(uint8_t addr, uint8_t reg) {
+    Wire.beginTransmission(addr);
+    Wire.write(reg);
+    if (Wire.endTransmission(false) != 0) {
+        return 0xFF;
+    }
+    if (Wire.requestFrom((uint8_t)addr, (uint8_t)1, (uint8_t)true) == 1) {
+        return Wire.read();
+    }
+    return 0xFF;
+}
+
+bool try_init_mpu() {
+    for (uint8_t addr : {0x68, 0x69}) {
+        uint8_t who = read_mpu_register(addr, 0x75);
+        if (who != 0xFF && who != 0x00) {
+            mpu_chip_id = who;
+
+            // Wake up MPU
+            Wire.beginTransmission(addr);
+            Wire.write(0x6B);
+            Wire.write(0x01);
+            Wire.endTransmission(true);
+            delay(10);
+
+            // Configure Accelerometer to ±8G
+            Wire.beginTransmission(addr);
+            Wire.write(0x1C);
+            Wire.write(0x10);
+            Wire.endTransmission(true);
+            delay(10);
+
+            // Configure DLPF to 44Hz
+            Wire.beginTransmission(addr);
+            Wire.write(0x1A);
+            Wire.write(0x03);
+            Wire.endTransmission(true);
+            delay(10);
+
+            mpu_found = true;
+            mpu_address = addr;
+
+            const char* chip_name = "MPU-Clone";
+            if (who == 0x68) chip_name = "MPU-6050";
+            else if (who >= 0x70 && who <= 0x73) chip_name = "MPU-6500";
+            else if (who == 0x98 || who == 0x75) chip_name = "MPU-9250";
+
+            Serial.printf("  🎉 ✅ Bus 0 (GPIO 21/22): %s (ID=0x%02X) ACTIVE on 0x%02X!\n",
+                          chip_name, who, addr);
+            return true;
+        }
+    }
+    return false;
+}
+
 float read_tilt_angle() {
     static float s_last_valid_tilt = 0.0f;
-    if (!mpu_found) return 0.0f;
+    static uint8_t s_fail_count = 0;
 
-    sensors_event_t a, g, temp;
-    if (!mpu.getEvent(&a, &g, &temp)) {
-        return s_last_valid_tilt;
+    if (!mpu_found) {
+        return 0.0f;
     }
 
-    float ax = a.acceleration.x;
-    float ay = a.acceleration.y;
-    float az = a.acceleration.z;
+    float ax_sum = 0.0f, ay_sum = 0.0f, az_sum = 0.0f;
+    int valid_samples = 0;
+
+    for (int i = 0; i < 5; i++) {
+        Wire.beginTransmission(mpu_address);
+        Wire.write(0x3B);
+        if (Wire.endTransmission(false) == 0) {
+            if (Wire.requestFrom((int)mpu_address, 6, (int)true) == 6) {
+                int16_t rawX = (Wire.read() << 8) | Wire.read();
+                int16_t rawY = (Wire.read() << 8) | Wire.read();
+                int16_t rawZ = (Wire.read() << 8) | Wire.read();
+
+                ax_sum += (float)rawX / 4096.0f;
+                ay_sum += (float)rawY / 4096.0f;
+                az_sum += (float)rawZ / 4096.0f;
+                valid_samples++;
+            }
+        }
+        delayMicroseconds(500);
+    }
+
+    if (valid_samples == 0) {
+        if (++s_fail_count >= 5) {
+            Serial.println("  ⚠️ MPU consecutive read failures — marking offline.");
+            s_last_valid_tilt = 0.0f;
+            mpu_found = false;
+            s_fail_count = 0;
+        }
+        return s_last_valid_tilt;
+    }
+    s_fail_count = 0;
+
+    float ax = ax_sum / (float)valid_samples;
+    float ay = ay_sum / (float)valid_samples;
+    float az = az_sum / (float)valid_samples;
 
     float raw_tilt = atan2(sqrt(ax * ax + ay * ay), fabs(az)) * 180.0f / 3.14159265f;
-    if (isnan(raw_tilt)) raw_tilt = 0.0f;
+    if (isnan(raw_tilt)) return s_last_valid_tilt;
 
-    // Exponential moving average filter
     if (s_last_valid_tilt == 0.0f) {
         s_last_valid_tilt = raw_tilt;
     } else {
@@ -84,12 +195,58 @@ float read_tilt_angle() {
     return s_last_valid_tilt;
 }
 
+// ============================================================
+// BUS 1 (WIRE1: GPIO 25/26) HELPER FOR BME280 / BMP280
+// ============================================================
+uint8_t read_bme_register(uint8_t addr, uint8_t reg) {
+    Wire1.beginTransmission(addr);
+    Wire1.write(reg);
+    if (Wire1.endTransmission(false) != 0) {
+        return 0xFF;
+    }
+    if (Wire1.requestFrom((uint8_t)addr, (uint8_t)1, (uint8_t)true) == 1) {
+        return Wire1.read();
+    }
+    return 0xFF;
+}
+
+bool try_init_bme() {
+    uint8_t addrs[2] = {0x76, 0x77};
+    for (uint8_t a : addrs) {
+        uint8_t cid = read_bme_register(a, 0xD0);
+        if (cid != 0xFF && cid != 0x00) {
+            bme_chip_id = cid;
+
+            // BME280 (Genuine Bosch = 0x60)
+            if (cid == 0x60) {
+                if (bme.begin(a, &Wire1)) {
+                    bme_found = true;
+                    is_bmp = false;
+                    bme_address = a;
+                    Serial.printf("  🎉 ✅ Bus 1 (GPIO 25/26): BME280 DETECTED on 0x%02X (ID=0x%02X)!\n", a, cid);
+                    return true;
+                }
+            }
+
+            // BMP280 (Genuine Bosch = 0x58, Clones = 0x56, 0x57)
+            if (bmp.begin(a)) {
+                bme_found = true;
+                is_bmp = true;
+                bme_address = a;
+                Serial.printf("  🎉 ✅ Bus 1 (GPIO 25/26): BMP280 DETECTED on 0x%02X (ID=0x%02X)!\n", a, cid);
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+// ============================================================
+// SOIL MOISTURE (TRUE PHYSICAL ANALOG ADC)
+// ============================================================
 float read_soil_moisture() {
     int raw = analogRead(SOIL_ANALOG_PIN);
-    // Capacitive Soil Moisture Sensor v1.2:
-    // In dry air (raw ~2800 - 3200) -> 0.0%
-    // In water/wet soil (raw ~1100 - 1500) -> 100.0%
-    const int DRY_AIR_VAL = 3000;
+    const int DRY_AIR_VAL = 2800;
     const int WET_VAL = 1200;
     if (raw >= DRY_AIR_VAL) return 0.0f;
     if (raw <= WET_VAL) return 100.0f;
@@ -105,93 +262,52 @@ uint8_t compute_battery_pct() {
     return (uint8_t)(((mv - BATTERY_EMPTY_MV) / (BATTERY_FULL_MV - BATTERY_EMPTY_MV)) * 100.0f);
 }
 
+// ============================================================
+// SETUP
+// ============================================================
 void setup() {
     Serial.begin(115200);
     delay(200);
-    Serial.println("\n═══════════════════════════════════════════════");
-    Serial.println("  DISASTER SENTINEL — Node 2: LANDSLIDE (SLD2)");
-    Serial.println("  Sensors: MPU-6050/6500 (0x70) + Soil + BME/BMP");
-    Serial.println("═══════════════════════════════════════════════");
+    Serial.println("\n═══════════════════════════════════════════════════════");
+    Serial.println("  DISASTER SENTINEL — Node 2: LANDSLIDE HARDWARE SUITE ");
+    Serial.println("  Dual-Bus: Wire (MPU: 21/22) + Wire1 (BME: 25/26)    ");
+    Serial.println("═══════════════════════════════════════════════════════");
 
     analogSetAttenuation(ADC_11db);
     pinMode(SOIL_ANALOG_PIN, INPUT);
 
-    // --- I2C Bus Initialization (Pins 21 SDA, 22 SCL) ---
-    Wire.begin(BME_SDA, BME_SCL, 100000);
+    // --- BUS 0 INITIALIZATION (MPU: GPIO 21 / 22) ---
+    Serial.println("\n--- Initializing Bus 0 (Wire: SDA=GPIO21, SCL=GPIO22) ---");
+    Wire.begin(MPU_SDA, MPU_SCL);
+    Wire.setClock(100000);
     Wire.setTimeOut(100);
     delay(50);
 
-    // Quick I2C Bus Scan
-    Serial.println("🔍 I2C Scan (GPIO 21 SDA / GPIO 22 SCL):");
-    int i2c_devs = 0;
-    for (uint8_t addr = 1; addr < 127; addr++) {
-        Wire.beginTransmission(addr);
-        if (Wire.endTransmission() == 0) {
-            Serial.printf("  ⭐ Found I2C device at 0x%02X\n", addr);
-            i2c_devs++;
+    for (uint8_t a = 1; a < 127; a++) {
+        Wire.beginTransmission(a);
+        if (Wire.endTransmission(true) == 0) {
+            Serial.printf("  ⭐ Bus 0 Device at 0x%02X\n", a);
         }
     }
-    if (i2c_devs == 0) {
-        Serial.println("  ⚠️ No I2C devices found on bus.");
-    }
+    try_init_mpu();
 
-    // --- MPU-6050 / MPU-6500 Initialization (Addresses 0x68 / 0x69) ---
-    Serial.println("\n--- Initializing MPU (MPU-6050 / MPU-6500) ---");
-    if (mpu.begin(0x68, &Wire) || mpu.begin(0x69, &Wire)) {
-        mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
-        mpu.setFilterBandwidth(MPU6050_BAND_44_HZ);
-        mpu_found = true;
-        Serial.println("✅ MPU-6050 / MPU-6500 (0x68/0x70) initialized successfully!");
-    } else {
-        Serial.println("⚠️ MPU-6050 / MPU-6500 not detected on 0x68 or 0x69.");
-    }
+    // --- BUS 1 INITIALIZATION (BME: GPIO 25 / 26) ---
+    Serial.println("\n--- Initializing Bus 1 (Wire1: SDA=GPIO25, SCL=GPIO26) ---");
+    Wire1.begin(BME_SDA, BME_SCL);
+    Wire1.setClock(100000);
+    Wire1.setTimeOut(100);
+    delay(50);
 
-    // --- BME280 / BMP280 Initialization (Addresses 0x76 / 0x77) ---
-    Serial.println("\n--- Initializing Environmental Sensor (BME280 / BMP280) ---");
-    uint8_t addrs[2] = {0x76, 0x77};
-
-    // Step 1: Try BME280 (Temp + Humidity + Pressure)
-    for (uint8_t a : addrs) {
-        if (bme.begin(a)) {
-            bme.setSampling(
-                Adafruit_BME280::MODE_FORCED,
-                Adafruit_BME280::SAMPLING_X2,
-                Adafruit_BME280::SAMPLING_X16,
-                Adafruit_BME280::SAMPLING_X1,
-                Adafruit_BME280::FILTER_X16,
-                Adafruit_BME280::STANDBY_MS_0_5
-            );
-            bme_found = true;
-            is_bmp = false;
-            Serial.printf("✅ BME280 detected and configured on 0x%02X!\n", a);
-            break;
+    for (uint8_t a = 1; a < 127; a++) {
+        Wire1.beginTransmission(a);
+        if (Wire1.endTransmission(true) == 0) {
+            Serial.printf("  ⭐ Bus 1 Device at 0x%02X\n", a);
         }
     }
+    try_init_bme();
 
-    // Step 2: Try BMP280 (Temp + Pressure)
-    if (!bme_found) {
-        for (uint8_t a : addrs) {
-            if (bmp.begin(a)) {
-                bmp.setSampling(
-                    Adafruit_BMP280::MODE_FORCED,
-                    Adafruit_BMP280::SAMPLING_X2,
-                    Adafruit_BMP280::SAMPLING_X16,
-                    Adafruit_BMP280::FILTER_X16,
-                    Adafruit_BMP280::STANDBY_MS_500
-                );
-                bme_found = true;
-                is_bmp = true;
-                Serial.printf("✅ BMP280 detected and configured on 0x%02X!\n", a);
-                break;
-            }
-        }
-    }
-
-    if (!bme_found) {
-        Serial.println("⚠️ BME280 / BMP280 not responding on 0x76 or 0x77 (Layer 3 fallback).");
-    }
-
-    // --- LoRa SX1278 SPI Initialization ---
+    // --- LoRa SX1278 SPI INITIALIZATION ---
+    Serial.println("\n--- Initializing LoRa SX1278 (SPI) ---");
     pinMode(LORA_RST, OUTPUT);
     digitalWrite(LORA_RST, LOW);
     delay(10);
@@ -202,18 +318,6 @@ void setup() {
     LoRa.setSPI(SPI);
     LoRa.setPins(LORA_CS, LORA_RST, LORA_DIO0);
 
-    // Direct SPI diagnostic probe
-    pinMode(LORA_CS, OUTPUT);
-    digitalWrite(LORA_CS, LOW);
-    SPI.transfer(0x42 & 0x7F);
-    uint8_t probeVersion = SPI.transfer(0x00);
-    digitalWrite(LORA_CS, HIGH);
-
-    Serial.printf("  [SPI Probe] SX1278 Chip ID: 0x%02X (Expected 0x12)\n", probeVersion);
-    if (probeVersion == 0x12) {
-        Serial.println("  ==> SPI hardware communication verified OK!");
-    }
-
     if (LoRa.begin(LORA_FREQUENCY)) {
         lora_initialized = true;
         LoRa.setTxPower(LORA_TX_POWER);
@@ -222,44 +326,74 @@ void setup() {
         LoRa.setCodingRate4(5);
         LoRa.setSyncWord(0xF3);
         LoRa.enableCrc();
-        Serial.println("✅ LoRa SX1278 initialized successfully (433 MHz, SF7, CR 4/5)!\n");
+        Serial.println("  ✅ LoRa SX1278 initialized successfully (433 MHz, SF7, CR 4/5)!");
     } else {
-        Serial.println("❌ LoRa initialization failed! Check wiring.\n");
+        Serial.println("  ❌ LoRa initialization failed! Check SPI wiring.");
     }
 
-    Serial.println("✅ Node SLD2 initialization sequence complete.\n");
+    Serial.println("═══════════════════════════════════════════════════════\n");
 }
 
+// ============================================================
+// MAIN LOOP
+// ============================================================
 void loop() {
-    float tilt = read_tilt_angle();
-    float soil = read_soil_moisture();
-    int rawSoil = analogRead(SOIL_ANALOG_PIN);
-    float pressure = 990.0f;
-    float temp = 25.0f;
+    // Non-blocking hot-plug re-probe every 3s
+    static unsigned long s_last_retry = 0;
+    unsigned long now = millis();
+    if ((!mpu_found || !bme_found) && (now - s_last_retry > 3000)) {
+        s_last_retry = now;
 
-    if (bme_found) {
-        if (is_bmp) {
-            bmp.takeForcedMeasurement();
-            float rawPress = bmp.readPressure() / 100.0f;
-            float rawTemp  = bmp.readTemperature();
-            if (!isnan(rawPress) && rawPress >= 800.0f && rawPress <= 1100.0f) pressure = rawPress;
-            if (!isnan(rawTemp) && rawTemp >= -20.0f && rawTemp <= 85.0f) temp = rawTemp;
-        } else {
-            bme.takeForcedMeasurement();
-            float rawPress = bme.readPressure() / 100.0f;
-            float rawTemp  = bme.readTemperature();
-            if (!isnan(rawPress) && rawPress >= 800.0f && rawPress <= 1100.0f) pressure = rawPress;
-            if (!isnan(rawTemp) && rawTemp >= -20.0f && rawTemp <= 85.0f) temp = rawTemp;
+        if (!mpu_found) {
+            try_init_mpu();
+        }
+        if (!bme_found) {
+            uint8_t b76 = read_bme_register(0x76, 0xD0);
+            uint8_t b77 = read_bme_register(0x77, 0xD0);
+            Serial.printf("  [PROBE Bus 1 (25/26)] BME ID: 0x76=0x%02X, 0x77=0x%02X\n", b76, b77);
+            try_init_bme();
         }
     }
 
-    float l1_anomaly_f = min(1.0f, max(0.0f, (tilt - 2.0f) / 15.0f));
+    // 1. Read physical sensors
+    float tilt = read_tilt_angle();
+    float soil = read_soil_moisture();
+    int rawSoil = analogRead(SOIL_ANALOG_PIN);
+
+    // Read real pressure and temp if BME is active on Wire1
+    float pressure = 0.0f;
+    float temp = 0.0f;
+    if (bme_found) {
+        static uint8_t s_bme_fail_count = 0;
+        float rawPress = (is_bmp ? bmp.readPressure() : bme.readPressure()) / 100.0f;
+        float rawTemp  = is_bmp ? bmp.readTemperature() : bme.readTemperature();
+
+        bool press_ok = !isnan(rawPress) && rawPress >= 300.0f && rawPress <= 1200.0f;
+        bool temp_ok  = !isnan(rawTemp)  && rawTemp  >= -40.0f && rawTemp  <= 85.0f;
+
+        if (press_ok && temp_ok) {
+            pressure = rawPress;
+            temp = rawTemp;
+            s_bme_fail_count = 0;
+        } else {
+            if (++s_bme_fail_count >= 5) {
+                Serial.println("  ⚠️ BME280 consecutive read failures — marking offline.");
+                bme_found = false;
+                is_bmp = false;
+                s_bme_fail_count = 0;
+            }
+        }
+    }
+
+    // 2. Multi-layer risk fusion
+    float l1_anomaly_f = (tilt > 0.0f) ? min(1.0f, max(0.0f, (tilt - 2.0f) / 15.0f)) : 0.0f;
     float l2_anomaly_f = min(1.0f, max(0.0f, (soil - 40.0f) / 50.0f));
-    float l3_anomaly_f = min(1.0f, max(0.0f, (1013.0f - pressure) / 20.0f));
+    float l3_anomaly_f = (pressure > 0.0f) ? min(1.0f, max(0.0f, (1013.0f - pressure) / 20.0f)) : 0.0f;
 
     float combined_f = SLIDE_LAYER1_WEIGHT * l1_anomaly_f + SLIDE_LAYER2_WEIGHT * l2_anomaly_f + SLIDE_LAYER3_WEIGHT * l3_anomaly_f;
     bool is_priority = combined_f >= PRIORITY_THRESHOLD;
 
+    // 3. Construct LoRa binary telemetry packet
     LoRaPacket packet;
     memset(&packet, 0, sizeof(packet));
     packet.header = is_priority ? PACKET_HEADER_PRIORITY : PACKET_HEADER_NORMAL;
@@ -276,31 +410,30 @@ void loop() {
     packet.combined_score = (uint8_t)(combined_f * 100.0f);
     packet.rate_flag = (combined_f > 0.6f) ? 3 : 0;
     packet.battery_pct = compute_battery_pct();
-    if (packet.battery_pct == 0) packet.battery_pct = 95; // USB fallback
     packet.sequence_num = ++g_sequence_num;
     packet.end_marker = 0x0D;
 
     size_t payload_len = sizeof(LoRaPacket) - 3;
     packet.crc16 = calculate_crc16((const uint8_t*)&packet, payload_len);
 
+    // 4. Transmit packet over 433 MHz LoRa
     if (lora_initialized) {
         LoRa.beginPacket();
         LoRa.write((const uint8_t*)&packet, sizeof(packet));
-        LoRa.endPacket(true); // Non-blocking TX
+        LoRa.endPacket();
 
         Serial.printf("📡 SLD2 Sent: Tilt=%.1f°, Soil=%.1f%%, Press=%.1fhPa | Combined=%.2f | Seq=%d\n",
                       tilt, soil, pressure, combined_f, packet.sequence_num);
-    } else {
-        Serial.printf("⚠️ SLD2 Telemetry (LoRa offline): Tilt=%.1f°, Soil=%.1f%%, Press=%.1fhPa | Combined=%.2f | Seq=%d\n",
-                      tilt, soil, pressure, combined_f, packet.sequence_num);
     }
 
-    // Diagnostics for hardware verification
-    Serial.printf("  [DIAG] Tilt=%.1f deg (%s) | RawSoil(GPIO%d)=%d (Soil=%.1f%%) | Temp=%.1fC Press=%.1fhPa\n",
-                  tilt, mpu_found ? "MPU-6050/6500 OK" : "None",
-                  SOIL_ANALOG_PIN, rawSoil, soil, temp, pressure);
+    // 5. Output diagnostics
+    Serial.printf("  [DIAG] Tilt=%.1f deg (%s, ID=0x%02X) | RawSoil(GPIO%d)=%d (Soil=%.1f%%) | BME=%s (ID=0x%02X, Temp=%.1fC Press=%.1fhPa)\n",
+                  tilt, mpu_found ? "MPU OK" : "DISCONNECTED", mpu_chip_id,
+                  SOIL_ANALOG_PIN, rawSoil, soil,
+                  bme_found ? (is_bmp ? "BMP280 OK" : "BME280 OK") : "DISCONNECTED", bme_chip_id,
+                  temp, pressure);
 
-    // JSON formatted line for external serial bridge & analytics
+    // 6. Output JSON formatted line for local serial bridge
     Serial.printf("{\"node\":\"SLD2\",\"tilt\":%.1f,\"soil\":%.1f,\"press\":%.1f,\"anomaly\":%.2f,\"batt\":%d,\"seq\":%d}\n",
                   tilt, soil, pressure, combined_f, packet.battery_pct, packet.sequence_num);
 

@@ -34,11 +34,13 @@
 #define LORA_BANDWIDTH        125E3
 
 // Sensor Pins
+#define MPU_SDA            21
+#define MPU_SCL            22
 #define MPU_ADDR           0x68
-#define SOIL_ANALOG_PIN    32
-#define BME_SDA            21
-#define BME_SCL            22
+#define BME_SDA            25
+#define BME_SCL            26
 #define BME_ADDR           0x76
+#define SOIL_ANALOG_PIN    32
 
 // 3-Layer Weights
 #define SLIDE_LAYER1_WEIGHT 0.50f   // MPU6050 tilt
@@ -48,9 +50,9 @@
 #define PRIORITY_THRESHOLD  0.70f
 #define ELEVATED_THRESHOLD  0.50f
 
-#define NORMAL_INTERVAL_MS   5000    // 5 sec for debugging/demo
-#define ALERT_INTERVAL_MS    3000    // 3 sec
-#define ELEVATED_INTERVAL_MS 4000    // 4 sec
+#define NORMAL_INTERVAL_MS   2000    // 2 sec for ultra-responsive live dashboard
+#define ALERT_INTERVAL_MS    1000    // 1 sec on emergency
+#define ELEVATED_INTERVAL_MS 1500    // 1.5 sec on alert
 
 #define BATTERY_ADC_PIN      36
 #define BATTERY_FULL_MV      4200
