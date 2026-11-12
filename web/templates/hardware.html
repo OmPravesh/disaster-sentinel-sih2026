@@ -650,7 +650,9 @@
             <i class="fa-solid fa-bullhorn text-amber-500 text-sm"></i>
             <h3 class="text-sm font-bold uppercase tracking-wider text-slate-900 font-mono">EMERGENCY ACTUATORS</h3>
           </div>
-          <span class="text-[10px] font-mono text-slate-500">Physical Hardware Relays</span>
+          <button onclick="allHwActuatorsOff()" title="Silence all physical alarms" class="text-[10px] font-mono px-2 py-0.5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold transition cursor-pointer">
+            ALL OFF
+          </button>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
@@ -659,21 +661,21 @@
             <div class="flex items-center justify-between">
               <div>
                 <div class="flex items-center gap-2">
-                  <span class="font-bold text-slate-900">Siren</span>
-                  <span id="hwBuzzerBadge" class="text-[10px] font-mono px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 font-semibold border border-slate-200">Standby</span>
+                  <span id="hwBuzzerDot" class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+                  <span class="font-bold text-sm text-slate-900">Acoustic Siren (Buzzer)</span>
+                  <span id="hwBuzzerBadge" class="text-xs font-mono px-2 py-0.5 rounded-md bg-slate-200 text-slate-700 font-bold">OFF</span>
                 </div>
-                <p class="text-[11px] text-slate-500 mt-0.5 font-mono">Pin 12 / GPIO18 · Acoustic Relay</p>
+                <p class="text-[11px] text-slate-500 mt-0.5 font-mono">Pin 12 / GPIO18 · Physical Siren</p>
               </div>
             </div>
-            <div class="flex items-center gap-1.5">
-              <button onclick="controlHwActuator('buzzer', 'on')" class="flex-1 py-1 px-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-xs transition cursor-pointer">
-                ON
+            <div class="grid grid-cols-2 gap-2 pt-0.5">
+              <button type="button" onclick="controlHwActuator('buzzer', 'on')" class="py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold text-xs shadow-sm transition flex items-center justify-center gap-1.5 cursor-pointer">
+                <i class="fa-solid fa-volume-high"></i>
+                <span>TURN ON</span>
               </button>
-              <button onclick="controlHwActuator('buzzer', 'off')" class="flex-1 py-1 px-2.5 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs transition cursor-pointer">
-                OFF
-              </button>
-              <button onclick="controlHwActuator('buzzer', 'pulse')" title="2.5 sec test beep" class="py-1 px-3 rounded-lg bg-amber-500 hover:bg-amber-400 text-white font-bold text-xs transition cursor-pointer">
-                Beep
+              <button type="button" onclick="controlHwActuator('buzzer', 'off')" class="py-2.5 px-3 rounded-xl bg-slate-200 hover:bg-slate-300 active:scale-95 text-slate-800 font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer">
+                <i class="fa-solid fa-volume-xmark"></i>
+                <span>TURN OFF</span>
               </button>
             </div>
           </div>
@@ -683,21 +685,21 @@
             <div class="flex items-center justify-between">
               <div>
                 <div class="flex items-center gap-2">
-                  <span class="font-bold text-slate-900">Warning Strobe</span>
-                  <span id="hwStrobeBadge" class="text-[10px] font-mono px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 font-semibold border border-slate-200">Standby</span>
+                  <span id="hwStrobeDot" class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+                  <span class="font-bold text-sm text-slate-900">Warning Strobe / LEDs</span>
+                  <span id="hwStrobeBadge" class="text-xs font-mono px-2 py-0.5 rounded-md bg-slate-200 text-slate-700 font-bold">OFF</span>
                 </div>
                 <p class="text-[11px] text-slate-500 mt-0.5 font-mono">Pin 16 / GPIO23 · Optical Relay</p>
               </div>
             </div>
-            <div class="flex items-center gap-1.5">
-              <button onclick="controlHwActuator('strobe', 'on')" class="flex-1 py-1 px-2.5 rounded-lg bg-red-600 hover:bg-red-500 text-white font-bold text-xs shadow-xs transition cursor-pointer">
-                ON
+            <div class="grid grid-cols-2 gap-2 pt-0.5">
+              <button type="button" onclick="controlHwActuator('strobe', 'on')" class="py-2.5 px-3 rounded-xl bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-bold text-xs shadow-sm transition flex items-center justify-center gap-1.5 cursor-pointer">
+                <i class="fa-solid fa-lightbulb"></i>
+                <span>TURN ON</span>
               </button>
-              <button onclick="controlHwActuator('strobe', 'off')" class="flex-1 py-1 px-2.5 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs transition cursor-pointer">
-                OFF
-              </button>
-              <button onclick="controlHwActuator('strobe', 'pulse')" title="2.5 sec test flash" class="py-1 px-3 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs transition cursor-pointer">
-                Flash
+              <button type="button" onclick="controlHwActuator('strobe', 'off')" class="py-2.5 px-3 rounded-xl bg-slate-200 hover:bg-slate-300 active:scale-95 text-slate-800 font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer">
+                <i class="fa-regular fa-lightbulb"></i>
+                <span>TURN OFF</span>
               </button>
             </div>
           </div>
@@ -2035,7 +2037,7 @@
     fb.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> Injecting ${scenario} surge telemetry...`;
 
     try {
-      const res = await fetch(`${API_BASE}/api/simulate/${scenario}`, { method: 'POST' });
+      const res = await fetch(`/api/simulate/${scenario}`, { method: 'POST' });
       const data = await res.json();
       if (data.success) {
         fb.className = 'p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-700 block';
@@ -2050,34 +2052,44 @@
 
   async function controlHwActuator(device, action) {
     try {
-      const res = await fetch(`${API_BASE}/api/actuators/${device}/${action}`, { method: 'POST' });
+      // Immediate local badge & dot feedback
+      const isBuzzer = (device === 'buzzer');
+      const dot = document.getElementById(isBuzzer ? 'hwBuzzerDot' : 'hwStrobeDot');
+      const badge = document.getElementById(isBuzzer ? 'hwBuzzerBadge' : 'hwStrobeBadge');
+      if (action === 'on') {
+        if (dot) dot.className = 'w-2.5 h-2.5 rounded-full ' + (isBuzzer ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500 animate-pulse');
+        if (badge) {
+          badge.className = 'text-xs font-mono px-2 py-0.5 rounded-md ' + (isBuzzer ? 'bg-emerald-100 text-emerald-800 font-bold' : 'bg-rose-100 text-rose-800 font-bold');
+          badge.textContent = 'ON';
+        }
+      } else {
+        if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-slate-400';
+        if (badge) {
+          badge.className = 'text-xs font-mono px-2 py-0.5 rounded-md bg-slate-200 text-slate-700 font-bold';
+          badge.textContent = 'OFF';
+        }
+      }
+
+      const res = await fetch(`/api/actuators/${device}/${action}`, { method: 'POST' });
       const data = await res.json();
-      if (data.success && typeof pollTelemetryOnce === 'function') {
+      if (!data.success) {
+        alert(`Server returned error: ` + (data.error || 'Failed'));
+      }
+      if (typeof pollTelemetryOnce === 'function') {
         pollTelemetryOnce();
       }
     } catch (e) {
-      alert(`Failed to ${action} ${device}: ` + e.message);
+      alert(`Network error controlling ${device}: ` + e.message);
     }
   }
 
-  async function toggleHwActuatorWithConfirm(device) {
-    const isCurrentlyActive = (device === 'buzzer' && document.getElementById('hwBuzzerBadge').textContent.includes('ACTIVATED')) ||
-                              (device === 'strobe' && document.getElementById('hwStrobeBadge').textContent.includes('ACTIVATED'));
-
-    if (!isCurrentlyActive) {
-      const devName = device === 'buzzer' ? 'Emergency Acoustic Siren (GPIO18)' : 'Warning Strobe Light (GPIO23)';
-      const confirmed = confirm(`CAUTION: Confirm hardware actuation override for ${devName}?\nThis engages physical relays in the field.`);
-      if (!confirmed) return;
-    }
-
+  async function allHwActuatorsOff() {
     try {
-      const res = await fetch(`${API_BASE}/api/actuators/${device}/toggle`, { method: 'POST' });
-      const data = await res.json();
-      if (data.success) {
-        if (typeof pollTelemetryOnce === 'function') pollTelemetryOnce();
-      }
+      await fetch('/api/actuators/all/off', { method: 'POST' });
+      controlHwActuator('buzzer', 'off');
+      controlHwActuator('strobe', 'off');
     } catch (e) {
-      alert(`Failed to toggle ${device}: ` + e.message);
+      console.error('Failed to silence all actuators:', e);
     }
   }
 
@@ -2091,48 +2103,36 @@
     }
 
     // Buzzer State
+    const bzDot = document.getElementById('hwBuzzerDot');
     const bzBadge = document.getElementById('hwBuzzerBadge');
-    const bzBtn = document.getElementById('hwBuzzerBtn');
     if (hub.buzzer_gpio18) {
+      if (bzDot) bzDot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse';
       if (bzBadge) {
-        bzBadge.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 font-bold animate-pulse border border-rose-200';
-        bzBadge.textContent = 'ACTIVATED';
-      }
-      if (bzBtn) {
-        bzBtn.className = 'px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition shadow-sm';
-        bzBtn.textContent = 'Deactivate';
+        bzBadge.className = 'text-xs font-mono px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-bold';
+        bzBadge.textContent = 'ON';
       }
     } else {
+      if (bzDot) bzDot.className = 'w-2.5 h-2.5 rounded-full bg-slate-400';
       if (bzBadge) {
-        bzBadge.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-semibold border border-slate-200';
-        bzBadge.textContent = 'Standby';
-      }
-      if (bzBtn) {
-        bzBtn.className = 'px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 transition shadow-sm';
-        bzBtn.textContent = 'Activate';
+        bzBadge.className = 'text-xs font-mono px-2 py-0.5 rounded-md bg-slate-200 text-slate-700 font-bold';
+        bzBadge.textContent = 'OFF';
       }
     }
 
     // Strobe State
+    const stDot = document.getElementById('hwStrobeDot');
     const stBadge = document.getElementById('hwStrobeBadge');
-    const stBtn = document.getElementById('hwStrobeBtn');
     if (hub.strobe_gpio23) {
+      if (stDot) stDot.className = 'w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse';
       if (stBadge) {
-        stBadge.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 font-bold animate-pulse border border-rose-200';
-        stBadge.textContent = 'ACTIVATED';
-      }
-      if (stBtn) {
-        stBtn.className = 'px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition shadow-sm';
-        stBtn.textContent = 'Deactivate';
+        stBadge.className = 'text-xs font-mono px-2 py-0.5 rounded-md bg-rose-100 text-rose-800 font-bold';
+        stBadge.textContent = 'ON';
       }
     } else {
+      if (stDot) stDot.className = 'w-2.5 h-2.5 rounded-full bg-slate-400';
       if (stBadge) {
-        stBadge.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-semibold border border-slate-200';
-        stBadge.textContent = 'Standby';
-      }
-      if (stBtn) {
-        stBtn.className = 'px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 transition shadow-sm';
-        stBtn.textContent = 'Activate';
+        stBadge.className = 'text-xs font-mono px-2 py-0.5 rounded-md bg-slate-200 text-slate-700 font-bold';
+        stBadge.textContent = 'OFF';
       }
     }
 

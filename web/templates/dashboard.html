@@ -250,7 +250,7 @@
             <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
               <div class="flex items-center gap-2">
                 <i class="fa-solid fa-bullhorn text-amber-500 text-sm"></i>
-                <h3 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider font-mono">Hardware Actuators</h3>
+                <h3 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider font-mono">EMERGENCY ACTUATORS</h3>
               </div>
               <button onclick="allActuatorsOff()" title="Silence all physical alarms" class="text-[10px] font-mono px-2 py-0.5 rounded-md bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold transition cursor-pointer">
                 ALL OFF
@@ -261,11 +261,14 @@
               <!-- Buzzer / Siren Control -->
               <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/70 dark:border-slate-800 space-y-2.5">
                 <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-2">
-                    <span id="dashBuzzerDot" class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
-                    <span class="font-bold text-sm text-slate-900 dark:text-slate-100">Buzzer (Siren)</span>
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <span id="dashBuzzerDot" class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+                      <span class="font-bold text-sm text-slate-900 dark:text-slate-100">Acoustic Siren (Buzzer)</span>
+                      <span id="dashBuzzerBadge" class="text-xs font-mono px-2 py-0.5 rounded-md bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold">OFF</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 font-mono">Pin 12 / GPIO18 · Physical Siren</p>
                   </div>
-                  <span id="dashBuzzerBadge" class="text-xs font-mono px-2 py-0.5 rounded-md bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold">OFF</span>
                 </div>
                 <div class="grid grid-cols-2 gap-2 pt-0.5">
                   <button type="button" onclick="setActuator('buzzer', 'on')" class="py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold text-xs shadow-sm transition flex items-center justify-center gap-1.5 cursor-pointer">
@@ -282,11 +285,14 @@
               <!-- Warning Lights / Relay Control -->
               <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/70 dark:border-slate-800 space-y-2.5">
                 <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-2">
-                    <span id="dashStrobeDot" class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
-                    <span class="font-bold text-sm text-slate-900 dark:text-slate-100">Warning Lights</span>
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <span id="dashStrobeDot" class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+                      <span class="font-bold text-sm text-slate-900 dark:text-slate-100">Warning Strobe / LEDs</span>
+                      <span id="dashStrobeBadge" class="text-xs font-mono px-2 py-0.5 rounded-md bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold">OFF</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 font-mono">Pin 16 / GPIO23 · Optical Relay</p>
                   </div>
-                  <span id="dashStrobeBadge" class="text-xs font-mono px-2 py-0.5 rounded-md bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold">OFF</span>
                 </div>
                 <div class="grid grid-cols-2 gap-2 pt-0.5">
                   <button type="button" onclick="setActuator('strobe', 'on')" class="py-2.5 px-3 rounded-xl bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-bold text-xs shadow-sm transition flex items-center justify-center gap-1.5 cursor-pointer">

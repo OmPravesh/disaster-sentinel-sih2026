@@ -436,7 +436,8 @@ def set_actuator_state(device: str, active: bool, is_manual: bool = False):
                 try:
                     GPIO.output(p, val)
                 except Exception as e:
-                    print(f"❌ [GPIO] Buzzer Pin {p} write error: {e}")
+                    print(f"❌ [GPIO] Buzzer Pin {p} write error: {e}", flush=True)
+        print(f"🔊 [ACTUATOR] Buzzer set to {'HIGH (3.3V ON)' if active else 'LOW (0V OFF)'} (Pins 12 & 32) [manual={is_manual}]", flush=True)
     elif device == "strobe":
         hub_state["strobe_gpio23"] = active
         hub_state["strobe_active_low"] = strobe_active_low
@@ -450,7 +451,8 @@ def set_actuator_state(device: str, active: bool, is_manual: bool = False):
                 try:
                     GPIO.output(p, val)
                 except Exception as e:
-                    print(f"❌ [GPIO] Strobe Pin {p} write error: {e}")
+                    print(f"❌ [GPIO] Strobe Pin {p} write error: {e}", flush=True)
+        print(f"💡 [ACTUATOR] Strobe set to {'HIGH (3.3V ON)' if active else 'LOW (0V OFF)'} (Pins 16 & 36) [active_low={strobe_active_low}, manual={is_manual}]", flush=True)
 
 def update_hub_alert_status():
     """Syncs buzzer and strobe states with active hazardous alerts."""
@@ -836,6 +838,32 @@ def get_all_forecasts():
             "SLD2": run_gru_forecast("SLD2"),
             "FIR3": run_gru_forecast("FIR3"),
             "POL4": run_gru_forecast("POL4")
+        }
+    })
+
+@app.route("/api/actuators", methods=["GET"])
+def get_actuators_status():
+    """Returns the live state of physical actuators (Buzzer & Strobe) on Jetson."""
+    return jsonify({
+        "success": True,
+        "actuators": {
+            "buzzer": {
+                "name": "Acoustic Siren (Buzzer)",
+                "physical_pin": 12,
+                "bcm_gpio": 18,
+                "state": hub_state.get("buzzer_gpio18", False),
+                "manual_override": manual_override.get("buzzer", False),
+                "gpio_hardware_active": HAS_JETSON_GPIO
+            },
+            "strobe": {
+                "name": "Warning Strobe / LEDs",
+                "physical_pin": 16,
+                "bcm_gpio": 23,
+                "state": hub_state.get("strobe_gpio23", False),
+                "manual_override": manual_override.get("strobe", False),
+                "active_low": strobe_active_low,
+                "gpio_hardware_active": HAS_JETSON_GPIO
+            }
         }
     })
 
