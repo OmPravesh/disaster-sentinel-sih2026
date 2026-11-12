@@ -20,3 +20,4 @@ run("curl -X POST http://127.0.0.1:5000/api/actuators/buzzer/on")
 run("curl http://127.0.0.1:5000/api/actuators")
 
 ssh.close()
+
