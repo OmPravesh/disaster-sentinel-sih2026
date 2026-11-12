@@ -245,6 +245,71 @@
             </a>
           </div>
 
+          <!-- Emergency Hardware Actuators Card (Buzzer & Strobe Lights) -->
+          <div class="p-5 rounded-2xl bg-white dark:bg-[#11141A] border border-slate-200/80 dark:border-white/[0.08] space-y-4 shadow-sm">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+              <div class="flex items-center gap-2">
+                <i class="fa-solid fa-bullhorn text-amber-500 text-sm"></i>
+                <h3 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider font-mono">Hardware Actuators</h3>
+              </div>
+              <button onclick="allActuatorsOff()" title="Silence all physical alarms" class="text-[10px] font-mono px-2 py-0.5 rounded-md bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold transition cursor-pointer">
+                ALL OFF
+              </button>
+            </div>
+
+            <div class="space-y-3 text-xs">
+              <!-- Buzzer / Siren Control -->
+              <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/70 dark:border-slate-800 space-y-2">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-1.5">
+                    <span id="dashBuzzerDot" class="w-2 h-2 rounded-full bg-slate-400"></span>
+                    <span class="font-bold text-slate-800 dark:text-slate-200">Acoustic Siren</span>
+                  </div>
+                  <span id="dashBuzzerBadge" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold">OFF</span>
+                </div>
+                <div class="flex items-center gap-1.5 pt-1">
+                  <button onclick="setActuator('buzzer', 'on')" class="flex-1 py-1 px-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] shadow-xs transition cursor-pointer">
+                    ON
+                  </button>
+                  <button onclick="setActuator('buzzer', 'off')" class="flex-1 py-1 px-2 rounded-lg bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-[11px] transition cursor-pointer">
+                    OFF
+                  </button>
+                  <button onclick="setActuator('buzzer', 'pulse')" title="2.5 sec test beep" class="py-1 px-2.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-white font-bold text-[11px] transition cursor-pointer">
+                    Beep
+                  </button>
+                </div>
+              </div>
+
+              <!-- Strobe Light / Relay Control -->
+              <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/70 dark:border-slate-800 space-y-2">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-1.5">
+                    <span id="dashStrobeDot" class="w-2 h-2 rounded-full bg-slate-400"></span>
+                    <span class="font-bold text-slate-800 dark:text-slate-200">Warning Strobe / LEDs</span>
+                  </div>
+                  <span id="dashStrobeBadge" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold">OFF</span>
+                </div>
+                <div class="flex items-center gap-1.5 pt-1">
+                  <button onclick="setActuator('strobe', 'on')" class="flex-1 py-1 px-2 rounded-lg bg-red-600 hover:bg-red-500 text-white font-bold text-[11px] shadow-xs transition cursor-pointer">
+                    ON
+                  </button>
+                  <button onclick="setActuator('strobe', 'off')" class="flex-1 py-1 px-2 rounded-lg bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-[11px] transition cursor-pointer">
+                    OFF
+                  </button>
+                  <button onclick="setActuator('strobe', 'pulse')" title="2.5 sec test flash" class="py-1 px-2.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-bold text-[11px] transition cursor-pointer">
+                    Flash
+                  </button>
+                </div>
+                <div class="flex items-center justify-between text-[10px] text-slate-500 pt-1 border-t border-slate-200/50 dark:border-slate-800">
+                  <span id="dashRelayModeLabel">Relay: Active-HIGH</span>
+                  <button onclick="toggleRelayPolarity()" class="text-[#6425FE] dark:text-purple-400 font-bold hover:underline cursor-pointer">
+                    Toggle Active-LOW
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Top Stations Mini List (matching "Top Stock" in reference) -->
           <div class="p-6 rounded-2xl bg-white dark:bg-[#11141A] border border-slate-200/80 dark:border-white/[0.08] space-y-4 shadow-xs">
             <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider block font-mono">Real-time Readings</h3>
@@ -807,7 +872,79 @@
 
       document.getElementById('statLeadTime').textContent = forecasts.FLD1.lead_time_label.includes('BREACH') ? '10 MIN MARGIN' : '50+ MIN SAFE';
     }
+
+    // 4. Update Hardware Actuator Indicators (Siren & Strobe)
+    if (hub) {
+      const bzDot = document.getElementById('dashBuzzerDot');
+      const bzBadge = document.getElementById('dashBuzzerBadge');
+      if (bzDot && bzBadge) {
+        if (hub.buzzer_gpio18) {
+          bzDot.className = 'w-2 h-2 rounded-full bg-amber-500 animate-pulse';
+          bzBadge.className = 'text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 font-bold';
+          bzBadge.textContent = 'ACTIVE';
+        } else {
+          bzDot.className = 'w-2 h-2 rounded-full bg-slate-400';
+          bzBadge.className = 'text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold';
+          bzBadge.textContent = 'OFF';
+        }
+      }
+
+      const stDot = document.getElementById('dashStrobeDot');
+      const stBadge = document.getElementById('dashStrobeBadge');
+      if (stDot && stBadge) {
+        if (hub.strobe_gpio23) {
+          stDot.className = 'w-2 h-2 rounded-full bg-red-500 animate-pulse';
+          stBadge.className = 'text-[10px] font-mono px-1.5 py-0.5 rounded bg-red-100 text-red-800 dark:bg-red-950/80 dark:text-red-300 font-bold';
+          stBadge.textContent = 'ACTIVE';
+        } else {
+          stDot.className = 'w-2 h-2 rounded-full bg-slate-400';
+          stBadge.className = 'text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold';
+          stBadge.textContent = 'OFF';
+        }
+      }
+    }
   });
+
+  // Actuator Trigger APIs
+  async function setActuator(device, action) {
+    try {
+      const res = await fetch(`${API_BASE}/api/actuators/${device}/${action}`, { method: 'POST' });
+      const data = await res.json();
+      if (data.success && typeof pollTelemetryOnce === 'function') {
+        pollTelemetryOnce();
+      }
+    } catch (e) {
+      console.error(`Failed to trigger ${device} ${action}:`, e);
+    }
+  }
+
+  async function allActuatorsOff() {
+    try {
+      const res = await fetch(`${API_BASE}/api/actuators/all/off`, { method: 'POST' });
+      const data = await res.json();
+      if (data.success && typeof pollTelemetryOnce === 'function') {
+        pollTelemetryOnce();
+      }
+    } catch (e) {
+      console.error('Failed to silence all actuators:', e);
+    }
+  }
+
+  async function toggleRelayPolarity() {
+    try {
+      const res = await fetch(`${API_BASE}/api/actuators/strobe/mode`, { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        const lbl = document.getElementById('dashRelayModeLabel');
+        if (lbl) {
+          lbl.textContent = `Relay: ${data.active_low ? 'Active-LOW' : 'Active-HIGH'}`;
+        }
+        if (typeof pollTelemetryOnce === 'function') pollTelemetryOnce();
+      }
+    } catch (e) {
+      console.error('Failed to toggle relay polarity:', e);
+    }
+  }
 
   document.addEventListener('DOMContentLoaded', () => {
     initCharts();

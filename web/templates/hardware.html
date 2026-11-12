@@ -655,31 +655,51 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
           <!-- Siren Actuator -->
-          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
-            <div>
-              <div class="flex items-center gap-2">
-                <span class="font-bold text-slate-900">Siren</span>
-                <span id="hwBuzzerBadge" class="text-[10px] font-mono px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 font-semibold border border-slate-200">Standby</span>
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-slate-900">Siren</span>
+                  <span id="hwBuzzerBadge" class="text-[10px] font-mono px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 font-semibold border border-slate-200">Standby</span>
+                </div>
+                <p class="text-[11px] text-slate-500 mt-0.5 font-mono">Pin 12 / GPIO18 · Acoustic Relay</p>
               </div>
-              <p class="text-[11px] text-slate-500 mt-0.5 font-mono">GPIO18 · Acoustic Relay</p>
             </div>
-            <button id="hwBuzzerBtn" onclick="toggleHwActuatorWithConfirm('buzzer')" class="px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 shadow-sm transition cursor-pointer">
-              Activate
-            </button>
+            <div class="flex items-center gap-1.5">
+              <button onclick="controlHwActuator('buzzer', 'on')" class="flex-1 py-1 px-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-xs transition cursor-pointer">
+                ON
+              </button>
+              <button onclick="controlHwActuator('buzzer', 'off')" class="flex-1 py-1 px-2.5 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs transition cursor-pointer">
+                OFF
+              </button>
+              <button onclick="controlHwActuator('buzzer', 'pulse')" title="2.5 sec test beep" class="py-1 px-3 rounded-lg bg-amber-500 hover:bg-amber-400 text-white font-bold text-xs transition cursor-pointer">
+                Beep
+              </button>
+            </div>
           </div>
 
           <!-- Strobe Actuator -->
-          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
-            <div>
-              <div class="flex items-center gap-2">
-                <span class="font-bold text-slate-900">Warning Strobe</span>
-                <span id="hwStrobeBadge" class="text-[10px] font-mono px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 font-semibold border border-slate-200">Standby</span>
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-slate-900">Warning Strobe</span>
+                  <span id="hwStrobeBadge" class="text-[10px] font-mono px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 font-semibold border border-slate-200">Standby</span>
+                </div>
+                <p class="text-[11px] text-slate-500 mt-0.5 font-mono">Pin 16 / GPIO23 · Optical Relay</p>
               </div>
-              <p class="text-[11px] text-slate-500 mt-0.5 font-mono">GPIO23 · Optical Relay</p>
             </div>
-            <button id="hwStrobeBtn" onclick="toggleHwActuatorWithConfirm('strobe')" class="px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 shadow-sm transition cursor-pointer">
-              Activate
-            </button>
+            <div class="flex items-center gap-1.5">
+              <button onclick="controlHwActuator('strobe', 'on')" class="flex-1 py-1 px-2.5 rounded-lg bg-red-600 hover:bg-red-500 text-white font-bold text-xs shadow-xs transition cursor-pointer">
+                ON
+              </button>
+              <button onclick="controlHwActuator('strobe', 'off')" class="flex-1 py-1 px-2.5 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs transition cursor-pointer">
+                OFF
+              </button>
+              <button onclick="controlHwActuator('strobe', 'pulse')" title="2.5 sec test flash" class="py-1 px-3 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs transition cursor-pointer">
+                Flash
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -2028,6 +2048,18 @@
     }
   }
 
+  async function controlHwActuator(device, action) {
+    try {
+      const res = await fetch(`${API_BASE}/api/actuators/${device}/${action}`, { method: 'POST' });
+      const data = await res.json();
+      if (data.success && typeof pollTelemetryOnce === 'function') {
+        pollTelemetryOnce();
+      }
+    } catch (e) {
+      alert(`Failed to ${action} ${device}: ` + e.message);
+    }
+  }
+
   async function toggleHwActuatorWithConfirm(device) {
     const isCurrentlyActive = (device === 'buzzer' && document.getElementById('hwBuzzerBadge').textContent.includes('ACTIVATED')) ||
                               (device === 'strobe' && document.getElementById('hwStrobeBadge').textContent.includes('ACTIVATED'));
@@ -2062,30 +2094,46 @@
     const bzBadge = document.getElementById('hwBuzzerBadge');
     const bzBtn = document.getElementById('hwBuzzerBtn');
     if (hub.buzzer_gpio18) {
-      bzBadge.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 font-bold animate-pulse border border-rose-200';
-      bzBadge.textContent = 'ACTIVATED';
-      bzBtn.className = 'px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition shadow-sm';
-      bzBtn.textContent = 'Deactivate';
+      if (bzBadge) {
+        bzBadge.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 font-bold animate-pulse border border-rose-200';
+        bzBadge.textContent = 'ACTIVATED';
+      }
+      if (bzBtn) {
+        bzBtn.className = 'px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition shadow-sm';
+        bzBtn.textContent = 'Deactivate';
+      }
     } else {
-      bzBadge.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-semibold border border-slate-200';
-      bzBadge.textContent = 'Standby';
-      bzBtn.className = 'px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 transition shadow-sm';
-      bzBtn.textContent = 'Activate';
+      if (bzBadge) {
+        bzBadge.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-semibold border border-slate-200';
+        bzBadge.textContent = 'Standby';
+      }
+      if (bzBtn) {
+        bzBtn.className = 'px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 transition shadow-sm';
+        bzBtn.textContent = 'Activate';
+      }
     }
 
     // Strobe State
     const stBadge = document.getElementById('hwStrobeBadge');
     const stBtn = document.getElementById('hwStrobeBtn');
     if (hub.strobe_gpio23) {
-      stBadge.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 font-bold animate-pulse border border-rose-200';
-      stBadge.textContent = 'ACTIVATED';
-      stBtn.className = 'px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition shadow-sm';
-      stBtn.textContent = 'Deactivate';
+      if (stBadge) {
+        stBadge.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 font-bold animate-pulse border border-rose-200';
+        stBadge.textContent = 'ACTIVATED';
+      }
+      if (stBtn) {
+        stBtn.className = 'px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition shadow-sm';
+        stBtn.textContent = 'Deactivate';
+      }
     } else {
-      stBadge.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-semibold border border-slate-200';
-      stBadge.textContent = 'Standby';
-      stBtn.className = 'px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 transition shadow-sm';
-      stBtn.textContent = 'Activate';
+      if (stBadge) {
+        stBadge.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-semibold border border-slate-200';
+        stBadge.textContent = 'Standby';
+      }
+      if (stBtn) {
+        stBtn.className = 'px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 transition shadow-sm';
+        stBtn.textContent = 'Activate';
+      }
     }
 
     // Update summary actuator pill

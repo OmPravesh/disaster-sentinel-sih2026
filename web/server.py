@@ -39,6 +39,32 @@ if sys.platform == "win32":
     except AttributeError:
         pass
 
+# -------------------------------------------------------------
+# Hardware GPIO Setup for Buzzer & Strobe (Jetson Orin Nano)
+# -------------------------------------------------------------
+HAS_JETSON_GPIO = False
+GPIO = None
+strobe_active_low = False
+
+try:
+    os.environ["JETSON_MODEL_NAME"] = "JETSON_ORIN_NANO"
+    import Jetson.GPIO as GPIO_LIB
+    GPIO_LIB.setmode(GPIO_LIB.BOARD)
+    # Physical Pin 12 (BCM 18) = Buzzer primary
+    # Physical Pin 32 (BCM 12) = Buzzer alternate
+    # Physical Pin 16 (BCM 23) = Strobe Relay primary
+    # Physical Pin 36 (BCM 16) = Strobe Relay alternate
+    for p in [12, 16, 32, 36]:
+        try:
+            GPIO_LIB.setup(p, GPIO_LIB.OUT, initial=GPIO_LIB.LOW)
+        except Exception as _p_err:
+            print(f"⚠️ [GPIO] Pin {p} setup warning: {_p_err}")
+    GPIO = GPIO_LIB
+    HAS_JETSON_GPIO = True
+    print("✅ [GPIO] Jetson.GPIO initialized: Buzzer (Pins 12 & 32) & Strobe (Pins 16 & 36)")
+except Exception as _gpio_err:
+    print(f"ℹ️ [GPIO] Hardware GPIO not active: {_gpio_err}")
+
 app = Flask(
     __name__,
     template_folder=os.path.join(BASE_DIR, "templates"),
@@ -387,6 +413,38 @@ incident_log = [
 for _ in range(5):
     record_history()
 
+manual_override = {"buzzer": False, "strobe": False}
+
+def set_actuator_state(device: str, active: bool, is_manual: bool = False):
+    """Sets actuator state in hub_state and physically writes to Jetson GPIO."""
+    global HAS_JETSON_GPIO, GPIO, strobe_active_low
+    active = bool(active)
+    if is_manual:
+        manual_override[device] = active
+    if device == "buzzer":
+        hub_state["buzzer_gpio18"] = active
+        if HAS_JETSON_GPIO and GPIO:
+            val = GPIO.HIGH if active else GPIO.LOW
+            for p in [12, 32]:
+                try:
+                    GPIO.output(p, val)
+                except Exception as e:
+                    print(f"❌ [GPIO] Buzzer Pin {p} write error: {e}")
+    elif device == "strobe":
+        hub_state["strobe_gpio23"] = active
+        hub_state["strobe_active_low"] = strobe_active_low
+        if HAS_JETSON_GPIO and GPIO:
+            # If active-low relay: LOW turns ON, HIGH turns OFF
+            if strobe_active_low:
+                val = GPIO.LOW if active else GPIO.HIGH
+            else:
+                val = GPIO.HIGH if active else GPIO.LOW
+            for p in [16, 36]:
+                try:
+                    GPIO.output(p, val)
+                except Exception as e:
+                    print(f"❌ [GPIO] Strobe Pin {p} write error: {e}")
+
 def update_hub_alert_status():
     """Syncs buzzer and strobe states with active hazardous alerts."""
     hazardous = [n for n in node_states.values() if n["status"] == "Hazardous"]
@@ -396,11 +454,13 @@ def update_hub_alert_status():
     hub_state["last_sync"] = datetime.now().strftime("%H:%M:%S")
     
     if len(hazardous) > 0:
-        hub_state["buzzer_gpio18"] = True
-        hub_state["strobe_gpio23"] = True
+        set_actuator_state("buzzer", True)
+        set_actuator_state("strobe", True)
     else:
-        hub_state["buzzer_gpio18"] = False
-        hub_state["strobe_gpio23"] = False
+        if not manual_override.get("buzzer", False):
+            set_actuator_state("buzzer", False)
+        if not manual_override.get("strobe", False):
+            set_actuator_state("strobe", False)
 
 # -------------------------------------------------------------
 # 3. REST API ENDPOINTS
@@ -776,18 +836,67 @@ def get_all_forecasts():
 def toggle_actuator(device):
     """Allows manual override of Jetson GPIO18 Buzzer or GPIO23 Strobe."""
     if device == "buzzer":
-        hub_state["buzzer_gpio18"] = not hub_state["buzzer_gpio18"]
-        state = hub_state["buzzer_gpio18"]
+        new_state = not hub_state["buzzer_gpio18"]
+        set_actuator_state("buzzer", new_state, is_manual=True)
+        return jsonify({"success": True, "device": device, "state": new_state})
     elif device == "strobe":
-        hub_state["strobe_gpio23"] = not hub_state["strobe_gpio23"]
-        state = hub_state["strobe_gpio23"]
+        new_state = not hub_state["strobe_gpio23"]
+        set_actuator_state("strobe", new_state, is_manual=True)
+        return jsonify({"success": True, "device": device, "state": new_state})
     else:
         return jsonify({"success": False, "error": "Unknown device"}), 400
+
+@app.route("/api/actuators/<device>/<action>", methods=["POST"])
+def control_actuator(device, action):
+    """Explicit on / off / pulse control for actuators: /api/actuators/buzzer/on or off or pulse."""
+    if device not in ["buzzer", "strobe"]:
+        return jsonify({"success": False, "error": "Unknown device"}), 400
         
+    action = action.lower()
+    if action in ["on", "1", "true", "start", "activate"]:
+        set_actuator_state(device, True, is_manual=True)
+        return jsonify({"success": True, "device": device, "action": action, "state": True})
+    elif action in ["off", "0", "false", "stop", "deactivate"]:
+        set_actuator_state(device, False, is_manual=False)
+        return jsonify({"success": True, "device": device, "action": action, "state": False})
+    elif action == "pulse":
+        import threading
+        def _pulse():
+            set_actuator_state(device, True, is_manual=True)
+            time.sleep(2.5)
+            set_actuator_state(device, False, is_manual=False)
+        threading.Thread(target=_pulse, daemon=True).start()
+        return jsonify({"success": True, "device": device, "action": "pulse", "duration_sec": 2.5})
+    else:
+        return jsonify({"success": False, "error": f"Unknown action: {action}"}), 400
+
+@app.route("/api/actuators/all/off", methods=["POST"])
+def all_actuators_off():
+    """Turns off both buzzer and strobe immediately and clears manual override."""
+    set_actuator_state("buzzer", False, is_manual=False)
+    set_actuator_state("strobe", False, is_manual=False)
+    return jsonify({"success": True, "buzzer": False, "strobe": False})
+
+@app.route("/api/actuators/strobe/mode", methods=["POST", "GET"])
+def toggle_strobe_polarity():
+    """Toggles or sets relay polarity: active-high (standard) or active-low."""
+    global strobe_active_low
+    if request.method == "POST":
+        data = request.get_json(silent=True) or {}
+        mode = data.get("mode", "").lower()
+        if mode in ["low", "active_low"]:
+            strobe_active_low = True
+        elif mode in ["high", "active_high"]:
+            strobe_active_low = False
+        else:
+            strobe_active_low = not strobe_active_low
+        hub_state["strobe_active_low"] = strobe_active_low
+        # Re-apply current state with the new polarity
+        set_actuator_state("strobe", hub_state.get("strobe_gpio23", False))
     return jsonify({
-        "success": True,
-        "device": device,
-        "state": state
+        "success": True, 
+        "active_low": strobe_active_low, 
+        "mode": "Active-LOW (LOW=ON)" if strobe_active_low else "Active-HIGH (HIGH=ON)"
     })
 
 @app.route("/api/simulate/<scenario>", methods=["POST"])
