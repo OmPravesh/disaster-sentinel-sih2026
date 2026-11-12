@@ -55,18 +55,18 @@ class BuzzerControl:
         _call_hub_actuator("buzzer", "on")
 
     async def off(self):
-        """Turn off buzzer."""
+        """Turn off buzzer (automatic background deactivation)."""
         self._is_on = False
         if self._continuous_task:
             self._continuous_task.cancel()
             self._continuous_task = None
-        _call_hub_actuator("buzzer", "off")
+        _call_hub_actuator("buzzer", "auto_off")
         logger.info("[Buzzer] OFF")
 
     def cleanup(self):
         """Cleanup buzzer."""
         self._is_on = False
-        _call_hub_actuator("buzzer", "off")
+        _call_hub_actuator("buzzer", "auto_off")
 
 
 class StrobeControl:
@@ -93,12 +93,12 @@ class StrobeControl:
         logger.warning("[Strobe] WARNING LIGHT ON")
 
     async def off(self):
-        """Turn strobe OFF."""
+        """Turn strobe OFF (automatic background deactivation)."""
         self._is_on = False
-        _call_hub_actuator("strobe", "off")
+        _call_hub_actuator("strobe", "auto_off")
         logger.info("[Strobe] Light OFF")
 
     def cleanup(self):
         """Cleanup strobe."""
         self._is_on = False
-        _call_hub_actuator("strobe", "off")
+        _call_hub_actuator("strobe", "auto_off")

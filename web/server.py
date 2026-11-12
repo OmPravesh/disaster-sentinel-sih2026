@@ -419,8 +419,15 @@ def set_actuator_state(device: str, active: bool, is_manual: bool = False):
     """Sets actuator state in hub_state and physically writes to Jetson GPIO."""
     global HAS_JETSON_GPIO, GPIO, strobe_active_low
     active = bool(active)
+    
     if is_manual:
         manual_override[device] = active
+    else:
+        # If an operator manually turned ON the device from the dashboard,
+        # background automated deactivations MUST NOT shut it off!
+        if manual_override.get(device, False) and not active:
+            return
+
     if device == "buzzer":
         hub_state["buzzer_gpio18"] = active
         if HAS_JETSON_GPIO and GPIO:
@@ -857,6 +864,9 @@ def control_actuator(device, action):
         set_actuator_state(device, True, is_manual=True)
         return jsonify({"success": True, "device": device, "action": action, "state": True})
     elif action in ["off", "0", "false", "stop", "deactivate"]:
+        set_actuator_state(device, False, is_manual=True)
+        return jsonify({"success": True, "device": device, "action": action, "state": False})
+    elif action in ["auto_off"]:
         set_actuator_state(device, False, is_manual=False)
         return jsonify({"success": True, "device": device, "action": action, "state": False})
     elif action == "pulse":
@@ -864,7 +874,7 @@ def control_actuator(device, action):
         def _pulse():
             set_actuator_state(device, True, is_manual=True)
             time.sleep(2.5)
-            set_actuator_state(device, False, is_manual=False)
+            set_actuator_state(device, False, is_manual=True)
         threading.Thread(target=_pulse, daemon=True).start()
         return jsonify({"success": True, "device": device, "action": "pulse", "duration_sec": 2.5})
     else:
@@ -873,8 +883,8 @@ def control_actuator(device, action):
 @app.route("/api/actuators/all/off", methods=["POST"])
 def all_actuators_off():
     """Turns off both buzzer and strobe immediately and clears manual override."""
-    set_actuator_state("buzzer", False, is_manual=False)
-    set_actuator_state("strobe", False, is_manual=False)
+    set_actuator_state("buzzer", False, is_manual=True)
+    set_actuator_state("strobe", False, is_manual=True)
     return jsonify({"success": True, "buzzer": False, "strobe": False})
 
 @app.route("/api/actuators/strobe/mode", methods=["POST", "GET"])

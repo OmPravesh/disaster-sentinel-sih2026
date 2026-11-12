@@ -259,51 +259,43 @@
 
             <div class="space-y-3 text-xs">
               <!-- Buzzer / Siren Control -->
-              <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/70 dark:border-slate-800 space-y-2">
+              <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/70 dark:border-slate-800 space-y-2.5">
                 <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-1.5">
-                    <span id="dashBuzzerDot" class="w-2 h-2 rounded-full bg-slate-400"></span>
-                    <span class="font-bold text-slate-800 dark:text-slate-200">Acoustic Siren</span>
+                  <div class="flex items-center gap-2">
+                    <span id="dashBuzzerDot" class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+                    <span class="font-bold text-sm text-slate-900 dark:text-slate-100">Buzzer (Siren)</span>
                   </div>
-                  <span id="dashBuzzerBadge" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold">OFF</span>
+                  <span id="dashBuzzerBadge" class="text-xs font-mono px-2 py-0.5 rounded-md bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold">OFF</span>
                 </div>
-                <div class="flex items-center gap-1.5 pt-1">
-                  <button onclick="setActuator('buzzer', 'on')" class="flex-1 py-1 px-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] shadow-xs transition cursor-pointer">
-                    ON
+                <div class="grid grid-cols-2 gap-2 pt-0.5">
+                  <button type="button" onclick="setActuator('buzzer', 'on')" class="py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold text-xs shadow-sm transition flex items-center justify-center gap-1.5 cursor-pointer">
+                    <i class="fa-solid fa-volume-high"></i>
+                    <span>TURN ON</span>
                   </button>
-                  <button onclick="setActuator('buzzer', 'off')" class="flex-1 py-1 px-2 rounded-lg bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-[11px] transition cursor-pointer">
-                    OFF
-                  </button>
-                  <button onclick="setActuator('buzzer', 'pulse')" title="2.5 sec test beep" class="py-1 px-2.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-white font-bold text-[11px] transition cursor-pointer">
-                    Beep
+                  <button type="button" onclick="setActuator('buzzer', 'off')" class="py-2.5 px-3 rounded-xl bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 active:scale-95 text-slate-800 dark:text-slate-200 font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer">
+                    <i class="fa-solid fa-volume-xmark"></i>
+                    <span>TURN OFF</span>
                   </button>
                 </div>
               </div>
 
-              <!-- Strobe Light / Relay Control -->
-              <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/70 dark:border-slate-800 space-y-2">
+              <!-- Warning Lights / Relay Control -->
+              <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/70 dark:border-slate-800 space-y-2.5">
                 <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-1.5">
-                    <span id="dashStrobeDot" class="w-2 h-2 rounded-full bg-slate-400"></span>
-                    <span class="font-bold text-slate-800 dark:text-slate-200">Warning Strobe / LEDs</span>
+                  <div class="flex items-center gap-2">
+                    <span id="dashStrobeDot" class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+                    <span class="font-bold text-sm text-slate-900 dark:text-slate-100">Warning Lights</span>
                   </div>
-                  <span id="dashStrobeBadge" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold">OFF</span>
+                  <span id="dashStrobeBadge" class="text-xs font-mono px-2 py-0.5 rounded-md bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold">OFF</span>
                 </div>
-                <div class="flex items-center gap-1.5 pt-1">
-                  <button onclick="setActuator('strobe', 'on')" class="flex-1 py-1 px-2 rounded-lg bg-red-600 hover:bg-red-500 text-white font-bold text-[11px] shadow-xs transition cursor-pointer">
-                    ON
+                <div class="grid grid-cols-2 gap-2 pt-0.5">
+                  <button type="button" onclick="setActuator('strobe', 'on')" class="py-2.5 px-3 rounded-xl bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-bold text-xs shadow-sm transition flex items-center justify-center gap-1.5 cursor-pointer">
+                    <i class="fa-solid fa-lightbulb"></i>
+                    <span>TURN ON</span>
                   </button>
-                  <button onclick="setActuator('strobe', 'off')" class="flex-1 py-1 px-2 rounded-lg bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-[11px] transition cursor-pointer">
-                    OFF
-                  </button>
-                  <button onclick="setActuator('strobe', 'pulse')" title="2.5 sec test flash" class="py-1 px-2.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-bold text-[11px] transition cursor-pointer">
-                    Flash
-                  </button>
-                </div>
-                <div class="flex items-center justify-between text-[10px] text-slate-500 pt-1 border-t border-slate-200/50 dark:border-slate-800">
-                  <span id="dashRelayModeLabel">Relay: Active-HIGH</span>
-                  <button onclick="toggleRelayPolarity()" class="text-[#6425FE] dark:text-purple-400 font-bold hover:underline cursor-pointer">
-                    Toggle Active-LOW
+                  <button type="button" onclick="setActuator('strobe', 'off')" class="py-2.5 px-3 rounded-xl bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 active:scale-95 text-slate-800 dark:text-slate-200 font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer">
+                    <i class="fa-regular fa-lightbulb"></i>
+                    <span>TURN OFF</span>
                   </button>
                 </div>
               </div>
@@ -908,41 +900,58 @@
   // Actuator Trigger APIs
   async function setActuator(device, action) {
     try {
-      const res = await fetch(`${API_BASE}/api/actuators/${device}/${action}`, { method: 'POST' });
+      // Immediate local button feedback
+      if (device === 'buzzer') {
+        const dot = document.getElementById('dashBuzzerDot');
+        const badge = document.getElementById('dashBuzzerBadge');
+        if (action === 'on') {
+          if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse';
+          if (badge) {
+            badge.className = 'text-xs font-mono px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 font-bold';
+            badge.textContent = 'ON';
+          }
+        } else {
+          if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-slate-400';
+          if (badge) {
+            badge.className = 'text-xs font-mono px-2 py-0.5 rounded-md bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold';
+            badge.textContent = 'OFF';
+          }
+        }
+      } else if (device === 'strobe') {
+        const dot = document.getElementById('dashStrobeDot');
+        const badge = document.getElementById('dashStrobeBadge');
+        if (action === 'on') {
+          if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse';
+          if (badge) {
+            badge.className = 'text-xs font-mono px-2 py-0.5 rounded-md bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300 font-bold';
+            badge.textContent = 'ON';
+          }
+        } else {
+          if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-slate-400';
+          if (badge) {
+            badge.className = 'text-xs font-mono px-2 py-0.5 rounded-md bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold';
+            badge.textContent = 'OFF';
+          }
+        }
+      }
+
+      const res = await fetch(`/api/actuators/${device}/${action}`, { method: 'POST' });
       const data = await res.json();
       if (data.success && typeof pollTelemetryOnce === 'function') {
         pollTelemetryOnce();
       }
     } catch (e) {
-      console.error(`Failed to trigger ${device} ${action}:`, e);
+      alert(`Actuator error: ` + e.message);
     }
   }
 
   async function allActuatorsOff() {
     try {
-      const res = await fetch(`${API_BASE}/api/actuators/all/off`, { method: 'POST' });
-      const data = await res.json();
-      if (data.success && typeof pollTelemetryOnce === 'function') {
-        pollTelemetryOnce();
-      }
+      await fetch(`/api/actuators/all/off`, { method: 'POST' });
+      setActuator('buzzer', 'off');
+      setActuator('strobe', 'off');
     } catch (e) {
       console.error('Failed to silence all actuators:', e);
-    }
-  }
-
-  async function toggleRelayPolarity() {
-    try {
-      const res = await fetch(`${API_BASE}/api/actuators/strobe/mode`, { method: 'POST' });
-      const data = await res.json();
-      if (data.success) {
-        const lbl = document.getElementById('dashRelayModeLabel');
-        if (lbl) {
-          lbl.textContent = `Relay: ${data.active_low ? 'Active-LOW' : 'Active-HIGH'}`;
-        }
-        if (typeof pollTelemetryOnce === 'function') pollTelemetryOnce();
-      }
-    } catch (e) {
-      console.error('Failed to toggle relay polarity:', e);
     }
   }
 
