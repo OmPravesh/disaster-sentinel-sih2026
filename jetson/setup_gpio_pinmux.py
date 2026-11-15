@@ -54,3 +54,4 @@ def enable_gpio_output_pads() -> None:
 
 if __name__ == "__main__":
     enable_gpio_output_pads()
+

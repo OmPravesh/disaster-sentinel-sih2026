@@ -650,9 +650,7 @@
             <i class="fa-solid fa-bullhorn text-amber-500 text-sm"></i>
             <h3 class="text-sm font-bold uppercase tracking-wider text-slate-900 font-mono">EMERGENCY ACTUATORS</h3>
           </div>
-          <button onclick="allHwActuatorsOff()" title="Silence all physical alarms" class="text-[10px] font-mono px-2 py-0.5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold transition cursor-pointer">
-            ALL OFF
-          </button>
+          <span class="text-[10px] font-mono text-slate-500">Physical Hardware Relays</span>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
@@ -662,7 +660,7 @@
               <div>
                 <div class="flex items-center gap-2">
                   <span id="hwBuzzerDot" class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
-                  <span class="font-bold text-sm text-slate-900">Acoustic Siren (Buzzer)</span>
+                  <span class="font-bold text-sm text-slate-900">Buzzer (Siren)</span>
                   <span id="hwBuzzerBadge" class="text-xs font-mono px-2 py-0.5 rounded-md bg-slate-200 text-slate-700 font-bold">OFF</span>
                 </div>
                 <p class="text-[11px] text-slate-500 mt-0.5 font-mono">Pin 12 / GPIO18 · Physical Siren</p>
@@ -686,7 +684,7 @@
               <div>
                 <div class="flex items-center gap-2">
                   <span id="hwStrobeDot" class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
-                  <span class="font-bold text-sm text-slate-900">Warning Strobe / LEDs</span>
+                  <span class="font-bold text-sm text-slate-900">Warning Lights</span>
                   <span id="hwStrobeBadge" class="text-xs font-mono px-2 py-0.5 rounded-md bg-slate-200 text-slate-700 font-bold">OFF</span>
                 </div>
                 <p class="text-[11px] text-slate-500 mt-0.5 font-mono">Pin 16 / GPIO23 · Optical Relay</p>
@@ -2080,16 +2078,6 @@
       }
     } catch (e) {
       alert(`Network error controlling ${device}: ` + e.message);
-    }
-  }
-
-  async function allHwActuatorsOff() {
-    try {
-      await fetch('/api/actuators/all/off', { method: 'POST' });
-      controlHwActuator('buzzer', 'off');
-      controlHwActuator('strobe', 'off');
-    } catch (e) {
-      console.error('Failed to silence all actuators:', e);
     }
   }
 

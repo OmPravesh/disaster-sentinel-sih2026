@@ -118,7 +118,35 @@ All visual assets, circuit schematics, dashboard telemetry, and hardware photogr
 
 ---
 
-### [F] Central Command Web Dashboard & 3D Tactical GIS
+### [F] Industrial IP65 Weatherproof Enclosure & Field Packaging (CAD Modeling)
+
+| IP65 Weatherproof Enclosure (Solid CAD) | Technical Blueprint & Wireframe Outlines |
+|:---:|:---:|
+| ![IP65 Junction Box Solid Render](project_images/IP65%20Junction%20Box%20with%20Lock.JPG) | ![IP65 Junction Box Wireframe Outlines](project_images/IP65%20Junction%20Box%20with%20Lock%20outlines.JPG) |
+| *High-strength IP65 weatherproof junction box featuring dual mechanical locking latches, hinged cover, and sealed internal cavity.* | *Parametric CAD orthographic outline showing internal PCB mounting standoffs, continuous perimeter gasket channel, and external wall/pole mounting flanges.* |
+
+| Photorealistic 3D Render & Material Model |
+|:---:|
+| ![IP65 Junction Box Color Render](project_images/IP65%20Junction%20Box%20with%20Lock%20colored.JPG) |
+| *Rendered 3D model with industrial high-visibility finish, molded hinges, silicone sealing perimeter, and physical tamper-proof padlock clasp for harsh Himalayan field deployments.* |
+
+---
+
+### [G] Custom ESP32 Multi-Hazard Node Carrier PCB (Design in Progress · Hardware v2.0)
+
+| 2D PCB Layout & Trace Routing | Component Footprint & Board Outline |
+|:---:|:---:|
+| ![Custom ESP32 PCB Layout](project_images/Custom%20Esp32%20pcb.png) | ![Custom ESP32 PCB Footprints](project_images/Custom%20ESP32%20footprints.png) |
+| *Custom double-sided carrier PCB designed in EDA/CAD: Dedicated power distribution planes, high-frequency SPI ground shielding for SX1278 LoRa, and low-noise sensor analog routing.* | *Standardized surface and through-hole component footprints: ESP32-WROOM-32 socket, SX1278 transceiver header, I2C/analog pull-ups, and precision battery voltage divider.* |
+
+| Connector & Field Wiring Interface Breakdown |
+|:---:|
+| ![Custom ESP32 Footprint & Connectors](project_images/Custom%20ESP32%20footprint%20and%20con.png) |
+| *Dedicated edge screw-terminal connectors for modular field sensor plug-and-play wiring (Rain sensor plate, JSN-SR04T ultrasonic, MPU-6050, MQ gas sensors, GP2Y1010AU0F dust sensor, and solar battery charging input).* |
+
+---
+
+### [H] Central Command Web Dashboard & 3D Tactical GIS
 
 | Master Executive Overview (`/dashboard`) | Live Multi-Hazard Telemetry (`/monitoring`) |
 |:---:|:---:|
@@ -142,7 +170,7 @@ All visual assets, circuit schematics, dashboard telemetry, and hardware photogr
 
 ---
 
-### [G] Technical Posters & Documentation
+### [I] Technical Posters & Documentation
 
 | SIH Technical Approach (Page 1) | System Architecture & Pipeline (Page 2) |
 |:---:|:---:|
@@ -241,6 +269,11 @@ A summary of pin connections for all 4 ESP32 nodes and the Jetson gateway. For f
 | SIM800L GSM | TXD / RXD | UART1_RXD / TXD | Pin 10 / Pin 8 | SMS alerts |
 | Piezo Buzzer | Signal / GND | GPIO18 / GND | Pin 12 / Pin 14 | Audio alarm |
 | Strobe Relay | IN | GPIO23 | Pin 16 | 5V relay for warning light |
+
+### Hardware v2.0 Roadmap: Custom Carrier PCB & Weatherproof Enclosure
+While initial bench testing and field qualification were conducted using modular breadboards and jumper wires, the system is actively transitioning to **Hardware v2.0** for permanent field deployments:
+- **Custom Multi-Hazard Node Carrier PCB**: Compact dual-layer PCB integrating the ESP32-WROOM-32, SX1278 LoRa radio header, analog signal conditioning, battery voltage divider, and vibration-resistant screw terminal blocks.
+- **IP65 Weatherproof Locking Enclosures**: Industrial UV-resistant junction boxes with dual mechanical latches, silicone gasket seals, and padlock clasps to safeguard remote field nodes against severe monsoons, freezing Himalayan winters, and wildlife tampering.
 
 ---
 
@@ -349,7 +382,7 @@ cd firmware/node_pollution && pio run -t upload
 | `jetson/dashboard/app.py` | FastAPI web server with REST API and WebSocket support |
 | `jetson/dashboard/static/` | Frontend CSS and JavaScript for the web dashboard |
 | `jetson/dashboard/templates/` | HTML shell for the Single-Page Application |
-| `project_images/` | All hardware photos, circuit schematics, and dashboard screenshots |
+| `project_images/` | All hardware photos, CAD enclosure models, custom PCB layouts, circuit schematics, and dashboard screenshots |
 | `hardware_pinout_guide.md` | Full hardware pin wiring and power circuit reference |
 | `simulation/` | Scenario scripts to simulate disaster events for testing |
 
