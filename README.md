@@ -7,17 +7,18 @@
 
 ### Tech Stack
 
-![ESP32](https://img.shields.io/badge/ESP32-Microcontroller-blue?style=flat-square&logo=espressif&logoColor=white)
-![C++](https://img.shields.io/badge/C++-Firmware-00599C?style=flat-square&logo=cplusplus&logoColor=white)
-![PlatformIO](https://img.shields.io/badge/PlatformIO-Build%20System-orange?style=flat-square&logo=platformio&logoColor=white)
-![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)
-![PyTorch](https://img.shields.io/badge/PyTorch-GRU%20AI%20Engine-EE4C2C?style=flat-square&logo=pytorch&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-Web%20Dashboard-009688?style=flat-square&logo=fastapi&logoColor=white)
-![NVIDIA Jetson](https://img.shields.io/badge/NVIDIA-Jetson%20Orin%20Nano-76B900?style=flat-square&logo=nvidia&logoColor=white)
-![LoRa](https://img.shields.io/badge/LoRa-433%20MHz%20Radio-8B4513?style=flat-square)
-![GSM](https://img.shields.io/badge/SIM800L-GSM%20SMS%20Alerts-red?style=flat-square)
-![Solar Powered](https://img.shields.io/badge/Solar-Powered%20Nodes-FFD700?style=flat-square&logo=sun&logoColor=black)
-![SIH 2026](https://img.shields.io/badge/SIH-2026-purple?style=flat-square)
+[![ESP32](https://img.shields.io/badge/ESP32-Microcontroller-blue?style=flat-square&logo=espressif&logoColor=white)](https://www.espressif.com/en/products/socs/esp32)
+[![C++](https://img.shields.io/badge/C++-Firmware-00599C?style=flat-square&logo=cplusplus&logoColor=white)](https://isocpp.org/)
+[![PlatformIO](https://img.shields.io/badge/PlatformIO-Build%20System-orange?style=flat-square&logo=platformio&logoColor=white)](https://platformio.org/)
+[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-GRU%20AI%20Engine-EE4C2C?style=flat-square&logo=pytorch&logoColor=white)](https://pytorch.org/)
+[![Flask](https://img.shields.io/badge/Flask-Central%20Command%20Hub-000000?style=flat-square&logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-Web%20Dashboard-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![NVIDIA Jetson](https://img.shields.io/badge/NVIDIA-Jetson%20Orin%20Nano-76B900?style=flat-square&logo=nvidia&logoColor=white)](https://www.nvidia.com/en-us/autonomous-machines/embedded-systems/jetson-orin/)
+[![LoRa](https://img.shields.io/badge/LoRa-433%20MHz%20Radio-8B4513?style=flat-square)](https://lora-alliance.org/)
+[![GSM](https://img.shields.io/badge/SIM800L-GSM%20SMS%20Alerts-red?style=flat-square)](https://www.simcom.com/)
+[![Solar Powered](https://img.shields.io/badge/Solar-Powered%20Nodes-FFD700?style=flat-square&logo=sun&logoColor=black)](#hardware-pin-connections)
+[![SIH 2026](https://img.shields.io/badge/SIH-2026-purple?style=flat-square)](https://www.sih.gov.in/)
 
 ---
 
@@ -297,11 +298,14 @@ Run the full Flask Central Command server with real-time PyTorch GRU forecasting
 python web/server.py
 ```
 
-- **Executive Command Dashboard**: [http://localhost:5000](http://localhost:5000)
-- **Live Telemetry & Gauges**: [http://localhost:5000/monitoring](http://localhost:5000/monitoring)
-- **Tactical 2D GIS Map**: [http://localhost:5000/map](http://localhost:5000/map)
-- **3D Himalayan Tactical Terrain GIS**: [http://localhost:5000/map3d](http://localhost:5000/map3d)
-- **AI Forecast Engine**: [http://localhost:5000/analytics](http://localhost:5000/analytics)
+> [!NOTE]
+> The endpoints below are hosted locally on your device or NVIDIA Jetson gateway. Run `python web/server.py` first, then open:
+> - **Executive Command Dashboard**: [http://localhost:5000](http://localhost:5000) (or via Jetson Wi-Fi: `http://192.168.1.50:5000`)
+> - **Live Telemetry & Gauges**: [http://localhost:5000/monitoring](http://localhost:5000/monitoring)
+> - **Tactical 2D GIS Map**: [http://localhost:5000/map](http://localhost:5000/map)
+> - **3D Himalayan Tactical Terrain GIS**: [http://localhost:5000/map3d](http://localhost:5000/map3d)
+> - **AI Forecast Engine**: [http://localhost:5000/analytics](http://localhost:5000/analytics)
+> - **Hardware & Actuator Relays**: [http://localhost:5000/hardware](http://localhost:5000/hardware)
 
 ### 2. Run the Gateway Orchestrator (Simulation Mode)
 
