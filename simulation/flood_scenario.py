@@ -31,20 +31,20 @@ async def run_flood_scenario(on_packet_cb=None):
 
     seq = 1000
     
-    # Timeline steps: (duration_sec, water_cm, rain_intensity_0_1, pressure_hPa, l1_anom, l2_anom, l3_anom, rate_flag, desc)
+    # Timeline steps: (duration_sec, distance_cm sensor->water (lower = higher water; critical < 300), rain_intensity_0_1, pressure_hPa, l1_anom, l2_anom, l3_anom, rate_flag, desc)
     timeline = [
         # Normal
-        (5, 45.0, 0.05, 1013.0, 0.05, 0.03, 0.02, 0, "NORMAL: Calm environmental conditions"),
-        (5, 48.0, 0.10, 1012.5, 0.08, 0.05, 0.04, 0, "NORMAL: Slight rain starting"),
+        (5, 510.0, 0.05, 1013.0, 0.05, 0.03, 0.02, 0, "NORMAL: Calm environmental conditions"),
+        (5, 505.0, 0.10, 1012.5, 0.08, 0.05, 0.04, 0, "NORMAL: Slight rain starting"),
         # Rising / Elevated
-        (5, 75.0, 0.35, 1010.0, 0.42, 0.38, 0.25, 1, "ELEVATED: Water level rising 75cm, moderate rain"),
-        (5, 110.0, 0.55, 1007.0, 0.61, 0.58, 0.45, 1, "ORANGE ALERT: Water level 110cm, 2 layers anomalous"),
+        (5, 440.0, 0.35, 1010.0, 0.42, 0.38, 0.25, 1, "ELEVATED: Water 440cm below sensor, moderate rain"),
+        (5, 370.0, 0.55, 1007.0, 0.61, 0.58, 0.45, 1, "ORANGE ALERT: Water 370cm below sensor, 2 layers anomalous"),
         # Surge / Critical RED
-        (5, 180.0, 0.85, 1002.0, 0.88, 0.82, 0.76, 3, "RED ALERT: SURGE! Water 180cm, heavy rain, storm pressure (3-layer CONFIRMED)"),
-        (5, 230.0, 0.95, 999.0, 0.96, 0.91, 0.88, 3, "CRITICAL RED: Water 230cm, sustained flood conditions"),
+        (5, 240.0, 0.85, 1002.0, 0.88, 0.82, 0.76, 3, "RED ALERT: SURGE! Water 240cm below sensor, heavy rain, storm pressure (3-layer CONFIRMED)"),
+        (5, 140.0, 0.95, 999.0, 0.96, 0.91, 0.88, 3, "CRITICAL RED: Water 140cm below sensor, sustained flood conditions"),
         # Receding
-        (5, 140.0, 0.40, 1006.0, 0.65, 0.45, 0.35, 2, "RECOVERY: Water receding to 140cm"),
-        (5, 60.0, 0.10, 1011.0, 0.15, 0.10, 0.08, 2, "NORMALIZED: Water level back to near baseline"),
+        (5, 320.0, 0.40, 1006.0, 0.65, 0.45, 0.35, 2, "RECOVERY: Water receding, 320cm below sensor"),
+        (5, 490.0, 0.10, 1011.0, 0.15, 0.10, 0.08, 2, "NORMALIZED: Water level back to near baseline"),
     ]
 
     for step in timeline:

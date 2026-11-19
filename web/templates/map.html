@@ -2,8 +2,8 @@
 
 {% block title %}Tactical Disaster Map · Disaster Sentinel{% endblock %}
 
-{% block page_title %}Tactical GIS Disaster Map{% endblock %}
-{% block page_subtitle %}Live geospatial intelligence across 4 strategic Uttarakhand field sectors{% endblock %}
+{% block page_title %}Map{% endblock %}
+{% block page_subtitle %}Uttarakhand · 4 stations · live status{% endblock %}
 
 {% block content %}
 <!-- Leaflet CSS -->
@@ -14,23 +14,7 @@
   <!-- ========================================================================= -->
   <!-- 1. PAGE HEADER: CLEAN & SIMPLE -->
   <!-- ========================================================================= -->
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
-    <div>
-      <div class="flex items-center gap-2">
-        <span class="text-[11px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200">
-          State of Uttarakhand (India)
-        </span>
-        <span class="text-slate-300">&bull;</span>
-        <span class="text-xs text-slate-500">SIH 2026 GIS Engine</span>
-      </div>
-      <h1 class="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5 mt-1">
-        <span>Uttarakhand Multi-Hazard Disaster Map</span>
-      </h1>
-      <p class="text-xs sm:text-sm text-slate-500 mt-1">
-        Live geospatial surveillance across 4 strategic hazard nodes: Rishikesh, Chamoli, Almora, and Dehradun.
-      </p>
-    </div>
-
+  <div class="flex flex-col sm:flex-row sm:items-center justify-end gap-4">
     <!-- Quick Status Pill & Controls -->
     <div class="flex flex-wrap items-center gap-2.5">
       <!-- Filter Tabs -->
@@ -47,9 +31,9 @@
       </div>
 
       <!-- Switch to 3D Terrain Mode Button -->
-      <a href="/map3d" class="px-3 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-semibold flex items-center gap-1.5 transition shadow-sm" title="Launch 3D Himalayan Digital Elevation Map">
-        <i class="fa-solid fa-mountain-sun text-xs text-amber-300"></i>
-        <span>3D Terrain View</span>
+      <a href="/map3d" class="px-3 py-2 rounded-xl bg-[var(--accent)] hover:opacity-90 text-white text-xs font-semibold flex items-center gap-1.5 transition shadow-sm" title="Launch 3D Himalayan Digital Elevation Map">
+        <i class="fa-solid fa-mountain-sun text-xs"></i>
+        <span>3D terrain</span>
       </a>
 
       <!-- Configure API Key Button -->
@@ -74,20 +58,7 @@
     <!-- Left: Main GIS Map Canvas (THE HERO, 8 Cols) -->
     <div class="lg:col-span-8 card-base p-4 sm:p-5 bg-white border border-slate-border rounded-lg shadow-sm flex flex-col space-y-3">
       
-      <!-- Statewide Live Danger Status Banner -->
-      <div id="statewideDangerBanner" class="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-between text-xs transition shadow-sm">
-        <div class="flex items-center gap-2.5">
-          <span id="statewideBannerDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-          <div>
-            <span id="statewideBannerTitle" class="font-bold tracking-tight uppercase block sm:inline">Uttarakhand Region: All 4 Nodes Safe</span>
-            <span class="text-slate-300 hidden sm:inline">&bull;</span>
-            <span id="statewideBannerDesc" class="text-slate-600 text-[11px] sm:text-xs">Normal parameters across Rishikesh, Chamoli, Almora &amp; Dehradun.</span>
-          </div>
-        </div>
-        <span id="statewideBannerBadge" class="text-[10px] font-bold px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-200 uppercase whitespace-nowrap">
-          Normal · Level 0
-        </span>
-      </div>
+
 
       <!-- Real Interactive Leaflet GIS Map Container -->
       <div class="relative w-full h-[540px] rounded-xl border border-slate-200 overflow-hidden shadow-inner bg-[#F1F5F9]">
@@ -125,7 +96,7 @@
         <!-- Clean Map Legend Overlay (Bottom Left) -->
         <div class="absolute bottom-3 left-3 bg-white/95 backdrop-blur px-3 py-2 rounded-xl border border-slate-200 text-[11px] text-slate-600 flex flex-wrap items-center gap-3 shadow-md z-[1000] pointer-events-auto">
           <span class="flex items-center gap-1.5 font-medium">
-            <span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span> Active Danger Zone
+            <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span> Active Danger Zone
           </span>
           <span class="flex items-center gap-1.5 font-medium">
             <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Safe Monitoring Radius
@@ -188,7 +159,7 @@
         <!-- Primary Vital Measurement Card -->
         <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
           <div class="flex justify-between items-center text-xs">
-            <span id="inspectorMetricLabel" class="text-slate-500 font-medium">River Water Level:</span>
+            <span id="inspectorMetricLabel" class="text-slate-500 font-medium">Distance to water:</span>
             <span id="inspectorThreshold" class="text-[11px] text-slate-400 font-mono">Normal (&lt; 6.0 m)</span>
           </div>
           <div class="flex items-baseline justify-between pt-0.5">
@@ -204,7 +175,7 @@
             <span id="inspectorDangerIndicatorTitle" class="text-xs font-bold text-emerald-700 uppercase">Current Status: Safe</span>
           </div>
           <p id="inspectorSituationNote" class="text-xs text-slate-600 leading-relaxed">
-            Water level is within normal baseline. Zero catchment overflow risk projected along Rishikesh Ganga riverbanks.
+            Water surface is more than 4.5 m below the sensor.
           </p>
         </div>
 
@@ -231,7 +202,7 @@
             </div>
             <div class="flex justify-between text-slate-500">
               <span>Danger Threshold:</span>
-              <span id="detThreshold" class="text-rose-600 font-mono font-medium">10.0 m (Critical Level)</span>
+              <span id="detThreshold" class="text-rose-600 font-mono font-medium">under 3.0 m (critical)</span>
             </div>
             <div class="flex justify-between text-slate-500">
               <span>Evacuation Radius:</span>
@@ -395,9 +366,9 @@
       title: "Rishikesh · Ganga Basin",
       station: "River Station #4 · Ganga Basin, Uttarakhand",
       district: "Dehradun / Tehri Garhwal",
-      metricName: "River Water Level",
-      thresholdSafe: "Normal (< 6.0 m)",
-      thresholdDanger: "Critical Danger (> 10.0 m)",
+      metricName: "Distance to water",
+      thresholdSafe: "Normal (> 4.5 m)",
+      thresholdDanger: "Critical (< 3.0 m)",
       unit: "m",
       coords: "30.0869° N, 78.2676° E",
       lat: 30.0869,
@@ -813,7 +784,7 @@
       const threshEl = document.getElementById('inspectorThreshold');
 
       let val = 0;
-      if (activeLocation === 'flood') val = node.sensors.River_Water_Level_m;
+      if (activeLocation === 'flood') val = node.sensors.Water_Distance_m;
       if (activeLocation === 'landslide') val = node.sensors.Slope_Angle;
       if (activeLocation === 'fire') val = node.sensors['TVOC[ppb]'];
       if (activeLocation === 'pollution') val = node.sensors.pm25;
@@ -988,31 +959,6 @@
         }
       }
     });
-
-    // Update Statewide Danger Status Banner
-    const banner = document.getElementById('statewideDangerBanner');
-    const bannerDot = document.getElementById('statewideBannerDot');
-    const bannerTitle = document.getElementById('statewideBannerTitle');
-    const bannerDesc = document.getElementById('statewideBannerDesc');
-    const bannerBadge = document.getElementById('statewideBannerBadge');
-
-    if (dangerCount > 0) {
-      banner.className = 'p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 flex items-center justify-between text-xs transition shadow-sm animate-pulse';
-      bannerDot.className = 'w-2.5 h-2.5 rounded-full bg-rose-600 animate-ping';
-      bannerTitle.className = 'font-bold tracking-tight uppercase text-rose-700 block sm:inline';
-      bannerTitle.textContent = `⚠️ Critical Disaster Alert: Danger in ${dangerAreas.join(', ')}`;
-      bannerDesc.textContent = `${dangerCount} region(s) in Uttarakhand exceeding critical threshold. LoRa alarms & emergency sirens triggered.`;
-      bannerBadge.className = 'text-[10px] font-bold px-2.5 py-1 rounded-md bg-rose-600 text-white border border-rose-700 uppercase whitespace-nowrap shadow-sm';
-      bannerBadge.textContent = `EMERGENCY · LEVEL 3`;
-    } else {
-      banner.className = 'p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-between text-xs transition shadow-sm';
-      bannerDot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500';
-      bannerTitle.className = 'font-bold tracking-tight uppercase text-emerald-800 block sm:inline';
-      bannerTitle.textContent = 'Uttarakhand Region: All 4 Nodes Safe';
-      bannerDesc.textContent = 'Normal parameters across Rishikesh, Chamoli, Almora & Dehradun.';
-      bannerBadge.className = 'text-[10px] font-bold px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-200 uppercase whitespace-nowrap';
-      bannerBadge.textContent = 'Normal · Level 0';
-    }
 
     updateMapLayersVisibility();
     renderLocationInspector();

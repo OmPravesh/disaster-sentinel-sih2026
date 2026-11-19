@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "sentinel-web",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["web/server.py", "--port", "5077"],
+      "port": 5077
+    }
+  ]
+}

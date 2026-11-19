@@ -113,7 +113,7 @@ void updateOledDisplay(float waterLevel, float rainIntensity, float pressure, fl
 
     // Line 1: Water Level (cm and m)
     oled.setCursor(2, 16);
-    oled.printf("Water: %.1fcm (%.2fm)", waterLevel, waterLevel / 100.0f);
+    oled.printf("Dist: %.1fcm (%.2fm)", waterLevel, waterLevel / 100.0f);
 
     // Line 2: Rain Intensity (Shows % and raw ADC for troubleshooting)
     oled.setCursor(2, 28);

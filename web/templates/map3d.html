@@ -2,8 +2,8 @@
 
 {% block title %}3D Tactical Terrain Map · Disaster Sentinel{% endblock %}
 
-{% block page_title %}3D Himalayan Tactical Terrain GIS{% endblock %}
-{% block page_subtitle %}WebGL 3D Digital Elevation Model with photorealistic terrain across Garhwal &amp; Kumaon ranges{% endblock %}
+{% block page_title %}3D terrain{% endblock %}
+{% block page_subtitle %}Garhwal &amp; Kumaon elevation · 4 stations{% endblock %}
 
 {% block content %}
 <!-- MapLibre GL JS (v4.7.1) for WebGL 3D Terrain -->
@@ -114,24 +114,7 @@
   <!-- ========================================================================= -->
   <!-- 1. HEADER: CLEAN CONTROLS & 2D/3D SWITCHER -->
   <!-- ========================================================================= -->
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
-    <div>
-      <div class="flex items-center gap-2">
-        <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-200 flex items-center gap-1.5">
-          <i class="fa-solid fa-mountain text-indigo-500"></i>
-          3D Digital Elevation Model (DEM)
-        </span>
-        <span class="text-slate-300">&bull;</span>
-        <span class="text-xs text-slate-500">Himalayan Garhwal &amp; Kumaon Terrain</span>
-      </div>
-      <h1 class="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5 mt-1">
-        <span>Uttarakhand 3D Tactical Terrain GIS</span>
-      </h1>
-      <p class="text-xs sm:text-sm text-slate-500 mt-1">
-        Real-time 3D elevation modeling for slope stability, river gorge depth, and mountain ridge hazard projection.
-      </p>
-    </div>
-
+  <div class="flex flex-col sm:flex-row sm:items-center justify-end gap-4">
     <!-- Quick Action Buttons -->
     <div class="flex flex-wrap items-center gap-2.5">
       <!-- Back to 2D Map -->
@@ -162,20 +145,7 @@
     <!-- Left: 3D WebGL Canvas (8 Cols) -->
     <div class="lg:col-span-8 card-base p-4 sm:p-5 bg-white border border-slate-border rounded-lg shadow-sm flex flex-col space-y-3" id="mapCardContainer">
 
-      <!-- Statewide Status Banner -->
-      <div id="statusBanner3D" class="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-between text-xs transition shadow-sm">
-        <div class="flex items-center gap-2.5">
-          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-          <div>
-            <span class="font-bold tracking-tight uppercase block sm:inline">3D Elevation Mesh: Active &amp; Calibrated</span>
-            <span class="text-slate-300 hidden sm:inline">&bull;</span>
-            <span class="text-slate-600 text-[11px] sm:text-xs">DEM resolution 10m &middot; Terrarium elevation encoding synchronized with 4 LoRa nodes.</span>
-          </div>
-        </div>
-        <span class="text-[10px] font-bold px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-200 uppercase whitespace-nowrap">
-          60 FPS WebGL
-        </span>
-      </div>
+
 
       <!-- 3D Canvas Container -->
       <div class="relative w-full h-[580px] rounded-xl border border-slate-200 overflow-hidden shadow-inner bg-slate-950" id="canvasWrapper">
@@ -367,9 +337,9 @@
       lat: 30.0869,
       altitude: "372 m",
       gradient: "3.2°",
-      metricLabel: "River Water Level:",
-      metricThreshold: "Warning > 6.0 m",
-      metricValue: "2.10 m",
+      metricLabel: "Distance to water:",
+      metricThreshold: "Critical < 3.0 m",
+      metricValue: "5.90 m",
       riskLevel: "Low Risk",
       topographicNote: "Upstream Himalayan runoff is standard. Ganga riverbed depth is within normal dry season envelope with zero flash flood risk.",
       lora: "433 MHz · RSSI -68 dBm",
@@ -873,8 +843,8 @@
         // FLD1
         if (data.nodes.FLD1) {
           const s = data.nodes.FLD1.sensors;
-          if (s && s.River_Water_Level_m !== undefined) {
-            NODES_CONFIG.fld1.metricValue = s.River_Water_Level_m.toFixed(2) + ' m';
+          if (s && s.Water_Distance_m !== undefined) {
+            NODES_CONFIG.fld1.metricValue = s.Water_Distance_m.toFixed(2) + ' m';
             if (activeSectorKey === 'fld1') {
               document.getElementById('metricValue3D').textContent = NODES_CONFIG.fld1.metricValue;
             }

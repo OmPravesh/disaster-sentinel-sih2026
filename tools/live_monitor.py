@@ -104,13 +104,13 @@ def run_monitor(jetson_ip: str = "192.168.1.50", port: int = 5000, interval: flo
 
             # 2. FLD1 Card (Flood)
             fl_sens = fld1.get("sensors", {})
-            fl_w = fl_sens.get("River_Water_Level_m", 0.0)
+            fl_w = fl_sens.get("Water_Distance_m", 0.0)
             fl_r = fl_sens.get("Rainfall_Intensity_mm_hr", 0.0)
             fl_stat = format_node_status(fld1)
             if fld1.get("connected"):
-                print(f"  {CLR_BLUE}{CLR_BOLD}🌊 FLD1 (Flood Catch){CLR_RESET} Water: {CLR_BOLD}{fl_w:.2f} m{CLR_RESET}    | Rain: {CLR_BOLD}{fl_r:.2f} mm/h{CLR_RESET}        | RSSI: {fld1.get('lora_rssi', -68)} dBm | {fl_stat}")
+                print(f"  {CLR_BLUE}{CLR_BOLD}🌊 FLD1 (Flood Catch){CLR_RESET} Distance: {CLR_BOLD}{fl_w:.2f} m{CLR_RESET}    | Rain: {CLR_BOLD}{fl_r:.2f} mm/h{CLR_RESET}        | RSSI: {fld1.get('lora_rssi', -68)} dBm | {fl_stat}")
             else:
-                print(f"  {CLR_DIM}🌊 FLD1 (Flood Catch) Last Water: {fl_w:.2f} m | {fl_stat}{CLR_RESET}")
+                print(f"  {CLR_DIM}🌊 FLD1 (Flood Catch) Last distance: {fl_w:.2f} m | {fl_stat}{CLR_RESET}")
 
             # 3. SLD2 Card (Landslide)
             sl_sens = sld2.get("sensors", {})

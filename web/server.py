@@ -202,6 +202,44 @@ def load_gru_models():
 
 load_gru_models()
 
+# FLD1 measures the DISTANCE from the fixed ultrasonic sensor down to the water (lower = higher water).
+FLOOD_WARN_DIST_M = 4.5
+FLOOD_CRIT_DIST_M = 3.0
+
+def flood_level(dist_m):
+    # shortcut: the flood RF/GRU models were trained on water LEVEL (warn 6 m, crit 10 m). This linear map lines
+    # those limits up with distance warn 4.5 m / crit 3 m (and 6 m sensor range -> level 2). Retrain on distance later.
+    return 18.0 - (8.0 / 3.0) * float(dist_m)
+
+def flood_distance(level_m):
+    return (18.0 - float(level_m)) * 3.0 / 8.0
+
+# One limits table: (sensor key, warning, critical, lower_is_worse). Used by the forecast and by the status rule.
+LIMITS = {
+    "FLD1": ("Water_Distance_m", FLOOD_WARN_DIST_M, FLOOD_CRIT_DIST_M, True),
+    "SLD2": ("Slope_Angle", 30.0, 45.0, False),
+    "FIR3": ("TVOC[ppb]", 1500.0, 5000.0, False),
+    "POL4": ("pm25", 60.0, 150.0, False),
+}
+
+def enforce_limits(node_id):
+    """A reading past a hard limit is at least that severe, whatever the RF model says."""
+    key, warn, crit, lower = LIMITS[node_id]
+    node = node_states[node_id]
+    v = float(node["sensors"].get(key, 0.0))
+    past = (lambda th: v <= th) if lower else (lambda th: v >= th)
+    if past(crit):
+        node["status"] = "Hazardous"
+    elif past(warn) and node["status"] == "Safe":
+        node["status"] = "Warning"
+
+def model_row(hazard_key, sensors):
+    """One RF input row in the model's own feature order (FLD1 distance converted to the trained level)."""
+    src = dict(sensors)
+    if "Water_Distance_m" in src:
+        src["River_Water_Level_m"] = flood_level(src["Water_Distance_m"])
+    return pd.DataFrame([{c: src.get(c, 0.0) for c in models[hazard_key].feature_names_in_}])
+
 # Rolling sequence buffer for all 4 GRU temporal inputs (maintains last 10 observations)
 node_sequence_buffers = {
     "FLD1": [],
@@ -212,7 +250,7 @@ node_sequence_buffers = {
 
 def seed_sequence_buffers():
     node_sequence_buffers["FLD1"] = [
-        {"River_Water_Level_m": round(2.05 + 0.01 * i, 2), "Rainfall_mm": 12.0, "Rainfall_Intensity_mm_hr": 1.5, "Atmospheric_Pressure_hPa": 1005.4, "Temperature_C": 31.5, "Relative_Humidity_pct": 78.0}
+        {"Water_Distance_m": round(5.99 - 0.01 * i, 2), "Rainfall_mm": 12.0, "Rainfall_Intensity_mm_hr": 1.5, "Atmospheric_Pressure_hPa": 1005.4, "Temperature_C": 31.5, "Relative_Humidity_pct": 78.0}
         for i in range(10)
     ]
     node_sequence_buffers["SLD2"] = [
@@ -262,7 +300,7 @@ node_states = {
         "battery": 95,
         "lora_rssi": -68,
         "sensors": {
-            "River_Water_Level_m": 2.10,
+            "Water_Distance_m": 5.90,
             "Rainfall_mm": 12.24,
             "Rainfall_Intensity_mm_hr": 1.54,
             "Atmospheric_Pressure_hPa": 1005.40,
@@ -270,7 +308,7 @@ node_states = {
             "Relative_Humidity_pct": 78.0
         },
         "units": {
-            "River_Water_Level_m": "m",
+            "Water_Distance_m": "m",
             "Rainfall_mm": "mm",
             "Rainfall_Intensity_mm_hr": "mm/h",
             "Atmospheric_Pressure_hPa": "hPa",
@@ -382,7 +420,7 @@ def record_history():
     now_str = datetime.now().strftime("%H:%M:%S")
     entry = {
         "time": now_str,
-        "fld1_water": node_states["FLD1"]["sensors"]["River_Water_Level_m"],
+        "fld1_distance": node_states["FLD1"]["sensors"]["Water_Distance_m"],
         "fld1_rain": node_states["FLD1"]["sensors"]["Rainfall_mm"],
         "sld2_slope": node_states["SLD2"]["sensors"]["Slope_Angle"],
         "sld2_soil": node_states["SLD2"]["sensors"]["Soil_Saturation"] * 100,
@@ -456,6 +494,9 @@ def set_actuator_state(device: str, active: bool, is_manual: bool = False):
 
 def update_hub_alert_status():
     """Syncs buzzer and strobe states with active hazardous alerts."""
+    del incident_log[200:]  # bounded: drills and live alerts would otherwise grow it forever
+    for nid in LIMITS:
+        enforce_limits(nid)
     hazardous = [n for n in node_states.values() if n["status"] == "Hazardous"]
     warnings = [n for n in node_states.values() if n["status"] == "Warning"]
     
@@ -474,6 +515,11 @@ def update_hub_alert_status():
 # -------------------------------------------------------------
 # 3. REST API ENDPOINTS
 # -------------------------------------------------------------
+
+_forecast_cache = {}
+
+def all_forecasts():
+    return {nid: run_gru_forecast(nid) for nid in ("FLD1", "SLD2", "FIR3", "POL4")}
 
 def run_gru_forecast(node_id):
     """
@@ -495,12 +541,20 @@ def run_gru_forecast(node_id):
         seed_sequence_buffers()
         buf = node_sequence_buffers.get(node_id, [])
         
-    recent_seq = buf[-10:]
+    # The newest row always carries the live reading, so the chart's "now" equals the station's reading.
+    recent_seq = buf[-10:-1] + [{**buf[-1], **node_states[node_id]["sensors"]}]
+    cache_key = json.dumps(recent_seq, sort_keys=True, default=str)
+    cached = _forecast_cache.get(node_id)
+    if cached and cached[0] == cache_key:
+        return cached[1]  # inputs unchanged since the last poll: skip inference
     norm_rows = []
     for row in recent_seq:
         vec = []
         for f in features:
-            val = float(row.get(f, scaler["min"][f]))
+            if node_id == "FLD1" and f == "River_Water_Level_m" and "Water_Distance_m" in row:
+                val = flood_level(row["Water_Distance_m"])
+            else:
+                val = float(row.get(f, scaler["min"][f]))
             min_v = float(scaler["min"][f])
             max_v = float(scaler["max"][f])
             diff = max_v - min_v
@@ -515,37 +569,17 @@ def run_gru_forecast(node_id):
     target_min = float(scaler["target_min"])
     target_max = float(scaler["target_max"])
     denorm_future = pred_reg[0].cpu().numpy() * (target_max - target_min) + target_min
+    if node_id == "FLD1":
+        denorm_future = [flood_distance(v) for v in denorm_future]
     future_vals = [round(float(v), 2) for v in denorm_future]
     risk_pct = round(float(pred_risk[0][0]) * 100, 1)
     
-    if node_id == "FLD1":
-        target_name = "River Water Level"
-        unit = "m"
-        warn_th = 6.0
-        crit_th = 10.0
-    elif node_id == "SLD2":
-        target_name = "Slope Incline Angle"
-        unit = "°"
-        warn_th = 30.0
-        crit_th = 45.0
-    elif node_id == "FIR3":
-        target_name = "Combustion Gas Density"
-        unit = "ppb"
-        warn_th = 1500.0
-        crit_th = 5000.0
-    elif node_id == "POL4":
-        target_name = "PM2.5 Particulate Dust"
-        unit = "µg/m³"
-        warn_th = 60.0
-        crit_th = 150.0
-    else:
-        target_name = "Sensor Metric"
-        unit = ""
-        warn_th = 50.0
-        crit_th = 100.0
-        
-    crit_step = next((i for i, v in enumerate(future_vals) if v >= crit_th), None)
-    warn_step = next((i for i, v in enumerate(future_vals) if v >= warn_th), None)
+    target_name, unit = {"FLD1": ("Distance to water", "m"), "SLD2": ("Slope Incline Angle", "°"),
+                         "FIR3": ("Combustion Gas Density", "ppb"), "POL4": ("PM2.5 Particulate Dust", "µg/m³")}[node_id]
+    _, warn_th, crit_th, lower_is_worse = LIMITS[node_id]
+    past = (lambda v, th: v <= th) if lower_is_worse else (lambda v, th: v >= th)
+    crit_step = next((i for i, v in enumerate(future_vals) if past(v, crit_th)), None)
+    warn_step = next((i for i, v in enumerate(future_vals) if past(v, warn_th)), None)
     
     if crit_step is not None:
         lead_time_min = (crit_step + 1) * 10
@@ -565,7 +599,7 @@ def run_gru_forecast(node_id):
         for i in range(len(future_vals))
     ]
     
-    target_key = scaler["target"]
+    target_key = "Water_Distance_m" if node_id == "FLD1" else scaler["target"]
     history_vals = [round(float(r.get(target_key, 0)), 2) for r in recent_seq]
     
     hazards_map = {
@@ -575,13 +609,14 @@ def run_gru_forecast(node_id):
         "POL4": "Air Pollution"
     }
 
-    return {
+    result = {
         "success": True,
         "node_id": node_id,
         "hazard": hazards_map.get(node_id, "Hazard"),
         "target_name": target_name,
         "unit": unit,
         "thresholds": {"warning": warn_th, "critical": crit_th},
+        "lower_is_worse": lower_is_worse,
         "history_values": history_vals,
         "current_value": history_vals[-1] if history_vals else 0,
         "future_steps": steps_data,
@@ -592,6 +627,8 @@ def run_gru_forecast(node_id):
         "lead_time_label": lead_time_label,
         "ai_engine": "DisasterGRUForecaster (PyTorch 2.14 on NVIDIA Jetson Orin Nano)"
     }
+    _forecast_cache[node_id] = (cache_key, result)
+    return result
 
 # -------------------------------------------------------------
 # 3. PAGE VIEW ROUTES (Clean 7-Page Enterprise Platform Architecture)
@@ -693,7 +730,7 @@ def ingest_telemetry():
     if node_id == "FLD1":
         if "l1_raw" in data:
             raw_w = float(data["l1_raw"])
-            node["sensors"]["River_Water_Level_m"] = round(raw_w / 100.0 if raw_w > 20 else raw_w, 2)
+            node["sensors"]["Water_Distance_m"] = round(raw_w / 100.0 if raw_w > 20 else raw_w, 2)  # firmware sends cm
         if "l2_raw" in data:
             r_val = round(float(data["l2_raw"]) * 20.0, 2)
             node["sensors"]["Rainfall_Intensity_mm_hr"] = r_val
@@ -746,9 +783,7 @@ def ingest_telemetry():
     hazard_key = node["hazard"].lower()
     if hazard_key in models:
         try:
-            req_cols = list(models[hazard_key].feature_names_in_)
-            row = {c: node["sensors"].get(c, 0.0) for c in req_cols}
-            df = pd.DataFrame([row])
+            df = model_row(hazard_key, node["sensors"])
             if hazard_key == "fire":
                 pred = models[hazard_key].predict(df)[0]
                 node["status"] = "Hazardous" if pred == 1 else "Safe"
@@ -792,6 +827,17 @@ def get_incidents():
 @app.route("/api/nodes", methods=["GET"])
 def get_nodes():
     """Returns real-time telemetry, node health, and hub status with active heartbeat detection."""
+    refresh_links()
+    return jsonify({"success": True, "hub": hub_state, "nodes": node_states})
+
+@app.route("/api/state", methods=["GET"])
+def get_state():
+    """Everything a page polls, in one request (nodes, hub, forecasts, recent incidents)."""
+    refresh_links()
+    return jsonify({"success": True, "hub": hub_state, "nodes": node_states,
+                    "forecasts": all_forecasts(), "incidents": incident_log[:50]})
+
+def refresh_links():
     now = time.time()
     for nid, node in node_states.items():
         last = node.get("last_seen")
@@ -807,12 +853,6 @@ def get_nodes():
             node["connected"] = True
             node["last_seen_ago"] = round(now - last, 1)
             node["status_display"] = node["status"]
-
-    return jsonify({
-        "success": True,
-        "hub": hub_state,
-        "nodes": node_states
-    })
 
 @app.route("/api/history", methods=["GET"])
 def get_history():
@@ -833,12 +873,7 @@ def get_all_forecasts():
     """Returns forecasts for all 4 deep-learning enabled edge nodes (FLD1, SLD2, FIR3, POL4)."""
     return jsonify({
         "success": True,
-        "forecasts": {
-            "FLD1": run_gru_forecast("FLD1"),
-            "SLD2": run_gru_forecast("SLD2"),
-            "FIR3": run_gru_forecast("FIR3"),
-            "POL4": run_gru_forecast("POL4")
-        }
+        "forecasts": all_forecasts()
     })
 
 @app.route("/api/actuators", methods=["GET"])
@@ -947,7 +982,7 @@ def simulate_scenario(scenario):
     
     if scenario == "flash_flood":
         node = node_states["FLD1"]
-        node["sensors"]["River_Water_Level_m"] = 13.25
+        node["sensors"]["Water_Distance_m"] = 1.75
         node["sensors"]["Rainfall_mm"] = 275.40
         node["sensors"]["Rainfall_Intensity_mm_hr"] = 52.10
         node["sensors"]["Atmospheric_Pressure_hPa"] = 979.40
@@ -957,7 +992,7 @@ def simulate_scenario(scenario):
         # Update GRU sequence buffer with surge trajectory
         node_sequence_buffers["FLD1"] = [
             {
-                "River_Water_Level_m": round(2.5 + 1.15 * i, 2),
+                "Water_Distance_m": round(5.8 - 0.43 * i, 2),
                 "Rainfall_mm": round(45.0 + 24.5 * i, 1),
                 "Rainfall_Intensity_mm_hr": round(6.0 + 4.8 * i, 1),
                 "Atmospheric_Pressure_hPa": round(1005.0 - 2.7 * i, 1),
@@ -969,7 +1004,7 @@ def simulate_scenario(scenario):
         
         # Run Random Forest Tripwire
         if "flood" in models:
-            df = pd.DataFrame([node["sensors"]])
+            df = model_row("flood", node["sensors"])
             pred = models["flood"].predict(df)[0]
             node["status"] = pred
         else:
@@ -983,7 +1018,7 @@ def simulate_scenario(scenario):
             "title": "Rishikesh Ganga River Surge Detected",
             "severity": "CRITICAL",
             "status": "Active",
-            "details": "Water level jumped to 13.25m at Rishikesh Ganga Catchment Station #4 (Critical > 10.0m). GRU forecaster projects breach in 10 mins."
+            "details": "Water surface rose to 1.75 m below the sensor at Rishikesh Ganga Station #4 (critical under 3.0 m)."
         })
 
     elif scenario == "landslide_collapse":
@@ -1007,7 +1042,7 @@ def simulate_scenario(scenario):
         ]
         
         if "landslide" in models:
-            df = pd.DataFrame([node["sensors"]])
+            df = model_row("landslide", node["sensors"])
             prob = models["landslide"].predict_proba(df)[0][list(models["landslide"].classes_).index('Hazardous')]
             node["risk_prob"] = round(prob * 100, 1)
             node["status"] = "Hazardous" if prob >= 0.70 else ("Warning" if prob >= 0.35 else "Safe")
@@ -1055,7 +1090,7 @@ def simulate_scenario(scenario):
         ]
         
         if "fire" in models:
-            df = pd.DataFrame([node["sensors"]])
+            df = model_row("fire", node["sensors"])
             pred = models["fire"].predict(df)[0]
             node["status"] = "Hazardous" if pred == 1 else "Safe"
         else:
@@ -1091,7 +1126,7 @@ def simulate_scenario(scenario):
         ]
         
         if "pollution" in models:
-            df = pd.DataFrame([node["sensors"]])
+            df = model_row("pollution", node["sensors"])
             pred = models["pollution"].predict(df)[0]
             node["status"] = pred
         else:
@@ -1113,7 +1148,7 @@ def simulate_scenario(scenario):
         
         # Reset FLD1
         node_states["FLD1"]["sensors"] = {
-            "River_Water_Level_m": 2.10, "Rainfall_mm": 12.24, "Rainfall_Intensity_mm_hr": 1.54,
+            "Water_Distance_m": 5.90, "Rainfall_mm": 12.24, "Rainfall_Intensity_mm_hr": 1.54,
             "Atmospheric_Pressure_hPa": 1005.40, "Temperature_C": 31.5, "Relative_Humidity_pct": 78.0
         }
         node_states["FLD1"]["status"] = "Safe"
@@ -1166,12 +1201,7 @@ def simulate_scenario(scenario):
         "scenario": scenario,
         "hub": hub_state,
         "nodes": node_states,
-        "forecasts": {
-            "FLD1": run_gru_forecast("FLD1"),
-            "SLD2": run_gru_forecast("SLD2"),
-            "FIR3": run_gru_forecast("FIR3"),
-            "POL4": run_gru_forecast("POL4")
-        }
+        "forecasts": all_forecasts()
     })
 
 @app.route("/api/sos", methods=["POST"])
@@ -1211,6 +1241,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Disaster Sentinel Central Command Server")
     parser.add_argument("--port", type=int, default=None, help="Port to run the server on")
     parser.add_argument("--host", type=str, default=None, help="Host to bind to")
+    parser.add_argument("--debug", action="store_true", help="Flask debugger (local use only)")
     args, _ = parser.parse_known_args()
 
     web_cfg = load_web_config()
@@ -1234,7 +1265,7 @@ if __name__ == "__main__":
                 port = fallback
                 break
 
-    debug = web_cfg.get("debug", True)
+    debug = "--debug" in sys.argv  # never by default: the Werkzeug debugger on 0.0.0.0 allows remote code execution
 
     print("\n=======================================================")
     print("  DISASTER SENTINEL - CENTRAL COMMAND DASHBOARD SERVER")
@@ -1243,5 +1274,5 @@ if __name__ == "__main__":
     print(f"  -> Web Dashboard URL: http://localhost:{port}")
     print(f"  -> LoRa Receiver API: http://localhost:{port}/api/nodes")
     print("=======================================================\n")
-    app.run(host=host, port=port, debug=debug, use_reloader=False)
+    app.run(host=host, port=port, debug=debug, use_reloader=False, threaded=True)
 

@@ -136,7 +136,7 @@ Incoming Sensor Reading
 * **Multi-Task Loss:**
   $$\mathcal{L} = \mathcal{L}_{MSE}(\text{Future Trajectory}) + 0.5 \cdot \mathcal{L}_{BCE}(\text{Risk Probability})$$
 * **Early Warning Lead Time:**
-  Agar GRU dekhta hai ki t+20m par water level critical threshold ($10\text{ m}$) cross karega, toh wo dashboard par label karta hai:  
+  Agar GRU dekhta hai ki t+20m par sensor se paani ki doori critical limit ($3\text{ m}$) se kam ho jayegi, toh wo dashboard par label karta hai:  
   👉 **`"BREACH PREDICTED IN 20 MINS"`**  
   Isse NDRF aur local police ko disaster aane se **20 minute pehle evacuation** ka time mil jata hai!
 
