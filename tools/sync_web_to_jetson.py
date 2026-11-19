@@ -1,6 +1,21 @@
 import paramiko
+import socket
 
-JETSON_IP = '192.168.1.50'
+def get_jetson_ip():
+    candidate_ips = ['10.77.154.70', '192.168.1.50']
+    for ip in candidate_ips:
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.settimeout(1.5)
+            if s.connect_ex((ip, 22)) == 0:
+                s.close()
+                return ip
+            s.close()
+        except Exception:
+            pass
+    return '10.77.154.70'
+
+JETSON_IP = get_jetson_ip()
 JETSON_USER = 'om'
 JETSON_PASS = 'gtaomp23'
 REMOTE_DIR = '/home/om/disaster-sentinel-sih2026'
@@ -29,7 +44,7 @@ print("\nRestarting sentinel.service...")
 stdin, stdout, stderr = ssh.exec_command("echo gtaomp23 | sudo -S systemctl restart sentinel.service")
 stdout.channel.recv_exit_status()
 
-stdin, stdout, stderr = ssh.exec_command("systemctl status sentinel.service | head -n 14")
+stdin, stdout, stderr = ssh.exec_command("systemctl status sentinel.service --no-pager | head -n 16")
 print("\n=== sentinel.service Status ===")
 print(stdout.read().decode('utf-8', 'replace'))
 
