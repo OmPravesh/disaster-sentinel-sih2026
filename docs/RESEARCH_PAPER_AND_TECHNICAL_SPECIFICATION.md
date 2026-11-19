@@ -366,7 +366,7 @@ When a verified `Hazardous` condition is confirmed by the AI engine:
    CRITICAL DISASTER SOS [2026-09-08 02:53:27]
    Node: FLD1 (Rishikesh Ganga River Basin Catchment)
    Threat: FLOOD CRITICAL (Lead Time: 20 Mins)
-   Water Level: 13.25m (Critical > 10.0m) | Consensus: 94%
+   Distance to water: 1.75m (Critical < 3.0m) | Consensus: 94%
    Deploy NDRF rescue teams immediately.
    ```
 

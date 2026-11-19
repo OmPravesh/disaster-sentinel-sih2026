@@ -209,7 +209,7 @@ def format_packet_log(pkt: DecodedPacket) -> str:
     if pkt.node_id == "SLD2":
         sensor_details = f"Tilt={pkt.l1_raw:.1f}° | Soil Moisture={pkt.l2_raw:.1f}% | Pressure={pkt.l3_raw:.1f}hPa"
     elif pkt.node_id == "FLD1":
-        sensor_details = f"Water Level={pkt.l1_raw:.2f}m | Rain={pkt.l2_raw:.1f}mm/h | Pressure={pkt.l3_raw:.1f}hPa"
+        sensor_details = f"Water distance={pkt.l1_raw:.1f}cm | Rain={pkt.l2_raw:.1f}mm/h | Pressure={pkt.l3_raw:.1f}hPa"
     elif pkt.node_id == "FIR3":
         sensor_details = f"Flame={pkt.l1_raw:.0f} | Gas/Smoke={pkt.l2_raw:.1f}ppb | Temp={pkt.l3_raw:.1f}°C"
     elif pkt.node_id == "POL4":

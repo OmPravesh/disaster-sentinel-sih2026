@@ -230,7 +230,7 @@ A summary of pin connections for all 4 ESP32 nodes and the Jetson gateway. For f
 
 | Component | Pin | ESP32 Pin | Function |
 |---|---|---|---|
-| HC-SR04 Ultrasonic | TRIG / ECHO | GPIO 12 / GPIO 13 | Water level measurement |
+| HC-SR04 Ultrasonic | TRIG / ECHO | GPIO 13 / GPIO 12 | Distance to water surface (critical < 3 m) |
 | YL-83 Rain Sensor | AO / DO | GPIO 34 / GPIO 27 | Rain density reading |
 | BME280 | SDA / SCL | GPIO 21 / GPIO 22 | Temperature, pressure, humidity |
 | Battery Monitor | ADC | GPIO 36 | Voltage divider (10k/10k) |

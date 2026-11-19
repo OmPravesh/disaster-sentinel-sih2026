@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{% block title %}Disaster Sentinel · Autonomous Disaster Intelligence Platform{% endblock %}</title>
 
-  <!-- Google Fonts: Inter (NASA / Modern Web Safe Sans) & JetBrains Mono (Telemetry/Data) -->
+  <!-- Fonts: IBM Plex Sans (UI) + IBM Plex Mono (pins, codes), per DESIGN.md -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -18,8 +18,8 @@
       theme: {
         extend: {
           fontFamily: {
-            sans: ['Inter', 'Arial', 'Helvetica Neue', 'sans-serif'],
-            mono: ['JetBrains Mono', 'Courier New', 'monospace'],
+            sans: ['IBM Plex Sans', 'Arial', 'sans-serif'],
+            mono: ['IBM Plex Mono', 'Consolas', 'monospace'],
           },
           colors: {
             page: '#F9FAFB',
@@ -56,7 +56,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
   <!-- Chart.js 4 -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script>
     window.getChartPalette = function() {
       const isDark = document.documentElement.classList.contains('dark');
@@ -75,7 +75,7 @@
       const p = window.getChartPalette();
       Chart.defaults.color = p.tickColor;
       Chart.defaults.borderColor = p.gridColor;
-      Chart.defaults.font.family = "'Inter', Arial, sans-serif";
+      Chart.defaults.font.family = "'IBM Plex Sans', Arial, sans-serif";
       if (!Chart.defaults.plugins) Chart.defaults.plugins = {};
       if (!Chart.defaults.plugins.legend) Chart.defaults.plugins.legend = {};
       if (!Chart.defaults.plugins.legend.labels) Chart.defaults.plugins.legend.labels = {};
@@ -84,25 +84,200 @@
   </script>
 
   <style>
+    /* ===================================================================== */
+    /* TOKENS (dashboard-design skill). One name, a light and a dark value.  */
+    /* accent = data marks + selection; warn / crit only for problems.       */
+    /* The app is pinned to light (applyTheme); html.dark holds dark values. */
+    /* ===================================================================== */
     :root {
-      color-scheme: light !important;
+      color-scheme: light;
+      --page: #F5F6F8;
+      --card: #FFFFFF;
+      --soft: #F0F2F5;
+      --ink: #0F172A;
+      --ink-2: #334155;
+      --muted: #5B6576;              /* >= 4.5:1 on card, soft and page */
+      --line: rgba(15, 23, 42, .08);
+      --line-strong: rgba(15, 23, 42, .16);
+      --accent: #155DFC;  --accent-rgb: 21 93 252;
+      --warn: #E86A00;    --warn-rgb: 232 106 0;   --warn-ink: #9A3F00;
+      --crit: #DC1F2A;    --crit-rgb: 220 31 42;   --crit-ink: #A3121B;
+      --live: #16A34A;
+      --tip: #111827;
+      --shadow-card: 0 1px 2px rgba(0,0,0,.04), 0 1px 1px rgba(0,0,0,.02);
+      --shadow-pop: 0 12px 32px -8px rgba(0,0,0,.18), 0 0 0 1px rgba(0,0,0,.06);
+    }
+    html.dark {
+      color-scheme: dark;
+      --page: #0B0D12; --card: #13161D; --soft: #1B1F28;
+      --ink: #F2F4F7; --ink-2: #C7CDD6; --muted: #8E97A6;
+      --line: rgba(255,255,255,.08); --line-strong: rgba(255,255,255,.16);
+      --accent: #6D9BFF;  --accent-rgb: 109 155 255;
+      --warn: #FF9A3D;    --warn-rgb: 255 154 61;  --warn-ink: #FFB872;
+      --crit: #FF5A63;    --crit-rgb: 255 90 99;   --crit-ink: #FF8C93;
+      --tip: #2A3242;
     }
     body {
-      background-color: #F9FAFB;
-      color: #0F172A;
-      font-family: 'Inter', Arial, 'Helvetica Neue', sans-serif;
-      letter-spacing: -0.011em;
+      background-color: var(--page);
+      color: var(--ink);
+      font-family: 'IBM Plex Sans', Arial, sans-serif;
+      font-size: 14px;
     }
-    .card-base {
-      background: #FFFFFF;
-      border: 1px solid #E5E7EB;
-      border-radius: 0.5rem;
-      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
-      transition: border-color 0.15s ease, background-color 0.15s ease;
+    .tnum { font-variant-numeric: tabular-nums; }
+
+    /* Shell: sidebar + header */
+    .shell-nav a {
+      display: flex; align-items: center; gap: 10px; height: 36px; padding: 0 10px;
+      border-radius: 10px; font-size: 13px; font-weight: 500; color: var(--ink-2);
+      transition: background-color .12s ease, color .12s ease;
     }
-    .card-base:hover {
-      border-color: #CBD5E1;
+    .shell-nav a i { width: 16px; text-align: center; font-size: 13px; color: var(--muted); }
+    .shell-nav a:hover { background: var(--soft); color: var(--ink); }
+    .shell-nav a.is-active {
+      background: rgb(var(--accent-rgb) / .08); color: var(--ink);
+      box-shadow: inset 0 0 0 1px rgb(var(--accent-rgb) / .18);
     }
+    .shell-nav a.is-active i { color: var(--accent); }
+    .pill {
+      display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px;
+      border-radius: 9999px; border: 1px solid var(--line); background: var(--card);
+      font-size: 12.5px; font-weight: 500; color: var(--ink-2); white-space: nowrap;
+    }
+    .pill.is-crit { background: rgb(var(--crit-rgb) / .08); border-color: rgb(var(--crit-rgb) / .3); color: var(--crit-ink); }
+    .icon-btn {
+      width: 32px; height: 32px; border-radius: 9999px; border: 1px solid var(--line); background: var(--card);
+      display: inline-flex; align-items: center; justify-content: center; color: var(--ink-2); font-size: 13px;
+    }
+    .icon-btn:hover { background: var(--soft); }
+    .dot { width: 7px; height: 7px; border-radius: 9999px; display: inline-block; flex-shrink: 0; }
+
+    /* One tooltip system: dark surface, 12px, above the element */
+    #tip {
+      position: fixed; z-index: 100; pointer-events: none; max-width: 260px;
+      background: var(--tip); color: #F8FAFC; font-size: 12px; line-height: 1.4;
+      padding: 7px 10px; border-radius: 8px; box-shadow: var(--shadow-pop);
+      opacity: 0; transform: translateY(2px); transition: opacity .1s ease, transform .1s ease;
+    }
+    #tip.show { opacity: 1; transform: none; }
+
+    /* ---- Shared UI kit (all pages) ---- */
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow-card); }
+    html.is-stale [data-live] { opacity: .45; transition: opacity .2s ease; }
+
+    /* KPI cards (report only) */
+    .kpi { padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+    .kpi-head { display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: var(--ink-2); }
+    .kpi-ico { width: 28px; height: 28px; border-radius: 8px; background: var(--soft); color: var(--muted);
+               display: inline-flex; align-items: center; justify-content: center; font-size: 12px; }
+    .kpi-val { font-size: 30px; line-height: 1.1; font-weight: 600; letter-spacing: -.03em; color: var(--ink); }
+    .kpi-foot { font-size: 12.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .kpi.is-crit .kpi-val { color: var(--crit-ink); }
+    .kpi.is-crit .kpi-ico { background: rgb(var(--crit-rgb) / .1); color: var(--crit); }
+    .kpi.is-warn .kpi-val { color: var(--warn-ink); }
+    .kpi.is-warn .kpi-ico { background: rgb(var(--warn-rgb) / .12); color: var(--warn); }
+
+    /* Chips */
+    .chip { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px; border-radius: 9999px;
+            font-size: 12px; font-weight: 500; white-space: nowrap; }
+    .chip-crit { background: rgb(var(--crit-rgb) / .1); color: var(--crit-ink); box-shadow: inset 0 0 0 1px rgb(var(--crit-rgb) / .25); }
+    .chip-warn { background: rgb(var(--warn-rgb) / .12); color: var(--warn-ink); box-shadow: inset 0 0 0 1px rgb(var(--warn-rgb) / .28); }
+    .chip-quiet { color: var(--muted); padding: 0; }
+
+    /* Station board */
+    .board-head, .srow { display: grid; align-items: center; column-gap: 16px;
+      grid-template-columns: minmax(170px, 1.3fr) 104px 112px minmax(160px, 1.6fr) 132px 132px 104px; }
+    .board-head { padding: 0 20px 8px; font-size: 12px; color: var(--muted); }
+    .srow { padding: 12px 20px; border-top: 1px solid var(--line); min-height: 64px; }
+    .srow:hover { background: color-mix(in srgb, var(--soft) 55%, transparent); }
+    .s-ico { width: 32px; height: 32px; border-radius: 9px; background: var(--soft); color: var(--muted);
+             display: inline-flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+    .is-crit .s-ico { background: rgb(var(--crit-rgb) / .1); color: var(--crit); }
+    .is-warn .s-ico { background: rgb(var(--warn-rgb) / .12); color: var(--warn); }
+    .s-name { font-size: 14px; font-weight: 500; color: var(--ink); }
+    .s-sub { font-size: 12.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .s-val { font-size: 16px; font-weight: 600; color: var(--ink); text-align: right; letter-spacing: -.01em; }
+    .s-val small { font-size: 12px; font-weight: 400; color: var(--muted); margin-left: 3px; }
+    .s-val.is-muted { color: var(--muted); font-weight: 500; }
+    .s-val.is-crit { color: var(--crit-ink); }
+    .s-val.is-warn { color: var(--warn-ink); }
+
+    /* Bullet graph: grey ranges (darker = worse), value bar, projected segment, critical target line */
+    .bullet { position: relative; height: 20px; border-radius: 4px; overflow: hidden; }
+    .bullet-range { position: absolute; top: 0; bottom: 0; }
+    .bullet-bar { position: absolute; left: 0; top: 7px; height: 6px; border-radius: 0 3px 3px 0; background: var(--ink-2);
+                  transition: width .4s cubic-bezier(.4,0,.2,1); }
+    .bullet-proj { position: absolute; top: 7px; height: 6px; border: 1px dashed var(--ink-2); border-left: 0; border-radius: 0 3px 3px 0; }
+    .bullet-target { position: absolute; top: 2px; bottom: 2px; width: 2px; margin-left: -1px; background: var(--ink); border-radius: 1px; }
+    .arow { display: grid; grid-template-columns: 32px minmax(0,1fr) auto auto auto; gap: 14px; align-items: center; padding: 12px 20px; border-top: 1px solid var(--line); }
+    @media (max-width: 640px) {
+      .arow { grid-template-columns: minmax(0,1fr) auto; padding: 12px 16px; }
+      .arow > .s-ico, .arow > :nth-child(3), .arow > :nth-child(4) { display: none; }
+      .arow .s-sub { white-space: normal; }
+    }
+    .lrow { display: grid; grid-template-columns: 8px minmax(0,1fr) auto auto; gap: 12px; align-items: center; padding: 10px 8px; border-top: 1px solid var(--line); border-radius: 8px; cursor: pointer; }
+    .lrow:hover { background: color-mix(in srgb, var(--soft) 60%, transparent); }
+    .data-table { width: 100%; font-size: 13px; border-collapse: collapse; }
+    .data-table th { font-weight: 500; font-size: 12px; color: var(--muted); text-align: left; padding: 0 8px 8px; }
+    .data-table td { padding: 9px 8px; border-top: 1px solid var(--line); color: var(--ink); font-variant-numeric: tabular-nums; }
+    .data-table .num { text-align: right; }
+    .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; }
+    .tile { background: var(--soft); border-radius: 10px; padding: 8px 10px; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+    .tile span { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tile b { font-size: 15px; font-weight: 600; color: var(--ink); }
+    .tile small, .tile b small { font-size: 11px; font-weight: 400; color: var(--muted); margin-left: 3px; }
+    .bullet-lg { height: 28px; } .bullet-lg .bullet-bar, .bullet-lg .bullet-proj { top: 9px; height: 10px; }
+    .bullet-scale { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+    .s-link { font-size: 12.5px; color: var(--ink-2); line-height: 1.35; }
+    .s-link .is-warn { color: var(--warn-ink); font-weight: 500; }
+
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 30px; padding: 0 12px;
+           border-radius: 9px; font-size: 12.5px; font-weight: 600; white-space: nowrap; transition: background-color .12s ease; }
+    .btn-crit { background: var(--crit); color: #fff; }
+    .btn-crit:hover { filter: brightness(.94); }
+    .btn-line { border: 1px solid var(--line-strong); color: var(--ink); background: var(--card); }
+    .btn-line:hover { background: var(--soft); }
+    .btn-ghost { color: var(--ink-2); }
+    .btn-ghost:hover { background: var(--soft); color: var(--ink); }
+
+    /* Phones and narrow tablets: rows fold, decorations go first */
+    @media (max-width: 1100px) {
+      .board-head { display: none; }
+      .srow { grid-template-columns: 1fr auto; grid-template-areas:
+        "name status" "bullet val" "fcst link" "act act"; row-gap: 10px; }
+      .srow > .c-name { grid-area: name; } .srow > .c-status { grid-area: status; justify-self: end; }
+      .srow > .c-val { grid-area: val; } .srow > .c-bullet { grid-area: bullet; }
+      .srow > .c-fcst { grid-area: fcst; } .srow > .c-link { grid-area: link; text-align: right; }
+      .srow > .c-act { grid-area: act; justify-self: stretch; }
+      .srow > .c-act .btn { width: 100%; }
+      .srow > .c-act:empty { display: none; }
+    }
+    @media (max-width: 480px) { .s-ico { display: none; } }
+
+    /* Segmented control: shrinks, never scrolls */
+    .seg { display: flex; padding: 3px; gap: 2px; border-radius: 10px; background: var(--soft); min-width: 0; }
+    .seg button { flex: 1 1 0; min-width: 0; height: 28px; padding: 0 10px; border-radius: 8px; font-size: 12.5px; font-weight: 500;
+                  color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-flex;
+                  align-items: center; justify-content: center; gap: 6px; }
+    .seg button[aria-pressed="true"] { background: var(--card); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.08), 0 0 0 1px var(--line); }
+
+    .stat { display: flex; flex-direction: column; gap: 2px; }
+    .stat span:first-child { font-size: 12px; color: var(--muted); }
+    .stat span:last-child { font-size: 14px; font-weight: 600; color: var(--ink); }
+
+    .legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; color: var(--muted); }
+    .legend i { display: inline-block; width: 16px; height: 0; vertical-align: middle; margin-right: 6px; border-top: 2px solid; }
+
+    .irow { display: grid; grid-template-columns: 8px 1fr auto; align-items: center; gap: 10px; padding: 9px 0; border-top: 1px solid var(--line); }
+    .irow:first-child { border-top: 0; }
+
+    .skel { background: linear-gradient(90deg, var(--soft) 0%, color-mix(in srgb, var(--soft) 40%, var(--card)) 50%, var(--soft) 100%);
+            background-size: 200% 100%; animation: skel 1.2s ease-in-out infinite; border-radius: 6px; color: transparent !important; }
+    @keyframes skel { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+    @media (prefers-reduced-motion: reduce) { .skel { animation: none; } .bullet-bar { transition: none; } }
+
+    /* Legacy class still used by the map pages: same surface as .card */
+    .card-base { background: var(--card) !important; border: 1px solid var(--line) !important; border-radius: 16px !important; box-shadow: var(--shadow-card) !important; }
     .nav-link-active {
       background-color: #EFF6FF !important;
       color: #155DFC !important;
@@ -220,7 +395,7 @@
   <script>
     // Global Chart.js Light-Mode Styling Configuration
     if (window.Chart) {
-      Chart.defaults.font.family = "'Inter', Arial, sans-serif";
+      Chart.defaults.font.family = "'IBM Plex Sans', Arial, sans-serif";
       Chart.defaults.color = "#64748B";
       Chart.defaults.plugins.tooltip.backgroundColor = "#0F172A";
       Chart.defaults.plugins.tooltip.titleColor = "#FFFFFF";
@@ -239,263 +414,118 @@
   <!-- ========================================================================= -->
   <!-- 0. DYNAMIC CONDITIONAL EMERGENCY ALERT BAR (HIDDEN WHEN ALL SYSTEMS SAFE) -->
   <!-- ========================================================================= -->
-  <div id="dynamicEmergencyBar" class="hidden bg-rose-600 text-white px-4 py-2.5 border-b border-rose-700 shadow-sm transition-all duration-300">
-    <div class="max-w-7xl mx-auto flex items-center justify-between gap-3 text-xs">
-      <div class="flex items-center gap-2.5 truncate">
-        <span class="w-2.5 h-2.5 rounded-full bg-white animate-ping flex-shrink-0"></span>
-        <span id="emergencyBarTitle" class="font-extrabold tracking-wide uppercase flex items-center gap-1.5">
-          <i class="fa-solid fa-triangle-exclamation"></i>
-          <span>CRITICAL - DISASTER DETECTED</span>
-        </span>
-        <span class="text-rose-200 hidden sm:inline">&bull;</span>
-        <span id="emergencyBarSubtitle" class="text-rose-100 truncate">Regional safety threshold exceeded. Immediate response advised.</span>
+  <!-- Emergency bar: only when a station is critical. Names + numbers, action on the right. -->
+  <div id="dynamicEmergencyBar" class="hidden text-white px-4 sm:px-6 lg:px-8 py-2" style="background:var(--crit)">
+    <div class="flex items-center justify-between gap-3 text-[13px]">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <span id="emergencyBarTitle" class="font-semibold whitespace-nowrap">Critical</span>
+        <span id="emergencyBarSubtitle" class="tnum truncate opacity-90 hidden sm:inline"></span>
       </div>
-      <a id="emergencyBarLink" href="/alerts" class="px-3.5 py-1 bg-white hover:bg-rose-50 text-rose-700 font-bold rounded-lg text-xs whitespace-nowrap shadow-sm transition flex items-center gap-1.5 flex-shrink-0">
-        <span>View Alert Details</span>
-        <i class="fa-solid fa-arrow-right text-[10px]"></i>
-      </a>
+      <div class="flex items-center gap-2 shrink-0">
+        <button onclick="openSosModal()" class="h-7 px-3 rounded-lg bg-white font-semibold text-[12.5px]" style="color:var(--crit-ink)">Send SOS</button>
+        <a id="emergencyBarLink" href="/alerts" class="h-7 px-3 rounded-lg border border-white/50 font-semibold text-[12.5px] hidden sm:inline-flex items-center">Open alerts</a>
+      </div>
     </div>
   </div>
 
   {% block layout %}
-  <div class="min-h-screen flex bg-[#F5F6FA] dark:bg-[#0B0F19] text-slate-800 dark:text-slate-100 font-sans antialiased">
+  <div class="min-h-screen flex font-sans antialiased" style="background:var(--page);color:var(--ink)">
 
-    <!-- Mobile Sidebar Backdrop -->
-    <div id="sidebarBackdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-30 hidden lg:hidden"></div>
+    <!-- Mobile sidebar backdrop -->
+    <div id="sidebarBackdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-black/40 z-30 hidden lg:hidden"></div>
 
-    <!-- ========================================================================= -->
-    <!-- 1. UNIFIED LEFT SIDEBAR (FOXSTOCKS PANEL LAYOUT ACROSS ALL PAGES)        -->
-    <!-- ========================================================================= -->
-    <aside id="dashboardSidebar" class="fox-sidebar shrink-0 bg-white dark:bg-[#111827] border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between p-5 select-none shadow-sm z-40">
-      <div class="space-y-6">
-        
-        <!-- Brand Logo & App Name -->
-        <div class="flex items-center justify-between">
-          <a href="/dashboard" class="flex items-center gap-3 group">
-            <div class="w-10 h-10 rounded-xl bg-[#6425FE] flex items-center justify-center text-white shadow-sm">
-              <i class="fa-solid fa-shield-halved text-lg"></i>
-            </div>
-            <div>
-              <span class="font-extrabold text-base tracking-tight text-slate-900 dark:text-white block leading-tight">Sentinel Hub</span>
-              <span class="text-[10px] text-slate-400 font-semibold tracking-wider uppercase block">Autonomous AI</span>
-            </div>
+    <!-- Sidebar: neutral, one accent for the current page -->
+    <aside id="dashboardSidebar" class="fox-sidebar shrink-0 flex flex-col justify-between px-3 py-4 select-none z-40 lg:sticky lg:top-0 lg:h-screen"
+           style="background:var(--card);border-right:1px solid var(--line)">
+      <div class="space-y-5">
+        <div class="flex items-center justify-between px-2">
+          <a href="/dashboard" class="flex items-center gap-2.5">
+            <span class="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm" style="background:var(--accent)">
+              <i class="fa-solid fa-shield-halved"></i>
+            </span>
+            <span class="text-[14px] font-semibold tracking-tight" style="color:var(--ink)">Disaster Sentinel</span>
           </a>
-          <button onclick="toggleSidebar()" class="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
+          <button onclick="toggleSidebar()" class="lg:hidden icon-btn" aria-label="Close menu"><i class="fa-solid fa-xmark"></i></button>
         </div>
 
-        <!-- Navigation Section -->
-        <div class="space-y-1">
-          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-3 pb-2 block">Operations Panel</span>
-          
-          <a href="/dashboard" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold {% if active_page == 'dashboard' or active_page == 'overview' %}sidebar-link-active{% else %}sidebar-link text-slate-600 dark:text-slate-300{% endif %} transition">
-            <i class="fa-solid fa-table-cells-large text-sm w-4 text-center"></i>
-            <span>Dashboard</span>
+        <nav class="shell-nav space-y-0.5">
+          <a href="/dashboard" class="{% if active_page in ['dashboard', 'overview'] %}is-active{% endif %}"><i class="fa-solid fa-table-cells-large"></i><span>Overview</span></a>
+          <a href="/monitoring" class="{% if active_page == 'monitoring' %}is-active{% endif %}"><i class="fa-solid fa-satellite-dish"></i><span>Live telemetry</span></a>
+          <a href="/alerts" class="{% if active_page == 'alerts' %}is-active{% endif %}">
+            <i class="fa-solid fa-triangle-exclamation"></i><span class="flex-1">Alerts</span>
+            <span id="sideAlertBadge" class="hidden tnum text-[11px] font-semibold px-1.5 rounded-full text-white" style="background:var(--crit)">0</span>
           </a>
-
-          <a href="/monitoring" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold {% if active_page == 'monitoring' %}sidebar-link-active{% else %}sidebar-link text-slate-600 dark:text-slate-300{% endif %} transition">
-            <i class="fa-solid fa-satellite-dish text-sm w-4 text-center"></i>
-            <span>Live Telemetry</span>
-          </a>
-
-          <a href="/map" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold {% if active_page == 'map' %}sidebar-link-active{% else %}sidebar-link text-slate-600 dark:text-slate-300{% endif %} transition">
-            <i class="fa-solid fa-map-location-dot text-sm w-4 text-center"></i>
-            <span>Tactical Map</span>
-          </a>
-
-          <a href="/map3d" class="flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold {% if active_page == 'map3d' %}sidebar-link-active{% else %}sidebar-link text-slate-600 dark:text-slate-300{% endif %} transition">
-            <div class="flex items-center gap-3">
-              <i class="fa-solid fa-mountain-sun text-sm w-4 text-center text-indigo-500"></i>
-              <span>3D Terrain Map</span>
-            </div>
-            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">3D</span>
-          </a>
-
-          <a href="/alerts" class="flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold {% if active_page == 'alerts' %}sidebar-link-active{% else %}sidebar-link text-slate-600 dark:text-slate-300{% endif %} transition">
-            <div class="flex items-center gap-3">
-              <i class="fa-solid fa-triangle-exclamation text-sm w-4 text-center text-amber-500"></i>
-              <span>Alerts &amp; Incidents</span>
-            </div>
-            <span id="sideAlertBadge" class="hidden text-[9px] font-mono font-bold px-1.5 py-0.2 rounded-full bg-rose-600 text-white">0</span>
-          </a>
-
-          <a href="/analytics" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold {% if active_page == 'analytics' %}sidebar-link-active{% else %}sidebar-link text-slate-600 dark:text-slate-300{% endif %} transition">
-            <i class="fa-solid fa-brain text-sm w-4 text-center"></i>
-            <span>AI Forecast Engine</span>
-          </a>
-
-          <a href="/hardware" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold {% if active_page == 'hardware' %}sidebar-link-active{% else %}sidebar-link text-slate-600 dark:text-slate-300{% endif %} transition">
-            <i class="fa-solid fa-microchip text-sm w-4 text-center"></i>
-            <span>Jetson &amp; LoRa Hub</span>
-          </a>
-
-          <a href="/about" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold {% if active_page == 'about' %}sidebar-link-active{% else %}sidebar-link text-slate-600 dark:text-slate-300{% endif %} transition">
-            <i class="fa-solid fa-circle-info text-sm w-4 text-center"></i>
-            <span>System Specs</span>
-          </a>
-        </div>
-
-        <!-- Situational Posture Callout (Tactical AI Diagnostic block from reference) -->
-        <div class="p-3.5 rounded-xl bg-emerald-50 dark:bg-[#0B0D12] border border-emerald-200 dark:border-white/[0.08] space-y-2">
-          <div class="flex items-center gap-2 text-emerald-800 dark:text-emerald-400 font-bold">
-            <div class="w-6 h-6 rounded-lg bg-emerald-200/80 dark:bg-emerald-950/60 dark:border dark:border-emerald-500/30 flex items-center justify-center text-xs text-emerald-900 dark:text-emerald-300">
-              <i class="fa-solid fa-sparkles text-[10px]"></i>
-            </div>
-            <span class="text-[11px] font-mono font-bold uppercase tracking-wider text-emerald-900 dark:text-emerald-400">✦ AI DIAGNOSTIC</span>
-          </div>
-          <p class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
-            Orin Nano recurrent GRU forecasters projecting nominal baseline stability across all 4 field stations with 50m lead time.
-          </p>
-        </div>
-
+          <a href="/map" class="{% if active_page == 'map' %}is-active{% endif %}"><i class="fa-solid fa-map-location-dot"></i><span>Map</span></a>
+          <a href="/map3d" class="{% if active_page == 'map3d' %}is-active{% endif %}"><i class="fa-solid fa-mountain-sun"></i><span>3D terrain</span></a>
+          <a href="/analytics" class="{% if active_page == 'analytics' %}is-active{% endif %}"><i class="fa-solid fa-chart-line"></i><span>Forecasts</span></a>
+          <a href="/hardware" class="{% if active_page == 'hardware' %}is-active{% endif %}"><i class="fa-solid fa-microchip"></i><span>Hub &amp; LoRa</span></a>
+          <a href="/about" class="{% if active_page == 'about' %}is-active{% endif %}"><i class="fa-solid fa-circle-info"></i><span>Specs</span></a>
+        </nav>
       </div>
 
-      <!-- Bottom Drawer / Emergency Actions -->
-      <div class="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-2">
-        <button onclick="openSimDrawer()" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 dark:hover:bg-slate-700 transition">
-          <span class="flex items-center gap-2">
-            <i class="fa-solid fa-flask text-purple-600 dark:text-purple-400"></i>
-            <span>Test Surges</span>
-          </span>
-          <i class="fa-solid fa-chevron-right text-[10px] text-slate-400"></i>
+      <div class="space-y-2 pt-4" style="border-top:1px solid var(--line)">
+        <button onclick="openSimDrawer()" class="w-full flex items-center gap-2.5 h-9 px-2.5 rounded-[10px] text-[13px] font-medium hover:bg-[var(--soft)]" style="color:var(--ink-2)">
+          <i class="fa-solid fa-flask w-4 text-center" style="color:var(--muted)"></i><span>Run drill</span>
         </button>
-
-        <button onclick="openSosModal()" class="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 transition shadow-sm">
-          <i class="fa-solid fa-satellite-dish"></i>
-          <span>SEND EMERGENCY SOS</span>
+        <button onclick="openSosModal()" class="w-full flex items-center justify-center gap-2 h-9 rounded-[10px] text-[13px] font-semibold text-white" style="background:var(--crit)">
+          <i class="fa-solid fa-tower-broadcast"></i><span>Send SOS</span>
         </button>
       </div>
-
     </aside>
 
-    <!-- ========================================================================= -->
-    <!-- 2. MAIN RIGHT VIEWPORT (HEADER + CONTENT + FOOTER)                        -->
-    <!-- ========================================================================= -->
+    <!-- Main viewport -->
     <div class="flex-1 flex flex-col min-w-0 min-h-screen">
-      
-      <!-- TOP FOXSTOCKS HEADER -->
-      <header class="fox-header sticky top-0 z-30 bg-white dark:bg-[#111827] border-b border-slate-200 dark:border-slate-800 px-5 sm:px-7 py-3 flex items-center justify-between gap-4">
-        
-        <!-- Left: Mobile Toggle & Page Greeting -->
-        <div class="flex items-center gap-3">
-          <button onclick="toggleSidebar()" class="lg:hidden p-2 rounded-xl text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800">
-            <i class="fa-solid fa-bars text-sm"></i>
-          </button>
-          <div>
-            <h1 class="font-extrabold text-lg sm:text-xl text-slate-900 dark:text-white tracking-tight leading-tight">
-              {% block page_title %}Hello Commander,{% endblock %}
-            </h1>
-            <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium hidden sm:block">
-              {% block page_subtitle %}Uttarakhand Multi-Hazard Autonomous Surveillance Network{% endblock %}
-            </p>
+
+      <header class="sticky top-0 z-30 px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3"
+              style="background:color-mix(in srgb, var(--page) 88%, transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)">
+        <div class="flex items-center gap-3 min-w-0">
+          <button onclick="toggleSidebar()" class="lg:hidden icon-btn" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
+          <div class="min-w-0">
+            <h1 class="text-[17px] font-semibold tracking-tight truncate" style="color:var(--ink)">{% block page_title %}Overview{% endblock %}</h1>
+            <p class="text-[12px] truncate hidden sm:block" style="color:var(--muted)">{% block page_subtitle %}Uttarakhand · 4 stations{% endblock %}</p>
           </div>
         </div>
 
-        <!-- Center: Search Input Bar with ⌘K Badge (Reference Style) -->
-        <div class="hidden md:flex items-center flex-1 max-w-md mx-4">
-          <div class="relative w-full">
-            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-            <input type="text" placeholder="Search sensor nodes, telemetry metrics, sectors..." class="w-full pl-9 pr-14 py-2 bg-slate-100 dark:bg-[#0A0C10] border border-transparent dark:border-white/[0.08] rounded-xl text-xs text-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:border-emerald-500 transition" />
-            <kbd class="hidden sm:inline-block absolute right-3 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[10px] font-mono text-slate-400 bg-white dark:bg-[#141720] border border-slate-200 dark:border-white/[0.08] rounded">⌘K</kbd>
-          </div>
-        </div>
-
-        <!-- Right: Action Icons & Profile Badge -->
-        <div class="flex items-center gap-2.5 sm:gap-3 shrink-0">
-          
-          <!-- Live System Status Tag -->
-          <div id="topStatusPill" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span id="topStatusText">ALL CLEAR</span>
-          </div>
-
-          <!-- Audio Siren Toggle -->
-          <button id="audioToggleBtn" onclick="toggleGlobalAudio()" title="Toggle Audio Alarm" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center transition cursor-pointer text-xs">
+        <div class="flex items-center gap-2 shrink-0">
+          <span id="updatedPill" class="pill" data-tip="Hub polled every 2.5 s">
+            <span id="updatedDot" class="dot" style="background:var(--line-strong)"></span>
+            <span class="hidden sm:inline">Updated</span><span id="updatedText" class="tnum">Connecting…</span>
+          </span>
+          <a id="topStatusPill" href="/alerts" class="pill hidden sm:inline-flex">
+            <span id="topStatusDot" class="dot" style="background:var(--live)"></span>
+            <span id="topStatusText" class="tnum">No alerts</span>
+          </a>
+          <button id="audioToggleBtn" onclick="toggleGlobalAudio()" class="icon-btn" data-tip="Browser siren on new alerts" aria-label="Toggle browser siren">
             <i id="audioIcon" class="fa-solid fa-volume-high"></i>
           </button>
-
-          <!-- Notification Bell -->
-          <a href="/alerts" title="Active Alerts" class="relative w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center transition text-xs">
+          <a href="/alerts" class="icon-btn relative" data-tip="Alerts" aria-label="Alerts">
             <i class="fa-regular fa-bell"></i>
-            <span id="bellBadge" class="hidden absolute top-2 right-2 w-2 h-2 rounded-full bg-rose-500"></span>
+            <span id="bellBadge" class="hidden absolute top-1.5 right-1.5 dot" style="background:var(--crit)"></span>
           </a>
-
-
-
-          <!-- Commander Avatar -->
-          <div class="flex items-center gap-2 pl-2 border-l border-slate-200 dark:border-slate-800">
-            <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#6425FE] to-[#8C65FE] flex items-center justify-center text-white font-bold text-xs shadow-sm">
-              <span>ND</span>
-            </div>
-          </div>
         </div>
-
       </header>
 
-      <!-- TACTICAL MISSION STATUS RIBBON (AGRI-COMMAND MISSION CONTROL STYLE) -->
-      <div class="hidden xl:flex items-center justify-between px-7 py-2 bg-slate-100/90 dark:bg-[#0A0C10] border-b border-slate-200 dark:border-white/[0.08] text-[11px] font-mono text-slate-500 dark:text-slate-400">
-        <div class="flex items-center gap-4">
-          <span class="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
-            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-            <strong class="font-bold text-slate-900 dark:text-white uppercase tracking-wider">SYSTEM:</strong>
-            <span class="text-emerald-600 dark:text-emerald-400 font-bold">Secure (99.9%)</span>
-          </span>
-          <span class="text-slate-300 dark:text-slate-700">&bull;</span>
-          <span class="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
-            <i class="fa-solid fa-tower-broadcast text-emerald-500 text-[10px]"></i>
-            <strong class="font-bold text-slate-900 dark:text-white uppercase tracking-wider">UPLINK:</strong>
-            <span class="text-emerald-600 dark:text-emerald-400 font-bold">14ms</span>
-          </span>
-          <span class="text-slate-300 dark:text-slate-700">&bull;</span>
-          <span class="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
-            <i class="fa-solid fa-satellite text-blue-500 text-[10px]"></i>
-            <strong class="font-bold text-slate-900 dark:text-white uppercase tracking-wider">ACTIVE NODES:</strong>
-            <span class="text-slate-900 dark:text-white font-bold">4/4 Online</span>
-          </span>
-          <span class="text-slate-300 dark:text-slate-700">&bull;</span>
-          <span class="text-slate-600 dark:text-slate-400">
-            <strong class="font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">GRID:</strong>
-            <span>30.0869&deg; N, 78.2676&deg; E</span>
-          </span>
-        </div>
-        <div class="flex items-center gap-3.5 text-slate-600 dark:text-slate-400">
-          <span class="flex items-center gap-1.5"><i class="fa-solid fa-droplet text-blue-400 text-[10px]"></i> 68% RH</span>
-          <span class="flex items-center gap-1.5"><i class="fa-solid fa-wind text-slate-400 text-[10px]"></i> 12 km/h NW</span>
-          <span class="flex items-center gap-1.5"><i class="fa-solid fa-temperature-half text-amber-400 text-[10px]"></i> 18&deg;C</span>
-          <span class="flex items-center gap-1.5"><i class="fa-solid fa-cloud-sun text-slate-400 text-[10px]"></i> Partly Cloudy</span>
-          <span class="px-2 py-0.5 rounded bg-slate-200/80 dark:bg-white/[0.08] text-slate-700 dark:text-slate-300 text-[10px] font-bold border border-transparent dark:border-white/[0.06]">BASE-01 TELEMETRY</span>
-        </div>
+      <!-- One page-level note when the hub can't be reached -->
+      <div id="fetchErrorNote" class="hidden px-4 sm:px-6 lg:px-8 py-2 text-[13px] flex items-center gap-2"
+           style="background:rgb(var(--warn-rgb) / .1);color:var(--warn-ink);border-bottom:1px solid rgb(var(--warn-rgb) / .25)">
+        <i class="fa-solid fa-plug-circle-xmark"></i>
+        <span id="fetchErrorText">Can't reach the hub. Showing the last numbers received.</span>
+        <button onclick="pollTelemetryOnce()" class="ml-auto font-semibold underline underline-offset-2">Retry</button>
       </div>
 
-      <!-- MAIN PAGE CONTENT BLOCK -->
-      <main class="flex-1 p-5 sm:p-7 space-y-6 overflow-y-auto">
+      <main class="flex-1 px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         {% block content %}{% endblock %}
       </main>
 
-      <!-- UNIFIED FOOTER -->
-      <footer class="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827] px-7 py-4 text-xs text-slate-500 dark:text-slate-400">
-        <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div class="flex flex-wrap items-center gap-2">
-            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-            <span class="font-bold text-slate-900 dark:text-white">Disaster Sentinel</span>
-            <span class="text-slate-300 dark:text-slate-600">|</span>
-            <span>SIH 2026 Qualcomm · Autonomous Jetson Orin Nano Edge Hub</span>
-          </div>
-          <div class="flex items-center gap-4 text-slate-500 dark:text-slate-400">
-            <a href="/monitoring" class="hover:text-[#6425FE] dark:hover:text-[#A78BFA] transition">Monitoring</a>
-            <a href="/map" class="hover:text-[#6425FE] dark:hover:text-[#A78BFA] transition">Tactical Map</a>
-            <a href="/map3d" class="hover:text-[#6425FE] dark:hover:text-[#A78BFA] transition">3D Terrain</a>
-            <a href="/alerts" class="hover:text-[#6425FE] dark:hover:text-[#A78BFA] transition">Alerts</a>
-            <a href="/hardware" class="hover:text-[#6425FE] dark:hover:text-[#A78BFA] transition">Hardware</a>
-            <a href="/about" class="hover:text-[#6425FE] dark:hover:text-[#A78BFA] transition">Specs</a>
-          </div>
-        </div>
+      <footer class="px-4 sm:px-6 lg:px-8 py-4 text-[12px] flex flex-wrap items-center justify-between gap-2"
+              style="color:var(--muted);border-top:1px solid var(--line)">
+        <span>Disaster Sentinel · SIH 2026 · Jetson Orin Nano hub</span>
+        <span class="tnum">LoRa SX1278 · 433 MHz</span>
       </footer>
-
     </div>
-
   </div>
+  <div id="tip" role="tooltip"></div>
   {% endblock layout %}
 
   <!-- ========================================================================= -->
@@ -539,7 +569,7 @@
             </span>
             <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 font-bold">FLD1</span>
           </div>
-          <p class="text-xs text-slate-muted mt-1.5">Water level surges from 2.1m to 13.25m. GRU projects spill breach in 10 mins.</p>
+          <p class="text-xs text-slate-muted mt-1.5">Water rises to 1.75 m below the sensor (critical under 3 m).</p>
         </button>
 
         <!-- Landslide -->
@@ -685,7 +715,7 @@
           sirenAudio.currentTime = 0;
         }
       } else {
-        icon.className = 'fa-solid fa-volume-high text-brand-action';
+        icon.className = 'fa-solid fa-volume-high';
       }
     }
 
@@ -751,88 +781,213 @@
       }
     }
 
-    // Global Polling Loop
-    async function pollTelemetryOnce() {
-      try {
-        const [nodeRes, forecastRes, incidentRes] = await Promise.all([
-          fetch(`${API_BASE}/api/nodes`).then(r => r.json()),
-          fetch(`${API_BASE}/api/forecast`).then(r => r.json()),
-          fetch(`${API_BASE}/api/incidents`).then(r => r.json())
-        ]);
+    // Shared station metadata: the one place limits and labels live (matches server run_gru_forecast).
+    window.SENTINEL_STATIONS = {
+      // FLD1 = distance from the fixed ultrasonic sensor down to the water: LOWER is worse (critical under 3 m).
+      FLD1: { hazard: 'Flood',     place: 'Rishikesh · Ganga', metric: 'Distance to water', key: 'Water_Distance_m', unit: 'm', dp: 2, warn: 4.5, crit: 3, lower: true, max: 6.5, icon: 'fa-water', anchor: 'flood' },
+      SLD2: { hazard: 'Landslide', place: 'Chamoli · Slope 2B', metric: 'Slope tilt',  key: 'Slope_Angle',         unit: '°',     dp: 1, warn: 30,   crit: 45,   icon: 'fa-mountain',            anchor: 'landslide' },
+      FIR3: { hazard: 'Wildfire',  place: 'Almora · Pine forest', metric: 'TVOC',      key: 'TVOC[ppb]',           unit: 'ppb',   dp: 0, warn: 1500, crit: 5000, icon: 'fa-fire-flame-curved',  anchor: 'fire' },
+      POL4: { hazard: 'Air quality', place: 'Selaqui · Industrial', metric: 'PM2.5',   key: 'pm25',                unit: 'µg/m³', dp: 1, warn: 60,   crit: 150,  icon: 'fa-smog',               anchor: 'pollution' }
+    };
+    window.fmtNum = (v, dp) => (v === null || v === undefined || isNaN(v)) ? '—' :
+      Number(v).toLocaleString('en-IN', { minimumFractionDigits: dp, maximumFractionDigits: dp });
 
-        if (nodeRes.success) {
-          const hub = nodeRes.hub;
-          const nodes = nodeRes.nodes;
-          const forecasts = forecastRes.forecasts || {};
-          const incidents = incidentRes.incidents || [];
+    // ---- Shared view helpers: every page derives station state the same way ----
+    window.ui = (() => {
+      const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+      const ago = s => s == null ? null : s < 60 ? `${Math.round(s)} s` : s < 3600 ? `${Math.round(s / 60)} min` : `${Math.round(s / 3600)} h`;
+      const cssVar = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 
-          // Update Dynamic Emergency Bar & Global Status Pill
-          const emergencyBar = document.getElementById('dynamicEmergencyBar');
-          const emergencyTitle = document.getElementById('emergencyBarTitle');
-          const emergencySub = document.getElementById('emergencyBarSubtitle');
-          const pill = document.getElementById('globalStatusPill');
-          const pillDot = document.getElementById('globalStatusDot');
-          const pillText = document.getElementById('globalStatusText');
-          const navAlertBadge = document.getElementById('navAlertBadge');
+      // One view-model per station: reading, limits, state, forecast, link.
+      function vm(id, node, fc) {
+        const m = SENTINEL_STATIONS[id];
+        const warn = fc && fc.thresholds ? fc.thresholds.warning : m.warn;
+        const crit = fc && fc.thresholds ? fc.thresholds.critical : m.crit;
+        const past = (v, th) => m.lower ? v <= th : v >= th;
+        const value = node ? parseFloat(node.sensors[m.key]) : NaN;
+        const steps = fc && fc.success ? fc.future_steps.map(s => s.predicted_value) : [];
+        const end = steps.length ? steps[steps.length - 1] : null;
+        const worst = steps.length ? (m.lower ? Math.min(...steps) : Math.max(...steps)) : null;
+        let state = 'ok';
+        if ((node && node.status === 'Hazardous') || past(value, crit)) state = 'crit';
+        else if ((node && node.status === 'Warning') || past(value, warn)) state = 'warn';
+        const breach = fc && fc.success && fc.lead_time_minutes
+          ? { level: fc.threat_level === 'CRITICAL' ? 'crit' : 'warn', min: fc.lead_time_minutes } : null;
+        return { id, m, node, fc, warn, crit, value, steps, end, worst, state, breach,
+                 live: !!(node && node.connected), everSeen: !!(node && node.last_seen_ago != null),
+                 lastAgo: node ? node.last_seen_ago : null, rssi: node ? node.lora_rssi : null,
+                 battery: node ? node.battery : null, risk: fc && fc.success ? fc.risk_probability_pct : null };
+      }
+      const all = d => Object.keys(SENTINEL_STATIONS).map(id => vm(id, d.nodes[id], d.forecasts[id]));
 
-          if (hub.active_alerts_count > 0) {
-            let hazardTitle = "DISASTER DETECTED";
-            let hazardSub = "Critical threshold exceeded. Immediate response protocol advised.";
-            if (nodes.FLD1 && nodes.FLD1.status === 'Hazardous') {
-              hazardTitle = "FLOOD DETECTED";
-              hazardSub = `Ganga Catchment • Water level ${nodes.FLD1.sensors.River_Water_Level_m}m`;
-            } else if (nodes.SLD2 && nodes.SLD2.status === 'Hazardous') {
-              hazardTitle = "LANDSLIDE WARNING";
-              hazardSub = `Himalayan Foothills • Slope tilt ${nodes.SLD2.sensors.Slope_Angle}°`;
-            } else if (nodes.FIR3 && nodes.FIR3.status === 'Hazardous') {
-              hazardTitle = "WILDFIRE DETECTED";
-              hazardSub = `Pine Forest Perimeter • TVOC ${nodes.FIR3.sensors['TVOC[ppb]']} ppb`;
-            } else if (nodes.POL4 && nodes.POL4.status === 'Hazardous') {
-              hazardTitle = "TOXIC SMOG DETECTED";
-              hazardSub = `Industrial Basin • PM2.5 ${nodes.POL4.sensors.pm25} µg/m³`;
-            }
+      // Bullet meter (Few): grey ranges darker toward danger, value bar, dashed forecast, critical tick.
+      function bullet(v, big) {
+        const m = v.m, ok = x => x != null && !isNaN(x);
+        const max = Math.max(m.lower ? (m.max || v.warn * 1.5) : v.crit * 1.25, ok(v.value) ? v.value * 1.05 : 0, ok(v.worst) ? v.worst * 1.05 : 0);
+        const pct = x => Math.max(0, Math.min(100, (x / max) * 100));
+        const now = ok(v.value) ? pct(v.value) : 0, proj = ok(v.worst) ? pct(v.worst) : now;
+        const tone = a => `color-mix(in srgb, var(--ink) ${a}%, transparent)`;
+        const [lo, mid, hi] = m.lower ? [17, 10, 5] : [5, 10, 17];   // shade grows toward the bad end
+        const a = pct(Math.min(v.warn, v.crit)), b = pct(Math.max(v.warn, v.crit));
+        const bar = v.state === 'crit' ? 'var(--crit)' : v.state === 'warn' ? 'var(--warn)' : v.everSeen ? 'var(--ink-2)' : 'var(--muted)';
+        const tip = `${m.metric}: ${fmtNum(v.value, m.dp)} ${m.unit} · warning ${m.lower ? 'under ' : ''}${fmtNum(v.warn, 1)} · critical ${m.lower ? 'under ' : ''}${fmtNum(v.crit, 1)}` +
+                    (ok(v.worst) ? ` · forecast ${m.lower ? 'low' : 'peak'} ${fmtNum(v.worst, m.dp)}` : '');
+        return `<div class="bullet${big ? ' bullet-lg' : ''}" data-tip="${esc(tip)}">
+            <div class="bullet-range" style="left:0;width:${a}%;background:${tone(lo)}"></div>
+            <div class="bullet-range" style="left:${a}%;width:${b - a}%;background:${tone(mid)}"></div>
+            <div class="bullet-range" style="left:${b}%;right:0;background:${tone(hi)}"></div>
+            <div class="bullet-bar" style="width:${now}%;background:${bar}"></div>
+            ${proj > now ? `<div class="bullet-proj" style="left:${now}%;width:${proj - now}%"></div>` : ''}
+            ${proj < now ? `<div class="bullet-proj" style="left:${proj}%;width:${now - proj}%;border:0;background:var(--card);opacity:.5"></div>` : ''}
+            <div class="bullet-target" style="left:${pct(v.crit)}%"></div>
+          </div>
+          <div class="bullet-scale tnum"><span>0</span><span>${m.lower ? 'critical under ' : ''}${fmtNum(v.crit, m.lower ? 1 : 0)} ${esc(m.unit)}</span></div>`;
+      }
 
-            if (emergencyBar) {
-              emergencyBar.classList.remove('hidden');
-              emergencyTitle.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1.5"></i> CRITICAL - ${hazardTitle}`;
-              emergencySub.textContent = hazardSub;
-            }
+      function chip(v) {
+        return v.state === 'crit' ? `<span class="chip chip-crit"><i class="fa-solid fa-caret-up"></i>Critical</span>`
+             : v.state === 'warn' ? `<span class="chip chip-warn"><i class="fa-solid fa-caret-up"></i>Warning</span>`
+             : `<span class="chip chip-quiet">Normal</span>`;
+      }
 
-            if (pill) pill.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200 animate-pulse';
-            if (pillDot) pillDot.className = 'w-2 h-2 rounded-full bg-rose-600 animate-ping';
-            if (pillText) pillText.textContent = `ACTIVE ALERT (${hub.active_alerts_count})`;
+      // Observed + forecast + limits chart; returns the Chart instance (pass it back in to update).
+      function forecastChart(canvas, v, chart) {
+        const hist = v.fc && v.fc.success ? v.fc.history_values : [];
+        const labels = [...hist.map((_, i) => i === hist.length - 1 ? 'Now' : ''), ...v.steps.map((_, i) => `+${(i + 1) * 10}`)];
+        const n = labels.length, rgb = cssVar('--accent-rgb'), accent = cssVar('--accent');
+        const top = Math.max(v.m.lower ? (v.m.max || v.warn * 1.5) : v.crit * 1.1, ...hist, ...v.steps) * 1.05;
+        const line = (label, data, color, extra) => ({ label, data, borderColor: color, borderWidth: 1.2, pointRadius: 0, pointHoverRadius: 0, fill: false, ...extra });
+        const data = { labels, datasets: [
+          line('Observed', [...hist, ...v.steps.map(() => null)], accent, { borderWidth: 2, tension: .3, pointHoverRadius: 4, fill: 'origin',
+            backgroundColor: ctx => { const a = ctx.chart.chartArea; if (!a) return 'transparent';
+              const g = ctx.chart.ctx.createLinearGradient(0, a.top, 0, a.bottom); g.addColorStop(0, `rgb(${rgb} / .16)`); g.addColorStop(1, `rgb(${rgb} / 0)`); return g; } }),
+          line('Forecast', [...hist.map((x, i) => i === hist.length - 1 ? x : null), ...v.steps], accent, { borderWidth: 2, borderDash: [5, 4], tension: .3, pointHoverRadius: 4 }),
+          line('Warning', Array(n).fill(v.warn), cssVar('--warn'), { borderWidth: 1, borderDash: [4, 4] }),
+          line('Critical', Array(n).fill(v.crit), cssVar('--crit'), { borderDash: [4, 4] })
+        ] };
+        const { unit, dp } = v.m, muted = cssVar('--muted'), grid = cssVar('--line');
+        const options = { responsive: true, maintainAspectRatio: false, animation: false, interaction: { mode: 'index', intersect: false },
+          plugins: { legend: { display: false }, tooltip: { backgroundColor: cssVar('--tip'), padding: 10, cornerRadius: 8, displayColors: false,
+            titleFont: { size: 11, weight: '400' }, bodyFont: { size: 13, weight: '600' },
+            filter: it => it.datasetIndex < 2 && it.raw != null,
+            callbacks: { title: it => { const l = it[0].label; return l === 'Now' ? 'Now' : l ? `${l} min · forecast` : 'Observed'; },
+                         label: it => `${fmtNum(it.raw, dp)} ${unit}` } } },
+          scales: { x: { grid: { display: false }, border: { color: grid }, ticks: { color: muted, font: { size: 11 }, autoSkip: false, maxRotation: 0 } },
+                    y: { position: 'right', min: 0, suggestedMax: top, grid: { color: grid }, border: { display: false },
+                         ticks: { color: muted, font: { size: 11 }, maxTicksLimit: 5,
+                                  callback: x => Math.abs(x) >= 1000 ? `${fmtNum(x / 1000, x % 1000 ? 1 : 0)}k` : fmtNum(x, x % 1 ? 1 : 0) } } } };
+        if (!chart) return new Chart(canvas, { type: 'line', data, options });
+        chart.data = data; chart.options = options; chart.update('none'); return chart;
+      }
 
-            if (navAlertBadge) {
-              navAlertBadge.classList.remove('hidden');
-              navAlertBadge.textContent = hub.active_alerts_count;
-            }
-            if (hub.active_alerts_count > previousAlertCount) {
-              playGlobalSiren();
-            }
-          } else {
-            if (emergencyBar) emergencyBar.classList.add('hidden');
-            if (pill) pill.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200';
-            if (pillDot) pillDot.className = 'w-2 h-2 rounded-full bg-emerald-500';
-            if (pillText) pillText.textContent = 'ALL SYSTEMS SAFE';
-            if (navAlertBadge) {
-              navAlertBadge.classList.add('hidden');
-            }
-          }
-          previousAlertCount = hub.active_alerts_count;
-          // Cache globally for immediate availability on navigation
-          window.sentinel_latest_data = { hub, nodes, forecasts, incidents };
+      const legend = `<div class="legend"><span><i style="border-color:var(--accent)"></i>Observed</span>
+        <span><i style="border-color:var(--accent);border-top-style:dashed"></i>Forecast</span>
+        <span><i style="border-color:var(--warn);border-top-style:dashed;border-top-width:1px"></i>Warning</span>
+        <span><i style="border-color:var(--crit);border-top-style:dashed;border-top-width:1px"></i>Critical</span></div>`;
 
-          // Dispatch event to page-specific listeners
-          window.dispatchEvent(new CustomEvent('sentinel_data', {
-            detail: { hub, nodes, forecasts, incidents }
-          }));
+      // Re-render on every poll, and once now if a payload is already cached.
+      function onData(fn) { window.addEventListener('sentinel_data', e => fn(e.detail)); if (window.sentinel_latest_data) fn(window.sentinel_latest_data); }
+
+      return { esc, ago, cssVar, vm, all, bullet, chip, forecastChart, legend, onData };
+    })();
+
+    let lastOkAt = null;
+
+    function setStatusChrome(hub, nodes) {
+      const n = hub.active_alerts_count || 0;
+      const pill = document.getElementById('topStatusPill');
+      const dot = document.getElementById('topStatusDot');
+      const txt = document.getElementById('topStatusText');
+      const side = document.getElementById('sideAlertBadge');
+      const bell = document.getElementById('bellBadge');
+      if (pill) pill.classList.toggle('is-crit', n > 0);
+      if (dot) dot.style.background = n > 0 ? 'var(--crit)' : 'var(--live)';
+      if (txt) txt.textContent = n > 0 ? `${n} alert${n > 1 ? 's' : ''}` : 'No alerts';
+      if (side) { side.classList.toggle('hidden', n === 0); side.textContent = n; }
+      if (bell) bell.classList.toggle('hidden', n === 0);
+
+      // Emergency bar: only for critical (Hazardous) stations
+      const bar = document.getElementById('dynamicEmergencyBar');
+      const critical = Object.entries(nodes).filter(([, nd]) => nd.status === 'Hazardous');
+      if (bar) {
+        bar.classList.toggle('hidden', critical.length === 0);
+        if (critical.length) {
+          const [id, nd] = critical[0];
+          const m = window.SENTINEL_STATIONS[id];
+          document.getElementById('emergencyBarTitle').textContent =
+            critical.length > 1 ? `${critical.length} stations critical` : `${m ? m.hazard : id} · ${id}`;
+          document.getElementById('emergencyBarSubtitle').textContent = critical.length > 1
+            ? critical.map(([cid]) => cid).join(' · ')
+            : m ? `${m.metric} ${fmtNum(parseFloat(nd.sensors[m.key]), m.dp)} ${m.unit} · limit ${m.lower ? '<' : ''}${fmtNum(m.crit, 0)} ${m.unit}` : '';
         }
+      }
+    }
+
+    function setUpdated(ok) {
+      const dot = document.getElementById('updatedDot');
+      const txt = document.getElementById('updatedText');
+      const note = document.getElementById('fetchErrorNote');
+      if (ok) lastOkAt = new Date();
+      const t = lastOkAt ? lastOkAt.toLocaleTimeString('en-GB') : null;
+      if (dot) dot.style.background = ok ? 'var(--live)' : 'var(--warn)';
+      if (txt) txt.textContent = t ? t.slice(0, 5) + (window.innerWidth >= 640 ? t.slice(5) : '') : 'No data';
+      if (note) {
+        note.classList.toggle('hidden', ok);
+        if (!ok) document.getElementById('fetchErrorText').textContent = t
+          ? `Can't reach the hub. Showing numbers from ${t}.`
+          : `Can't reach the hub. No numbers received yet.`;
+      }
+      document.documentElement.classList.toggle('is-stale', !ok && !!lastOkAt);
+    }
+
+    // Global polling loop
+    let pollSeq = 0;
+    async function pollTelemetryOnce() {
+      const seq = ++pollSeq;
+      try {
+        const st = await fetch(`${API_BASE}/api/state`).then(r => r.json());
+        if (seq !== pollSeq) return;              // a newer request is in flight; never overwrite with older data
+        if (!st.success) throw new Error('hub returned an error');
+        const { hub, nodes } = st, forecasts = st.forecasts || {}, incidents = st.incidents || [];
+
+        setStatusChrome(hub, nodes);
+        setUpdated(true);
+        if (hub.active_alerts_count > previousAlertCount) playGlobalSiren();
+        previousAlertCount = hub.active_alerts_count;
+
+        window.sentinel_latest_data = { hub, nodes, forecasts, incidents };
+        window.dispatchEvent(new CustomEvent('sentinel_data', { detail: { hub, nodes, forecasts, incidents } }));
       } catch (e) {
+        if (seq !== pollSeq) return;
+        setUpdated(false);
+        window.dispatchEvent(new CustomEvent('sentinel_error', { detail: { error: e } }));
         console.warn("Global polling error:", e);
       }
     }
 
-    // Auto-poll every 2.5 seconds
+    // Tooltip: any element with data-tip; shows on hover and keyboard focus, hides on scroll / Escape.
+    (function () {
+      const tip = document.getElementById('tip');
+      if (!tip) return;
+      let owner = null;
+      const show = (el) => {
+        const text = el.getAttribute('data-tip');
+        if (!text) return;
+        owner = el; tip.textContent = text; tip.classList.add('show');
+        const r = el.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight;
+        let x = r.left + r.width / 2 - w / 2, y = r.top - h - 8;
+        if (y < 4) y = r.bottom + 8;
+        x = Math.max(8, Math.min(x, window.innerWidth - w - 8));
+        tip.style.left = x + 'px'; tip.style.top = y + 'px';
+      };
+      const hide = () => { owner = null; tip.classList.remove('show'); };
+      document.addEventListener('mouseover', e => { const el = e.target.closest('[data-tip]'); if (el && el !== owner) show(el); else if (!el) hide(); });
+      document.addEventListener('focusin', e => { const el = e.target.closest('[data-tip]'); if (el) show(el); });
+      document.addEventListener('focusout', hide);
+      document.addEventListener('scroll', hide, true);
+      document.addEventListener('keydown', e => { if (e.key === 'Escape') hide(); });
+    })();
+
     pollTelemetryOnce();
     setInterval(pollTelemetryOnce, 2500);
   </script>

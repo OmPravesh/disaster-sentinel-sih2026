@@ -133,7 +133,7 @@
         district: "Dehradun / Tehri Garhwal",
         gps: { lat: 30.0869, lng: 78.2676 },
         status: "Safe", battery: 95, lora_rssi: -68,
-        sensors: { River_Water_Level_m: 2.10, Rainfall_mm: 12.24, Rainfall_Intensity_mm_hr: 1.54, Atmospheric_Pressure_hPa: 1005.40, Temperature_C: 31.5, Relative_Humidity_pct: 78.0 }
+        sensors: { Water_Distance_m: 5.90, Rainfall_mm: 12.24, Rainfall_Intensity_mm_hr: 1.54, Atmospheric_Pressure_hPa: 1005.40, Temperature_C: 31.5, Relative_Humidity_pct: 78.0 }
       },
       SLD2: {
         node_id: "SLD2", name: "Landslide Monitoring Node", hazard: "Landslide",
@@ -596,12 +596,12 @@
                     </div>
 
                     <div className="mt-4 p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-                      <span className="text-[11px] text-slate-500 font-medium block">River Water Level</span>
+                      <span className="text-[11px] text-slate-500 font-medium block">Distance to water</span>
                       <div className="flex items-baseline gap-1">
-                        <span className="text-2xl font-extrabold text-slate-900 font-mono">{nodes.FLD1.sensors.River_Water_Level_m.toFixed(2)}</span>
+                        <span className="text-2xl font-extrabold text-slate-900 font-mono">{nodes.FLD1.sensors.Water_Distance_m.toFixed(2)}</span>
                         <span className="text-xs text-slate-500 font-mono">meters</span>
                       </div>
-                      <span className="text-[11px] text-slate-500 block">{nodes.FLD1.status === 'Hazardous' ? 'CRITICAL SURGE (> 10.0m)' : 'Normal Flow (< 6.0m)'}</span>
+                      <span className="text-[11px] text-slate-500 block">{nodes.FLD1.status === 'Hazardous' ? 'CRITICAL (< 3.0m)' : 'Normal (> 4.5m)'}</span>
                     </div>
                   </div>
 

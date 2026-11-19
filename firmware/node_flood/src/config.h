@@ -141,9 +141,10 @@
 // FLOOD-SPECIFIC THRESHOLDS (used alongside anomaly detection)
 // ============================================================
 
-// Water level danger threshold (cm) — informational, anomaly detection is primary
-#define WATER_DANGER_CM    200.0f
-#define WATER_WARNING_CM   150.0f
+// The ultrasonic sensor is fixed above the river and measures the DISTANCE down to the water (cm).
+// Lower distance = higher water. Informational (anomaly detection is primary); the hub uses the same limits.
+#define WATER_DANGER_CM    300.0f   // critical when distance < 3.0 m
+#define WATER_WARNING_CM   450.0f   // warning when distance < 4.5 m
 
 // Rain intensity threshold (analog 0-4095, lower = more rain for YL-83)
 #define RAIN_HEAVY_THRESHOLD  1500
