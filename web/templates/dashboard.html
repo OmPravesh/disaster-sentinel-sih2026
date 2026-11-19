@@ -54,12 +54,12 @@
 <!-- 2. Station board: where problems show, with the action on the row -->
 <section class="card pt-4 pb-1" data-live>
   <div class="flex items-center justify-between px-5 pb-3">
-    <h2 class="text-[15px] font-semibold" style="color:var(--ink)">Stations</h2>
+    <div class="flex flex-wrap items-center gap-x-5 gap-y-1"><h2 class="text-[15px] font-semibold" style="color:var(--ink)">Stations</h2><span id="meterLegend"></span></div>
     <a href="/monitoring" class="btn btn-ghost">Live telemetry <i class="fa-solid fa-arrow-right text-[11px]"></i></a>
   </div>
   <div class="board-head">
     <span>Station</span><span>Status</span><span class="text-right">Now</span>
-    <span>vs warning · critical</span><span>+50 min</span><span>Link</span><span></span>
+    <span>Position vs limits</span><span>+50 min</span><span>Link</span><span></span>
   </div>
   <div id="stationRows"></div>
 </section>
@@ -282,10 +282,11 @@
     <div class="srow"><div class="c-name flex items-center gap-3"><span class="s-ico"><i class="fa-solid ${S[id].icon}"></i></span>
       <div><div class="s-name">${id} · ${S[id].hazard}</div><div class="s-sub">${S[id].place}</div></div></div>
       <div class="c-status"><span class="skel">Normal</span></div><div class="c-val s-val"><span class="skel">00.0</span></div>
-      <div class="c-bullet"><div class="bullet skel"></div></div><div class="c-fcst"><span class="skel">0.00 m</span></div>
+      <div class="c-bullet"><div class="meter skel"></div></div><div class="c-fcst"><span class="skel">0.00 m</span></div>
       <div class="c-link"><span class="skel">00 s ago</span></div><div class="c-act"></div></div>`).join('');
 
   document.getElementById('fcLegend').innerHTML = ui.legend;
+  document.getElementById('meterLegend').innerHTML = ui.meterLegend;
   ui.onData(render);
 
   // ---------- Actuator controls (state confirmed by the next poll) ----------
