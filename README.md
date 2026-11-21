@@ -133,17 +133,28 @@ All visual assets, circuit schematics, dashboard telemetry, and hardware photogr
 
 ---
 
-### [G] Custom ESP32 Multi-Hazard Node Carrier PCB (Design in Progress · Hardware v2.0)
+### [G] Sentinel Universal Node PCB — SUN-1 rev A (In Development · Hardware v2.0)
 
-| 2D PCB Layout & Trace Routing | Component Footprint & Board Outline |
+We are developing our own PCB: **one universal board that can become any of the four nodes** (Flood, Landslide, Fire, Pollution). Sensors plug into labelled, keyed ports, and the board is configured for its node type, so one PCB design serves the whole network.
+
+> SUN-1 is under development and kept separate from the running system. The four deployed nodes (FLD1, SLD2, FIR3, POL4), their firmware and the Jetson gateway are unchanged. It will be integrated after prototype testing.
+
+| 3D Render | Top View & Port Labels |
 |:---:|:---:|
-| ![Custom ESP32 PCB Layout](project_images/Custom%20Esp32%20pcb.png) | ![Custom ESP32 PCB Footprints](project_images/Custom%20ESP32%20footprints.png) |
-| *Custom double-sided carrier PCB designed in EDA/CAD: Dedicated power distribution planes, high-frequency SPI ground shielding for SX1278 LoRa, and low-noise sensor analog routing.* | *Standardized surface and through-hole component footprints: ESP32-WROOM-32 socket, SX1278 transceiver header, I2C/analog pull-ups, and precision battery voltage divider.* |
+| ![SUN-1 Universal Node PCB 3D render](project_images/sun1_pcb_3d.png) | ![SUN-1 Universal Node PCB top view](project_images/sun1_pcb_top.png) |
+| *Compact 2-layer board with ESP32-S3, LoRa radio (same network as the current gateway), and solar / USB-C battery charging.* | *Plug-in sensor ports for analog, digital, I2C and UART sensors, plus a display connector.* |
 
-| Connector & Field Wiring Interface Breakdown |
-|:---:|
-| ![Custom ESP32 Footprint & Connectors](project_images/Custom%20ESP32%20footprint%20and%20con.png) |
-| *Dedicated edge screw-terminal connectors for modular field sensor plug-and-play wiring (Rain sensor plate, JSN-SR04T ultrasonic, MPU-6050, MQ gas sensors, GP2Y1010AU0F dust sensor, and solar battery charging input).* |
+| Copper Traces (Top = red, Bottom = blue) | Schematic Overview |
+|:---:|:---:|
+| ![SUN-1 copper traces](project_images/sun1_copper_traces.png) | ![SUN-1 schematic](project_images/sun1_schematic.png) |
+| *Two-layer routing with ground pours on both sides and an antenna keep-out area. Passes KiCad design-rule checks.* | *Schematic organised into functional blocks: power input, charging and protection, regulation, MCU, LoRa, and the sensor ports. Passes the electrical rules check.* |
+
+**What SUN-1 improves over the breadboard nodes:**
+- Built-in battery protection and temperature-safe charging for sealed outdoor enclosures.
+- Sensor power switched off during deep sleep, for much longer battery life.
+- Protected sensor inputs, so 5 V sensors can't damage the microcontroller.
+- Battery and solar monitoring on board.
+- One board design for every hazard type, which simplifies manufacturing and maintenance.
 
 ---
 
@@ -273,7 +284,7 @@ A summary of pin connections for all 4 ESP32 nodes and the Jetson gateway. For f
 
 ### Hardware v2.0 Roadmap: Custom Carrier PCB & Weatherproof Enclosure
 While initial bench testing and field qualification were conducted using modular breadboards and jumper wires, the system is actively transitioning to **Hardware v2.0** for permanent field deployments:
-- **Custom Multi-Hazard Node Carrier PCB**: Compact dual-layer PCB integrating the ESP32-WROOM-32, SX1278 LoRa radio header, analog signal conditioning, battery voltage divider, and vibration-resistant screw terminal blocks.
+- **Sentinel Universal Node PCB (SUN-1)**: one dual-layer PCB for all four node types, with an ESP32-S3, LoRa radio, protected solar battery charging and plug-in sensor ports. The design is complete and passes design-rule checks; the first prototype boards are next. See section [G] above.
 - **IP65 Weatherproof Locking Enclosures**: Industrial UV-resistant junction boxes with dual mechanical latches, silicone gasket seals, and padlock clasps to safeguard remote field nodes against severe monsoons, freezing Himalayan winters, and wildlife tampering.
 
 ---
