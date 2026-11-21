@@ -34,3 +34,6 @@ data/**/*.csv
 *.zip
 
 
+
+# SUN-1 universal node PCB design files - confidential, kept local (only images are published)
+hardware/universal-node/

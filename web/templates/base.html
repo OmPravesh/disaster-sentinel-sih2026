@@ -202,12 +202,27 @@
     .s-val.is-warn { color: var(--warn-ink); }
 
     /* Bullet graph: grey ranges (darker = worse), value bar, projected segment, critical target line */
-    .bullet { position: relative; height: 20px; border-radius: 4px; overflow: hidden; }
-    .bullet-range { position: absolute; top: 0; bottom: 0; }
-    .bullet-bar { position: absolute; left: 0; top: 7px; height: 6px; border-radius: 0 3px 3px 0; background: var(--ink-2);
-                  transition: width .4s cubic-bezier(.4,0,.2,1); }
-    .bullet-proj { position: absolute; top: 7px; height: 6px; border: 1px dashed var(--ink-2); border-left: 0; border-radius: 0 3px 3px 0; }
-    .bullet-target { position: absolute; top: 2px; bottom: 2px; width: 2px; margin-left: -1px; background: var(--ink); border-radius: 1px; }
+    /* Limit meter: zones Safe -> Warning -> Critical left to right, dot = reading now */
+    .meter, .meter-scale { margin: 0 9px; }  /* room for a dot pinned at either end */
+    .meter { position: relative; height: 16px; }
+    .meter-track { position: absolute; left: 0; right: 0; top: 5px; height: 6px; border-radius: 9999px; overflow: hidden; }
+    .meter-track span { position: absolute; top: 0; bottom: 0; }
+    .meter-track .mz-crit { right: 0; }
+    .mz-safe { background: color-mix(in srgb, var(--ink) 9%, transparent); left: 0; }
+    .mz-warn { background: rgb(var(--warn-rgb) / .35); }
+    .mz-crit { background: rgb(var(--crit-rgb) / .35); }
+    .meter-now { position: absolute; top: 50%; width: 14px; height: 14px; border-radius: 9999px; transform: translate(-50%, -50%);
+                            transition: left .4s cubic-bezier(.4,0,.2,1); }
+    .meter-now { border: 2px solid var(--card); box-shadow: 0 0 0 1px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.2); z-index: 2; }
+    .meter-lg { height: 22px; } .meter-lg .meter-track { top: 7px; height: 8px; }
+    .meter-lg .meter-now { width: 18px; height: 18px; }
+    .meter-scale { position: relative; height: 15px; margin-top: 3px; font-size: 11px; font-weight: 500; }
+    .meter-scale span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+    .meter-legend { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; font-size: 12px; color: var(--muted); font-weight: 400; }
+    .meter-legend > span { display: inline-flex; align-items: center; gap: 5px; }
+    .meter-legend i { display: inline-block; width: 14px; height: 6px; border-radius: 3px; }
+    .meter-legend b { display: inline-block; width: 10px; height: 10px; border-radius: 9999px; }
+    .meter-legend .lg-now { background: var(--ink); }
     .arow { display: grid; grid-template-columns: 32px minmax(0,1fr) auto auto auto; gap: 14px; align-items: center; padding: 12px 20px; border-top: 1px solid var(--line); }
     @media (max-width: 640px) {
       .arow { grid-template-columns: minmax(0,1fr) auto; padding: 12px 16px; }
@@ -225,8 +240,6 @@
     .tile span { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .tile b { font-size: 15px; font-weight: 600; color: var(--ink); }
     .tile small, .tile b small { font-size: 11px; font-weight: 400; color: var(--muted); margin-left: 3px; }
-    .bullet-lg { height: 28px; } .bullet-lg .bullet-bar, .bullet-lg .bullet-proj { top: 9px; height: 10px; }
-    .bullet-scale { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 2px; }
 
     .s-link { font-size: 12.5px; color: var(--ink-2); line-height: 1.35; }
     .s-link .is-warn { color: var(--warn-ink); font-weight: 500; }
@@ -274,7 +287,7 @@
     .skel { background: linear-gradient(90deg, var(--soft) 0%, color-mix(in srgb, var(--soft) 40%, var(--card)) 50%, var(--soft) 100%);
             background-size: 200% 100%; animation: skel 1.2s ease-in-out infinite; border-radius: 6px; color: transparent !important; }
     @keyframes skel { from { background-position: 200% 0; } to { background-position: -200% 0; } }
-    @media (prefers-reduced-motion: reduce) { .skel { animation: none; } .bullet-bar { transition: none; } }
+    @media (prefers-reduced-motion: reduce) { .skel { animation: none; } .meter-now { transition: none; } }
 
     /* Legacy class still used by the map pages: same surface as .card */
     .card-base { background: var(--card) !important; border: 1px solid var(--line) !important; border-radius: 16px !important; box-shadow: var(--shadow-card) !important; }
@@ -820,29 +833,34 @@
       }
       const all = d => Object.keys(SENTINEL_STATIONS).map(id => vm(id, d.nodes[id], d.forecasts[id]));
 
-      // Bullet meter (Few): grey ranges darker toward danger, value bar, dashed forecast, critical tick.
+      // Limit meter: danger is always to the RIGHT (flood's axis runs from far water to 0 m), coloured zones
+      // Safe / Warning / Critical with the limit values at their edges, one dot = the reading now.
+      // The +50 min forecast is NOT drawn here (a second dot overlapped the first); it has its own column/stat.
       function bullet(v, big) {
         const m = v.m, ok = x => x != null && !isNaN(x);
-        const max = Math.max(m.lower ? (m.max || v.warn * 1.5) : v.crit * 1.25, ok(v.value) ? v.value * 1.05 : 0, ok(v.worst) ? v.worst * 1.05 : 0);
-        const pct = x => Math.max(0, Math.min(100, (x / max) * 100));
-        const now = ok(v.value) ? pct(v.value) : 0, proj = ok(v.worst) ? pct(v.worst) : now;
-        const tone = a => `color-mix(in srgb, var(--ink) ${a}%, transparent)`;
-        const [lo, mid, hi] = m.lower ? [17, 10, 5] : [5, 10, 17];   // shade grows toward the bad end
-        const a = pct(Math.min(v.warn, v.crit)), b = pct(Math.max(v.warn, v.crit));
-        const bar = v.state === 'crit' ? 'var(--crit)' : v.state === 'warn' ? 'var(--warn)' : v.everSeen ? 'var(--ink-2)' : 'var(--muted)';
-        const tip = `${m.metric}: ${fmtNum(v.value, m.dp)} ${m.unit} · warning ${m.lower ? 'under ' : ''}${fmtNum(v.warn, 1)} · critical ${m.lower ? 'under ' : ''}${fmtNum(v.crit, 1)}` +
-                    (ok(v.worst) ? ` · forecast ${m.lower ? 'low' : 'peak'} ${fmtNum(v.worst, m.dp)}` : '');
-        return `<div class="bullet${big ? ' bullet-lg' : ''}" data-tip="${esc(tip)}">
-            <div class="bullet-range" style="left:0;width:${a}%;background:${tone(lo)}"></div>
-            <div class="bullet-range" style="left:${a}%;width:${b - a}%;background:${tone(mid)}"></div>
-            <div class="bullet-range" style="left:${b}%;right:0;background:${tone(hi)}"></div>
-            <div class="bullet-bar" style="width:${now}%;background:${bar}"></div>
-            ${proj > now ? `<div class="bullet-proj" style="left:${now}%;width:${proj - now}%"></div>` : ''}
-            ${proj < now ? `<div class="bullet-proj" style="left:${proj}%;width:${now - proj}%;border:0;background:var(--card);opacity:.5"></div>` : ''}
-            <div class="bullet-target" style="left:${pct(v.crit)}%"></div>
+        // Fixed scale so limit labels never move; a reading beyond it sits pinned at the end (exact value in the tooltip).
+        const span = m.lower ? (m.max || v.warn * 1.5) : v.crit * 1.25;
+        const pos = x => Math.max(0, Math.min(100, (m.lower ? span - x : x) / span * 100));
+        const pw = pos(v.warn), pc = pos(v.crit), now = ok(v.value) ? pos(v.value) : null;
+        const dot = v.state === 'crit' ? 'var(--crit)' : v.state === 'warn' ? 'var(--warn)' : v.everSeen ? 'var(--ink)' : 'var(--muted)';
+        const u = m.unit, lim = x => `${fmtNum(x, x % 1 ? 1 : 0)}`;
+        const tip = `${m.metric} ${fmtNum(v.value, m.dp)} ${u} now` + (ok(v.worst) ? ` · ${fmtNum(v.worst, m.dp)} ${u} at worst in 50 min` : '') +
+                    ` · warning ${m.lower ? 'below' : 'above'} ${lim(v.warn)} ${u} · critical ${m.lower ? 'below' : 'above'} ${lim(v.crit)} ${u}`;
+        const clamp = p => Math.max(4, Math.min(96, p));
+        return `<div class="meter${big ? ' meter-lg' : ''}" data-tip="${esc(tip)}" role="img" aria-label="${esc(tip)}">
+            <div class="meter-track">
+              <span class="mz-safe" style="width:${pw}%"></span><span class="mz-warn" style="left:${pw}%;width:${pc - pw}%"></span><span class="mz-crit" style="left:${pc}%"></span>
+            </div>
+            ${now != null ? `<span class="meter-now" style="left:${now}%;background:${dot}"></span>` : ''}
           </div>
-          <div class="bullet-scale tnum"><span>0</span><span>${m.lower ? 'critical under ' : ''}${fmtNum(v.crit, m.lower ? 1 : 0)} ${esc(m.unit)}</span></div>`;
+          <div class="meter-scale tnum">
+            <span style="left:${clamp(pw)}%;color:var(--warn-ink)">${lim(v.warn)}</span>
+            <span style="left:${clamp(pc)}%;color:var(--crit-ink)">${lim(v.crit)} ${esc(u)}</span>
+          </div>`;
       }
+
+      const meterLegend = `<span class="meter-legend"><span><i class="mz-safe"></i>Safe</span><span><i class="mz-warn"></i>Warning</span>
+        <span><i class="mz-crit"></i>Critical</span><span><b class="lg-now"></b>Now</span></span>`;
 
       function chip(v) {
         return v.state === 'crit' ? `<span class="chip chip-crit"><i class="fa-solid fa-caret-up"></i>Critical</span>`
@@ -888,7 +906,7 @@
       // Re-render on every poll, and once now if a payload is already cached.
       function onData(fn) { window.addEventListener('sentinel_data', e => fn(e.detail)); if (window.sentinel_latest_data) fn(window.sentinel_latest_data); }
 
-      return { esc, ago, cssVar, vm, all, bullet, chip, forecastChart, legend, onData };
+      return { esc, ago, cssVar, vm, all, bullet, meterLegend, chip, forecastChart, legend, onData };
     })();
 
     let lastOkAt = null;

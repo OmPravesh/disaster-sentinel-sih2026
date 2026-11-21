@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {#
-  Live telemetry — one card per station: primary reading on a bullet meter (replaces the old dial gauges:
-  a bar against limits reads faster and works for FLD1, where LOWER distance is worse), +50 min forecast,
+  Live telemetry — one card per station: primary reading on a limit meter (replaces the old dial gauges:
+  danger is always to the right, so FLD1, where LOWER distance is worse, reads like the others), +50 min forecast,
   every secondary sensor, and link health. Filter tabs keep the #flood / #landslide / #fire / #pollution anchors.
 #}
 {% block title %}Live telemetry · Disaster Sentinel{% endblock %}
@@ -11,7 +11,7 @@
 {% block content %}
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
   <div id="filterTabs" class="seg sm:w-[520px]" role="group" aria-label="Hazard"></div>
-  <span id="liveCount" class="pill tnum"></span>
+  <div class="flex flex-wrap items-center gap-3"><span id="meterLegend"></span><span id="liveCount" class="pill tnum"></span></div>
 </div>
 <section id="stationCards" class="grid grid-cols-1 xl:grid-cols-2 gap-6" data-live></section>
 {% endblock %}
@@ -104,6 +104,7 @@
     lc.innerHTML = `<span class="dot" style="background:${live === vms.length ? 'var(--live)' : 'var(--warn)'}"></span>${live} / ${vms.length} live`;
     document.getElementById('stationCards').innerHTML = vms.filter(v => filter === 'all' || v.m.anchor === filter).map(card).join('');
   }
+  document.getElementById('meterLegend').innerHTML = ui.meterLegend;
   ui.onData(render);
 })();
 </script>
