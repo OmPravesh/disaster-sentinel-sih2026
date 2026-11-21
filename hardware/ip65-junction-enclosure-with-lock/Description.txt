@@ -1,0 +1,15 @@
+IP65 Junction Box with Lock, 300 mm x 200 mm x 170 mm
+
+Link to CAD files:
+https://grabcad.com/library/ip65-junction-box-with-lock-300-mm-x-200-mm-x-170-mm-1
+
+
+Some parts like the hinge and screws need a bit of refinement/adjustment.
+
+The clamp needs to work a bit better since the walls kind of bend or don't close properly sometimes. 
+
+Other than that this is a good enclosure with nice clamps and a seal to create good protection.
+
+https://www.amazon.com/Ogrmar-Dustproof-Waterproof-Universal-Electrical/dp/B07KW1W5NP
+
+#CAD #SolidWorks #3dmodel #electricalenclosure #ip65
