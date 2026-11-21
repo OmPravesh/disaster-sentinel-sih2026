@@ -106,17 +106,67 @@ with a 0.6 mm nozzle and 0.3 mm layers it's about 7–9 h (the box is the longes
 
 | Part | Size used | Source / note |
 |---|---|---|
-| ESP32-DevKitC 38-pin | ≈ 55 × 28 mm, sits on female headers on the perfboard | Espressif DevKitC V4 |
+| ESP32-DevKitC V4 (38-pin) | PCB **27.94 × 50.85 mm**, header rows **25.40 mm** apart, 19 pins over 48.26 mm; the WROOM-32 antenna overhangs the top edge by 6.04 mm. Sits on 8.5 mm female headers on the perfboard | Espressif `esp32_devkitc_v4_dimensions.pdf` |
 | Ra-02 (SX1278) | 17 × 16 mm, on the perfboard with U.FL → SMA pigtail | Ai-Thinker |
-| 2×18650 **parallel** holder | 77–78 × 40–41 × 21 mm → cradle 78.6 × 41.6 | check that it's wired in parallel (1S2P) and not series: TP4056 is a 1-cell charger |
+| 2×18650 **parallel** holder | 77–78 × 40–41 × 21 mm → cradle **79.4** × 41.6 | check that it's wired in parallel (1S2P) and not series: TP4056 is a 1-cell charger |
 | Perfboard | 70 × 90 mm on standoffs at **63.5 × 83.82 mm** (25 × 33 holes of 2.54 mm pitch) | hole positions vary between boards, so **drill those 4 holes out to 2.5–3 mm** at the grid positions |
 | GP2Y1010AU0F | 46 × 30 × 17.6 mm | Sharp datasheet |
 | JSN-SR04T probe | **18.2 mm socket** (`JSN_D` in `cad/params.py`) | sellers quote 18 mm and 23 mm holes for different versions. **Measure your probe**, change `JSN_D`, and re-run `build_pods.py flood` |
 | MQ-2 / MQ-135 module | 32 × 22 mm PCB → 33.6 mm card slot | |
-| GY-BME280 | 13–15 mm PCB → 16.6 mm card slot | |
+| GY-BME280 | 15.4 × 11.6 mm PCB → 16.6 mm card slot | sellers quote 15.3–15.4 × 11.5–11.6 |
 | KY-026 | 36 × 15 mm → 36.6 mm card slot, 14 mm block so the IR LED lines up with the window | bend the LED so it points through the window |
 | YL-83 / FC-37 rain plate | 54 × 40 mm | stick it to the tray with outdoor VHB tape |
-| PG7 gland | 12.5 mm hole, ≤ 19 mm nut | |
+| PG7 gland | 12.5 mm hole, 19 AF nut; glands at x = −10.5 / 10.5 / 32 and the M12 vent at −32 (21.5 mm apart, so the nuts clear each other, the lid pillars and the pod bosses) | |
+
+## Electronics reference models and fit check
+
+Every node assembly (`cad/SN_Node_*.SLDASM`) now contains the actual electronics, so you can see
+how the finished box looks and SolidWorks can check that everything fits. The parts are modelled
+from manufacturer datasheet dimensions (`cad/components.py`, files in `cad/components/`) directly in
+the node's coordinate frame, so each one sits exactly where it mounts: boards on their standoffs and
+headers, sensors in their card slots, glands and cables through their holes.
+
+| Part | Modelled size | Source |
+|---|---|---|
+| ESP32-DevKitC V4 + 2×19 female headers | 27.94 × 50.85 mm PCB, rows 25.40 mm, WROOM-32 18 × 25.5 × 3.1 mm, antenna 6.04 mm overhang | Espressif dimension drawing |
+| Ai-Thinker Ra-02 on a 22 × 22 mm adapter | 17 × 16 × 3.2 mm, IPEX at the top edge | Ai-Thinker Ra-02 spec |
+| TP4056 USB-C + DW01A charger | 28 × 17 × 1.6 mm, USB-C 9 × 7.4 × 3.2 mm | module listings |
+| 2 × 18650 holder + cells | 78 × 40 × 21 mm; cells 18.4 × 65.2 mm | holder listings / 18650 standard |
+| Perfboard | 70 × 90 × 1.6 mm FR-4 | |
+| PG7 glands ×3, M12 vent, 433 MHz antenna on the 10 mm bulkhead, U.FL pigtail, solar lead | as bought | |
+| JSN-SR04T board + probe | 41 × 28.5 mm; probe Ø18 body, Ø22 lip | seller drawings (measure your probe) |
+| YL-83 plate + LM393 board | 54 × 40 mm; 30 × 16 mm | |
+| GY-BME280 · GY-521 MPU6050 | 15.4 × 11.6 mm · 21.2 × 16.4 mm | seller listings |
+| MQ-2 / MQ-135 module | 32 × 22 mm, head Ø19.8 | |
+| KY-026 | 36 × 15 mm, 5 mm IR photodiode | |
+| Sharp GP2Y1010AU0F | 46 × 30 × 17.6 mm | Sharp datasheet |
+| Capacitive soil sensor v1.2 | 98 × 23 mm | |
+
+**What the fit check changed in the enclosure** (all four nodes rebuilt):
+
+* The **ports in the bottom wall are re-spaced** to x = −32 (vent), −10.5, 10.5, 32. Before, the vent's
+  lock nut hit a corner lid pillar, and the gland nuts were too close together.
+* The **flood rain-plate mount moved 63 mm higher** on the pole. The 125 mm LoRa antenna ran straight
+  through its tray.
+* The **battery cradle is widened to 79.4 mm**. A 78 mm holder only just fitted.
+* The **MQ-2 / MQ-135 card slot** now has a 1 mm lip on its outer side, so the sensor head on the
+  PCB face clears the slot block.
+* The **KY-026 slot is shallow** (4 mm in a 10 mm block). The board's pot and IR LED are no longer buried,
+  and the LED sits on the axis of the IR window.
+* The **fire-pod divider moved to x = 0**, between the re-spaced glands, and the **pod's back cable holes**
+  line up with the solar gland (x = ±32).
+* The ESP32 sits 1 mm lower, so its antenna tip clears the antenna bulkhead boss.
+
+Interference check after the changes: the only overlaps left in all four nodes are intended. The
+lid's 0.6 mm bead compresses the TPU gasket (251 mm³), and the solar lead passes through its gland
+(93 mm³). In FLD1, the rain plate also touches its tray (rounding, < 0.01 mm).
+
+### Assembly animations
+
+`video/SN_Node_<node>_assembly.mp4`: every part flies in to its mounted position (rails, pod, glands,
+batteries, board, ESP32, LoRa, charger, sensors, cables, antenna, gasket, lid), then the camera
+orbits the finished node. Rendered frame by frame from the SolidWorks assemblies by
+`cad/make_video.py`.
 
 ## Assembly
 
@@ -157,6 +207,8 @@ with a 0.6 mm nozzle and 0.3 mm layers it's about 7–9 h (the box is the longes
 
 ```
 cad/        SolidWorks parts (.SLDPRT), per-node assemblies (.SLDASM) and the build scripts
+cad/components/  electronics reference models (from datasheet dimensions)
+video/      assembly animation per node (MP4) + GIF previews
 step/       STEP of every part and every node assembly (for other CAD tools / sharing)
 stl/        print files
 renders/    images
@@ -173,7 +225,9 @@ cd "hardware/enclosures/cad"
 & "$env:USERPROFILE\tools\solidworks-mcp\.venv\Scripts\python.exe" build_common.py
 & "$env:USERPROFILE\tools\solidworks-mcp\.venv\Scripts\python.exe" build_pods.py      # or: build_pods.py flood
 & "$env:USERPROFILE\tools\solidworks-mcp\.venv\Scripts\python.exe" build_extras.py
+& "$env:USERPROFILE\tools\solidworks-mcp\.venv\Scripts\python.exe" components.py       # electronics models
 & "$env:USERPROFILE\tools\solidworks-mcp\.venv\Scripts\python.exe" build_asm.py
+& "$env:USERPROFILE\tools\solidworks-mcp\.venv\Scripts\python.exe" make_video.py       # assembly videos (slow)
 ```
 
 ### What "IP65" means here

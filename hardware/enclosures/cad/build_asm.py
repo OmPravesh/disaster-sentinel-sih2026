@@ -1,9 +1,10 @@
 import os, sys
 from swlib import *
 from params import *
+from components import COMMON as C_COMMON, NODE as C_NODE, DIR as C_DIR
 C = lambda n: os.path.join(OUT, "cad", n + ".SLDPRT")
 NODES = {
-    "FLD1_Flood": ("SN_Pod_Flood_FLD1", [("SN_Flood_RainPlateMount", 0, H / 2 + 25, -15)]),
+    "FLD1_Flood": ("SN_Pod_Flood_FLD1", [("SN_Flood_RainPlateMount", 0, RAIN_Y0, -15)]),
     "SLD2_Landslide": ("SN_Pod_Landslide_SLD2", []),
     "FIR3_Fire": ("SN_Pod_Fire_FIR3", []),
     "POL4_Pollution": ("SN_Pod_Pollution_POL4", []),
@@ -23,6 +24,9 @@ for node, (pod, extra) in NODES.items():
         T("insert_component", C("SN_PoleRail"), 0, y, -11)
     for n, x, y, z in extra:
         T("insert_component", C(n), x, y, z)
+    # electronics / sensor reference models (modelled in the assembly frame -> insert at origin)
+    for n, _ in C_COMMON + C_NODE[node]:
+        T("insert_component", os.path.join(C_DIR, n + ".SLDPRT"), 0, 0, 0)
     say(node, T("check_interference"))
     p = os.path.join(OUT, "cad", f"SN_Node_{node}.SLDASM")
     T("save_document", p, overwrite=True)

@@ -3,6 +3,9 @@ Each call runs the MCP server's own tool implementation, so the build is identic
 server from an MCP client, but it is a re-runnable, parametric script."""
 import asyncio, os, re
 from solidworks_mcp import server as S
+import logging
+logging.getLogger("SW-MCP").setLevel(logging.CRITICAL)
+S.CONFIG.command_timeout_s = 900.0   # large assemblies / frame capture take longer than the 90 s default
 
 _loop = asyncio.new_event_loop()
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")

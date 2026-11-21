@@ -138,6 +138,23 @@ Four weatherproof enclosures built for unattended sites in Uttarakhand. All four
 | ![Main box](project_images/enclosure_main_box.png) | ![Lid with logo](project_images/enclosure_lid_logo.png) |
 | *TPU gasket + 4 × M3 heat-set screws, perfboard standoffs, battery cradle with clamp bar, 3 × PG7 + vent in the bottom wall, pole-mount ears.* | *Engraved logo (prints face-down for a crisp finish) and a node-ID sticker panel. ASA, 5 perimeters, no supports, ≈ 370 g per node.* |
 
+#### Inside each node: electronics and sensors in place (lid and pod shell hidden)
+
+Every node assembly contains reference models of the real parts, dimensioned from the manufacturers' datasheets: the ESP32-DevKitC V4 (Espressif dimension drawing), Ra-02, TP4056, 2 × 18650, perfboard, glands, antenna and every sensor. SolidWorks' interference check runs on the full node; the only overlaps left are the intended gasket squeeze and the cable through its gland.
+
+| Flood — FLD1 | Landslide — SLD2 | Fire — FIR3 | Pollution — POL4 |
+|:---:|:---:|:---:|:---:|
+| ![Flood inside](project_images/enclosure_inside_flood_fld1.png) | ![Landslide inside](project_images/enclosure_inside_landslide_sld2.png) | ![Fire inside](project_images/enclosure_inside_fire_fir3.png) | ![Pollution inside](project_images/enclosure_inside_pollution_pol4.png) |
+| *JSN-SR04T + YL-83 boards on the perfboard; probe and BME280 in the pod* | *MPU6050 fixed on the board; BME280 in the pod, soil probe below* | *MQ-2 + KY-026 (on the IR window axis) and BME280 in the pod* | *GP2Y1010 on its posts and MQ-135 in the pod* |
+
+#### Assembly animations
+
+| Flood — FLD1 | Landslide — SLD2 | Fire — FIR3 | Pollution — POL4 |
+|:---:|:---:|:---:|:---:|
+| ![Flood assembly](hardware/enclosures/video/SN_Node_FLD1_Flood_assembly.gif) | ![Landslide assembly](hardware/enclosures/video/SN_Node_SLD2_Landslide_assembly.gif) | ![Fire assembly](hardware/enclosures/video/SN_Node_FIR3_Fire_assembly.gif) | ![Pollution assembly](hardware/enclosures/video/SN_Node_POL4_Pollution_assembly.gif) |
+
+Full-resolution MP4s: [`hardware/enclosures/video/`](hardware/enclosures/video/). Each part flies in to its mounted position, the lid closes, then the camera orbits the finished node.
+
 CAD, STEP, STL, print settings, bill of materials and the assembly guide are in [`hardware/enclosures/`](hardware/enclosures/README.md).
 
 ---
