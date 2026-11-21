@@ -6,13 +6,18 @@ PH, PW = POD_H, POD_WALL
 FT = -PH + PW               # floor top y
 ZC = D / 2
 
-def card_slot(xc, zc, pcb_w, h, pcb_t=1.9):
+def card_slot(xc, zc, pcb_w, h, pcb_t=1.9, depth=None, low_px=False):
     """Block on the floor with a slot that holds a sensor PCB upright (edge in slot + drop of glue).
     PCB plane is YZ (board faces +-x)."""
     m = sketch_on(face=[xc, FT, 47.5])
     box_rect(m, (xc, FT, zc), (6.0, 0, pcb_w + 4.0)); T("extrude", h)
     m = sketch_on(face=[xc + 2.2, FT + h, zc])
-    box_rect(m, (xc, FT + h, zc), (pcb_t, 0, pcb_w + 0.6)); T("cut_extrude", h - 2.0)
+    box_rect(m, (xc, FT + h, zc), (pcb_t, 0, pcb_w + 0.6)); T("cut_extrude", depth or (h - 2.0))
+    if low_px:
+        # cut the +x wall down to a 1 mm lip so a sensor head on the PCB's +x face clears the block
+        lip = FT + h - (depth or (h - 2.0)) + 1.0
+        m = sketch_on(face=[xc - 2.2, FT + h, zc])
+        box_rect(m, (xc + 2.0, FT + h, zc), (2.2, 0, pcb_w + 6.0)); T("cut_extrude", FT + h - lip)
 
 def shell_pod(skip_slots=()):
     T("close_document", discard_changes=True); T("new_part")
@@ -44,7 +49,7 @@ def shell_pod(skip_slots=()):
         T("sketch_slot", a[0], a[1], b[0], b[1], 3.0)
     T("cut_extrude", PW + 0.5)
     # cable exits in the back wall (soil probe / rain plate / solar)
-    T("hole", [[sx * 30, -12, 0] for sx in (-1, 1)], diameter_mm=8.0, depth_mm=PW + 0.5)
+    T("hole", [[sx * GLANDS_X[2], -12, 0] for sx in (-1, 1)], diameter_mm=8.0, depth_mm=PW + 0.5)
 
 def finish(name):
     T("set_material", "ABS")
@@ -67,13 +72,13 @@ def landslide():
     finish("SN_Pod_Landslide_SLD2")
 
 def fire():
-    shell_pod(skip_slots=[(12, 18), (27, 33)])
+    shell_pod(skip_slots=[(-1.5, 1.5), (12, 18), (27, 33)])
     # divider: keeps the MQ-2 heater (~0.8 W) away from the BME280
-    m = sketch_on("top"); box_rect(m, (-6, 0, ZC), (2.0, 0, D - 2 * PW)); T("extrude", PH - PW, reverse=True)
-    m = sketch_on("top"); box_rect(m, (-6, 0, 24), (4.0, 0, 10.0)); T("cut_extrude", 6.0)
+    m = sketch_on("top"); box_rect(m, (0, 0, ZC), (2.0, 0, D - 2 * PW)); T("extrude", PH - PW, reverse=True)
+    m = sketch_on("top"); box_rect(m, (0, 0, 24), (4.0, 0, 10.0)); T("cut_extrude", 6.0)
     card_slot(-44, 26, 16, 8)                         # BME280 (left, cool chamber)
-    card_slot(30, 26, 33, 8)                          # MQ-2 module 32 x 22, dome facing +x louvers
-    card_slot(15, 30, 36, 14)                         # KY-026 flame, LED towards the window
+    card_slot(30, 25, 33, 8, low_px=True)             # MQ-2 module 32 x 22, dome facing +x louvers
+    card_slot(15, 25, 36, 10, depth=4)                 # KY-026 flame: shallow slot, IR LED at the board end in line with the window
     # IR window: 18 mm aperture, 25 x 2 mm acrylic/glass disc glued in from inside, rain visor above
     T("hole", [[15, -36.5, D]], diameter_mm=18.0, depth_mm=PW + 0.5)
     m = sketch_on(face=[15, -24.0, D - PW]); circle(m, 25.4, 15, -36.5, D - PW); T("cut_extrude", 1.6)
@@ -86,7 +91,7 @@ def fire():
 
 def pollution():
     shell_pod(skip_slots=[(27, 33)])
-    card_slot(30, 26, 33, 8)                          # MQ-135 module, dome facing +x louvers
+    card_slot(30, 25, 33, 8, low_px=True)             # MQ-135 module, dome facing +x louvers
     # GP2Y1010AU0F (46 x 30 x 17.6) lies flat on 4 posts so air convects up through its hole;
     # zip-tie it through the floor slots
     m = sketch_on(face=[0, FT, 47.5])
