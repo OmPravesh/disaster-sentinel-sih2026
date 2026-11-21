@@ -119,17 +119,26 @@ All visual assets, circuit schematics, dashboard telemetry, and hardware photogr
 
 ---
 
-### [F] Industrial IP65 Weatherproof Enclosure & Field Packaging (CAD Modeling)
+### [F] IP65 Field Enclosures — 3D Printed, One per Node (SolidWorks 2024)
 
-| IP65 Weatherproof Enclosure (Solid CAD) | Technical Blueprint & Wireframe Outlines |
+Four weatherproof enclosures built for unattended sites in Uttarakhand. All four share one **sealed main box** (110 × 165 × 52 mm) that holds the ESP32-DevKitC, Ra-02 LoRa, TP4056 charger and 2 × 18650 cells on a 70 × 90 mm solder board. Under it, each node gets its own **vented sensor pod**: 45° rain-proof louvers, a slotted drain floor, and sun and rain shading from the box above. Every cable enters from below through PG7 glands. An M12 breather vent stops condensation, and the LoRa antenna mounts on a 10 mm sealed bulkhead on top. Every lid carries the **TEAM WAYWOT · SIH 2026** logo.
+
+| Flood Node — FLD1 | Landslide Node — SLD2 |
 |:---:|:---:|
-| ![IP65 Junction Box Solid Render](project_images/IP65%20Junction%20Box%20with%20Lock.JPG) | ![IP65 Junction Box Wireframe Outlines](project_images/IP65%20Junction%20Box%20with%20Lock%20outlines.JPG) |
-| *High-strength IP65 weatherproof junction box featuring dual mechanical locking latches, hinged cover, and sealed internal cavity.* | *Parametric CAD orthographic outline showing internal PCB mounting standoffs, continuous perimeter gasket channel, and external wall/pole mounting flanges.* |
+| ![Flood node enclosure](project_images/enclosure_flood_fld1.png) | ![Landslide node enclosure](project_images/enclosure_landslide_sld2.png) |
+| *Pod: BME280 + **JSN-SR04T probe looking straight down** at the water. The YL-83 rain plate sits on a 20° pole mount above the box.* | *Pod: BME280 + soil-probe cable exit. **MPU6050 is fixed rigidly inside** the box; the soil sensor's electronics are sealed in a printed cap.* |
 
-| Photorealistic 3D Render & Material Model |
-|:---:|
-| ![IP65 Junction Box Color Render](project_images/IP65%20Junction%20Box%20with%20Lock%20colored.JPG) |
-| *Rendered 3D model with industrial high-visibility finish, molded hinges, silicone sealing perimeter, and physical tamper-proof padlock clasp for harsh Himalayan field deployments.* |
+| Fire Node — FIR3 | Air Pollution Node — POL4 |
+|:---:|:---:|
+| ![Fire node enclosure](project_images/enclosure_fire_fir3.png) | ![Pollution node enclosure](project_images/enclosure_pollution_pol4.png) |
+| *Pod: KY-026 flame sensor behind an **IR window with a 45° rain visor**. A divider keeps the hot MQ-2 heater away from the BME280.* | *Pod: MQ-135 + GP2Y1010 dust sensor lying flat on posts, so air rises through it. The louvers keep it dark, as the sensor needs.* |
+
+| Common Sealed Main Box | Front Lid — TEAM WAYWOT · SIH 2026 |
+|:---:|:---:|
+| ![Main box](project_images/enclosure_main_box.png) | ![Lid with logo](project_images/enclosure_lid_logo.png) |
+| *TPU gasket + 4 × M3 heat-set screws, perfboard standoffs, battery cradle with clamp bar, 3 × PG7 + vent in the bottom wall, pole-mount ears.* | *Engraved logo (prints face-down for a crisp finish) and a node-ID sticker panel. ASA, 5 perimeters, no supports, ≈ 370 g per node.* |
+
+CAD, STEP, STL, print settings, bill of materials and the assembly guide are in [`hardware/enclosures/`](hardware/enclosures/README.md).
 
 ---
 
@@ -285,7 +294,7 @@ A summary of pin connections for all 4 ESP32 nodes and the Jetson gateway. For f
 ### Hardware v2.0 Roadmap: Custom Carrier PCB & Weatherproof Enclosure
 While initial bench testing and field qualification were conducted using modular breadboards and jumper wires, the system is actively transitioning to **Hardware v2.0** for permanent field deployments:
 - **Sentinel Universal Node PCB (SUN-1)**: one dual-layer PCB for all four node types, with an ESP32-S3, LoRa radio, protected solar battery charging and plug-in sensor ports. The design is complete and passes design-rule checks; the first prototype boards are next. See section [G] above.
-- **IP65 Weatherproof Locking Enclosures**: Industrial UV-resistant junction boxes with dual mechanical latches, silicone gasket seals, and padlock clasps to safeguard remote field nodes against severe monsoons, freezing Himalayan winters, and wildlife tampering.
+- **IP65 3D-Printed Node Enclosures**: a common sealed main box plus a node-specific vented sensor pod for each of the 4 nodes, printed in UV-resistant ASA with a TPU gasket, PG7 glands, a breather vent and a pole mount. The design is complete; test prints are next. See section [F] above and `hardware/enclosures/`.
 
 ---
 
@@ -398,6 +407,7 @@ cd firmware/node_pollution && pio run -t upload
 | `jetson/dashboard/static/` | Frontend CSS and JavaScript for the web dashboard |
 | `jetson/dashboard/templates/` | HTML shell for the Single-Page Application |
 | `project_images/` | All hardware photos, CAD enclosure models, custom PCB layouts, circuit schematics, and dashboard screenshots |
+| `hardware/enclosures/` | IP65 3D-printed enclosures for all 4 nodes: SolidWorks parts/assemblies, STEP, STL, renders, build scripts and assembly guide |
 | `hardware_pinout_guide.md` | Full hardware pin wiring and power circuit reference |
 | `simulation/` | Scenario scripts to simulate disaster events for testing |
 
